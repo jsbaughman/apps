@@ -1,8 +1,8 @@
 {
   "id": "cluster_themes",
   "title": "Cluster Themes",
-  "description": "Redraws the instrument cluster: GT3 race dash, M-style, M view, Vector (with a music panel), Supercar (a virtual-cockpit look), Sport, Minimal, Track, Drag, Rally, Retro 80s, Cruise, Dyno (BMW-coloured readout tiles) or Ribbon (with holiday editions), with shift lights, boost, temps, tyres, a G-meter and a 0-60 timer",
-  "version": "0.19.4",
+  "description": "Redraws the instrument cluster: GT3 race dash, M-style, M view, Vector (with a music panel), Supercar (a virtual-cockpit look), Apex (a needle dash with a G-meter), Sport, Minimal, Track, Drag, Rally, Retro 80s, Cruise, Dyno (BMW-coloured readout tiles) or Ribbon (with holiday editions), with shift lights, boost, temps, tyres, a G-meter and a 0-60 timer",
+  "version": "0.19.5",
   "vendor": "custom",
   "loggingId": "OAC1",
   "iconGlyph": "CLU",
@@ -142,6 +142,10 @@
           "Supercar"
         ],
         [
+          "apex",
+          "Apex"
+        ],
+        [
           "sport",
           "Sport"
         ],
@@ -224,6 +228,10 @@
           "Supercar"
         ],
         [
+          "apex",
+          "Apex"
+        ],
+        [
           "sport",
           "Sport"
         ],
@@ -292,6 +300,10 @@
           "Supercar"
         ],
         [
+          "apex",
+          "Apex"
+        ],
+        [
           "sport",
           "Sport"
         ],
@@ -358,6 +370,10 @@
         [
           "supercar",
           "Supercar"
+        ],
+        [
+          "apex",
+          "Apex"
         ],
         [
           "sport",

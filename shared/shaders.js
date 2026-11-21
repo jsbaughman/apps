@@ -1772,4 +1772,116 @@ void main() {
 }
 `;
 
-module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH };
+const CDASH = `// The Apex theme in one cluster-render "effect" layer (GLSL ES 1.00), layout made by tools/gen_apex.py: a black backdrop with
+// a faint carbon weave and red-glow side panels (u_panels), a round needle rev counter (u_tach, u_tachA) whose outer band
+// lights white up to the revs over fixed amber-to-red zones (u_zone), a red needle, up to 4 line bars with a marker and a red
+// end zone (u_bar, u_barZ), and up to 8 thin rule lines (u_line). v_uv (0,0) is the top-left.
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 v_uv;
+uniform vec2 u_size;
+uniform vec4 u_tach;       // centre x, y, outer radius, band width (px)
+uniform vec4 u_tachA;      // start angle (deg, clockwise from 3 o'clock), sweep (deg), thousands on the scale, revs 0..1
+uniform vec2 u_zone;       // amber from, red from (0..1 of the scale)
+uniform vec4 u_panels;     // left panel's inner edge x, right panel's inner edge x, glow top y, glow bottom y
+uniform vec4 u_bar[4];     // left x, y, width (0 = none), value 0..1
+uniform vec4 u_barZ;       // each bar's red zone from (0..1; 1 = none)
+uniform vec4 u_line[8];    // rule lines: from x, y, to x, y (all 0 = none)
+
+const vec3 WHITE = vec3(0.95, 0.96, 0.97);
+const vec3 TRACK = vec3(0.16, 0.16, 0.18);
+const vec3 RED = vec3(0.93, 0.09, 0.1);
+const vec3 AMBER = vec3(0.95, 0.78, 0.1);
+
+float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
+vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
+float segd(vec2 p, vec2 a, vec2 b) {
+    vec2 ba = b - a;
+    float h = clamp(dot(p - a, ba) / max(dot(ba, ba), 0.001), 0.0, 1.0);
+    return length(p - a - ba * h);
+}
+vec3 zoneCol(float f) {   // amber at the zone's start, through orange, to red at the red line
+    float t = clamp((f - u_zone.x) / max(u_zone.y - u_zone.x, 0.001), 0.0, 1.0);
+    vec3 orange = vec3(0.97, 0.45, 0.08);
+    return t < 0.5 ? mix(AMBER, orange, t * 2.0) : mix(orange, RED, (t - 0.5) * 2.0);
+}
+
+void main() {
+    vec2 p = v_uv * u_size;
+    // backdrop: near black with a faint carbon weave
+    vec2 q = p / 6.0;
+    vec2 cell = floor(q), fq = fract(q);
+    float dir = mod(cell.x + cell.y, 2.0);
+    float w = dir > 0.5 ? fq.x : fq.y;
+    vec3 c = vec3(0.045, 0.046, 0.05) * (0.7 + 0.6 * (0.5 - abs(w - 0.5)));
+    // the side panels: a muted red glow strongest at the screen's outer edges, fading in towards the dial (to the
+    // panel's inner edge), and out just above the bottom strip
+    float sideL = 1.0 - smoothstep(0.0, u_panels.x, p.x);
+    float sideR = smoothstep(u_panels.y, u_size.x, p.x);
+    float side = max(sideL, sideR);
+    float foot = 1.0 - smoothstep(u_panels.w - 80.0, u_panels.w, p.y);
+    c += vec3(0.24, 0.025, 0.035) * side * side * foot;
+
+    vec2 d = p - u_tach.xy;
+    float r = length(d), R = u_tach.z, B = u_tach.w;
+    // the dial: drop shadow, a black face, a thin bezel
+    c *= 1.0 - 0.85 * (1.0 - smoothstep(R + 6.0, R + 50.0, length(d - vec2(0.0, 14.0))));
+    c = put(c, mix(vec3(0.0), vec3(0.035, 0.036, 0.04), smoothstep(R * 0.3, R, r)), cov(r - R - 8.0));
+    c = put(c, vec3(0.45, 0.46, 0.5), cov(abs(r - R - 8.0) - 1.2));
+    c = put(c, vec3(0.2, 0.2, 0.22), cov(abs(r - R * 0.42) - 0.8));
+    c = put(c, vec3(0.14, 0.14, 0.16), cov(abs(r - R * 0.5) - 0.8));
+    if (r > R * 0.55 && r < R + 4.0) {
+        float rel = mod(degrees(atan(d.y, d.x)) - u_tachA.x + 720.0, 360.0);
+        float f = rel / u_tachA.y;
+        float on = step(f, 1.0);
+        // the band: track, the zone always shown (dim), lit up to the revs
+        float band = cov(-min(r - (R - B), R - r)) * on;
+        vec3 z = zoneCol(f);
+        bool inZone = f >= u_zone.x;
+        vec3 off = inZone ? z * 0.35 : TRACK;
+        vec3 lit = inZone ? z : mix(vec3(0.75, 0.76, 0.78), WHITE, f);
+        c = put(c, f <= u_tachA.w ? lit : off, band);
+        // marks: a long one every 1000, a short one every 500, red / amber in the zone
+        float per = u_tachA.y / u_tachA.z;
+        float m1 = abs(radians(mod(rel + per * 0.5, per) - per * 0.5)) * r;
+        float m2 = abs(radians(mod(rel + per * 0.25, per * 0.5) - per * 0.25)) * r;
+        vec3 mc = inZone ? zoneCol(f) : WHITE;
+        c = put(c, mc, cov(m1 - 1.6) * cov(abs(r - (R - B - 20.0)) - 13.0) * on);
+        c = put(c, mc * 0.8, cov(m2 - 1.0) * cov(abs(r - (R - B - 13.0)) - 6.0) * on);
+    }
+    // the needle: red, with a soft glow
+    {
+        float a = radians(u_tachA.x + u_tachA.y * u_tachA.w);
+        vec2 dir2 = vec2(cos(a), sin(a));
+        float nd = segd(p, u_tach.xy + dir2 * R * 0.56, u_tach.xy + dir2 * (R - 2.0));
+        float along = clamp(dot(d, dir2) / R, 0.0, 1.0);
+        float wdt = mix(2.0, 3.6, along);
+        c = put(c, RED * 0.6, clamp(1.0 - (nd - wdt) / 9.0, 0.0, 1.0) * 0.45);
+        c = put(c, mix(RED, vec3(1.0, 0.55, 0.5), 0.25), cov(nd - wdt));
+    }
+    // the line bars: track, red end zone, white fill to the value, a marker
+    for (int i = 0; i < 4; i++) {
+        vec4 b = u_bar[i];
+        if (b.z <= 0.0) continue;
+        float t = (p.x - b.x) / b.z;
+        float in1 = step(0.0, t) * step(t, 1.0);
+        float bar = cov(abs(p.y - b.y) - 2.5) * in1;
+        float rz = i == 0 ? u_barZ.x : i == 1 ? u_barZ.y : i == 2 ? u_barZ.z : u_barZ.w;
+        c = put(c, t >= rz ? RED * 0.8 : vec3(0.42, 0.42, 0.45), bar);
+        c = put(c, WHITE, bar * step(t, b.w));
+        c = put(c, WHITE, cov(abs(p.x - (b.x + b.z * b.w)) - 2.0) * cov(abs(p.y - b.y) - 10.0));
+    }
+    // rule lines
+    for (int i = 0; i < 8; i++) {
+        vec4 s = u_line[i];
+        if (s.x == 0.0 && s.z == 0.0) continue;
+        c = put(c, vec3(0.5, 0.5, 0.53), cov(segd(p, s.xy, s.zw) - 0.8));
+    }
+    gl_FragColor = vec4(c, 1.0);
+}
+`;
+
+module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH };

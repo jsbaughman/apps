@@ -92,6 +92,11 @@
  *             (the track's progress); the map window as fill ("hole", "holeWhen") with its corners cut "holeCut" px;
  *             Supercar adds "zones" [yellow from, red from] (rpm: fixed rev zones in amber and red) and "face" { bg: 0 black,
  *             1 graphite, 2 carbon; shadow: px of drop shadow round the dial; dial: true for a dark dial face with a rim }
+ *   cdash     effect layer; the whole Apex theme (shaders.js cdash, layout made by tools/gen_apex.py): "tach" [cx, cy, outer r,
+ *             band, start deg, sweep deg, thousands on the scale] (a needle rev counter, its band lit white up to the revs),
+ *             "zones" [amber from, red from] rpm, "panels" [left inner x, right inner x, glow top y, glow bottom y] (red-glow side
+ *             panels on a carbon backdrop), "bars" (at most 4 line bars: {x, y, w, signal, min, max, red: 0..1 where the red end
+ *             zone starts}), "lines" (at most 8 rule lines [x0, y0, x1, y1])
  *   sdash     effect layer; the whole Sport theme (shaders.js sdash), optional "road" [horizonY, scale] (a road in the
  *             middle while no map shows, its dashes running with the speed): "geo" [yTop, yBend, yBottom, xBend] and
  *             "k" [above, below, round] for the left bracket's outer line (the right one is mirrored), "band"
@@ -2206,6 +2211,21 @@ class HudApp {
             x.prog = pr ? [pr[0] - w.x, pr[1] - w.y, pr[2]] : [0, 0, 0];
             c.uniform(ref, 'u_hole', this._hole(w));
             c.uniform(ref, 'u_holeC', [isNum(w.holeCut) ? w.holeCut : 40]);
+        } else if (w.type === 'cdash') {
+            // Apex (tools/gen_apex.py): "tach" [cx, cy, outer r, band, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
+            // "panels" [left inner x, right inner x, glow top y, bottom y], "bars" (up to 4: {x, y, w, signal, min, max, red}),
+            // "lines" (up to 8: [x0, y0, x1, y1]); target px
+            const T = w.tach, Z = w.zones || [6500, 7000], P = w.panels || [600, 1320, 0, 600];
+            c.uniform(ref, 'u_size', [w.w, w.h]);
+            c.uniform(ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], T[3]]);
+            c.uniform(ref, 'u_zone', [Z[0] / (T[6] * 1000), Z[1] / (T[6] * 1000)]);
+            c.uniform(ref, 'u_panels', [P[0] - w.x, P[1] - w.x, P[2] - w.y, P[3] - w.y]);
+            const bz = [0, 1, 2, 3].map((i) => { const b = (w.bars || [])[i]; return b && isNum(b.red) ? b.red : 1; });
+            c.uniform(ref, 'u_barZ', bz);
+            const ln = [];
+            (w.lines || []).slice(0, 8).forEach((l) => ln.push(l[0] - w.x, l[1] - w.y, l[2] - w.x, l[3] - w.y));
+            while (ln.length < 32) ln.push(0);
+            c.uniform(ref, 'u_line', ln, { type: 'vec4' });
         } else if (w.type === 'mdash') {
             const ty = w.tyres || [0, 0, 0], L = w.gaugeL || {}, R = w.gaugeR || {}, b = w.blade || {};
             const bars = Array.isArray(w.segbars) ? w.segbars.slice(0, 4) : [];
@@ -2761,6 +2781,19 @@ class HudApp {
             x.c.uniform(x.ref, 'u_rpm', [vals[1]]);
             x.c.uniform(x.ref, 'u_fuel', [vals[2]]);
             x.c.uniform(x.ref, 'u_oil', [vals[3]]);
+        } else if (w.type === 'cdash') {
+            const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
+            const rpm = this._raw('rpm');
+            const bars = [0, 1, 2, 3].map((i) => (w.bars || [])[i]);
+            const bv = bars.map((b) => { const v = b && b.signal ? this._raw(b.signal) : null; return isNum(v) ? q((v - b.min) / (b.max - b.min)) : 0; });
+            const rv = isNum(rpm) ? q(rpm / (T[6] * 1000)) : 0;
+            const key = [rv].concat(bv).join('|');
+            if (!force && key === x.last) return;
+            x.last = key;
+            x.c.uniform(x.ref, 'u_tachA', [T[4], T[5], T[6], rv]);
+            const bu = [];
+            bars.forEach((b, i) => bu.push(b ? b.x - w.x : 0, b ? b.y - w.y : 0, b ? b.w : 0, bv[i]));
+            x.c.uniform(x.ref, 'u_bar', bu, { type: 'vec4' });
         } else if (w.type === 'vdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 400) / 400;
             const frac = (g) => { const v = g && g.signal ? this._raw(g.signal) : null; return isNum(v) ? q((v - g.min) / (g.max - g.min)) : 0; };

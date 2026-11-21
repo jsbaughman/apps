@@ -71,6 +71,12 @@ CLUSTER_FONTS = [
     ('s_hero', 'Michroma-Regular.ttf', 132, DIGITS + '-', 3),   # the big speed in the middle while no map shows (Nov 13 2026)
     ('s_gear', 'Michroma-Regular.ttf', 70, DIGITS + 'PRNDSM-', 3),
     ('sc_num', 'Michroma-Regular.ttf', 44, DIGITS, 2),   # Supercar: the rev counter's numbers (Nov 21 2026: s_gear was too big on the car)
+    # Apex: a light, upright condensed face for the needle dash
+    ('a_gear', 'BarlowSemiCondensed-Medium.ttf', 190, DIGITS + 'PRNDSM-', 3),
+    ('a_speed', 'BarlowSemiCondensed-Medium.ttf', 110, DIGITS + '-', 3),
+    ('a_val', 'BarlowSemiCondensed-Medium.ttf', 56, DIGITS + '.-', 2),
+    ('a_big', 'BarlowSemiCondensed-Medium.ttf', 100, DIGITS + '.-', 3),   # boost and oil temperature (Nov 21 2026: a_val too small)
+    ('a_num', 'BarlowSemiCondensed-Medium.ttf', 46, DIGITS, 2),
     ('s_val', 'Michroma-Regular.ttf', 26, DIGITS + ':+-.', 1),
     ('s_unit', 'Barlow-Medium.ttf', 24, LOWER + UPPER + DIGITS + '°/-. '),
     ('s_label', 'BarlowSemiCondensed-SemiBold.ttf', 30, UPPER + DIGITS + ' .'),
