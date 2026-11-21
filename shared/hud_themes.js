@@ -86,6 +86,16 @@ const THEMES = {
         bg: [0, 0, 0, 255], panel: [0, 0, 0, 255], line: [128, 135, 148, 255], head: [226, 228, 232, 255],
         ink: [12, 12, 14, 255], accent: [242, 31, 36, 255], well: [0, 0, 0, 255], faint: [96, 104, 118, 255],
     },
+    // Supercar (layout supercar.json): a virtual-cockpit look, white numbers on black, red drive mode and fuel / oil rings.
+    supercar: {
+        name: 'Supercar',
+        fg: [240, 242, 246, 255], dim: [150, 156, 166, 255], track: [44, 46, 52, 255], arc: [240, 242, 246, 255],
+        glow: 0, stripe: false,
+        bar: { low: [240, 242, 246], mid: [240, 242, 246], high: [230, 24, 32], midAt: 'shift' },
+        rev: { from: [230, 24, 32], to: [230, 24, 32] },
+        bg: [0, 0, 0, 255], panel: [0, 0, 0, 255], line: [120, 126, 138, 255], head: [226, 228, 232, 255],
+        ink: [12, 12, 14, 255], accent: [230, 24, 32, 255], well: [0, 0, 0, 255], faint: [96, 104, 118, 255],
+    },
     // Minimal (layout minimal.json): white on black, nothing but the speed, the gear and a fuel line.
     minimal: {
         name: 'Minimal',
