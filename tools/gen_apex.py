@@ -20,6 +20,7 @@ CX, CY, R, BAND = 960, 332, 318, 46
 START, SWEEP, THOUSANDS = 100, 260, 8
 HEAD_H = 43                   # a_head's cell height
 HEAD_DY = -1                  # headings sit on the rule as v_title did
+GLOW = [0, 0, 0, 0]   # the glow outward from the gear's ring when the app has no dialGlow setting: r, g, b, strength (0 = none)
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
@@ -72,7 +73,7 @@ def build():
              [LX0, 560, LX1, 560], [RX0, 560, RX1, 560]]
     widgets.append({'id': 'dash', 'type': 'cdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                     'tach': [CX, CY, R, BAND, START, SWEEP, THOUSANDS], 'zones': ZONES,
-                    'panels': [640, 1280, 120, 660], 'bars': bars, 'lines': lines})
+                    'panels': [640, 1280, 120, 660], 'bars': bars, 'lines': lines, 'glow': GLOW})
     # --- the G-meter --------------------------------------------------------------------------------------------
     widgets.append({'id': 'gmeter', 'type': 'gmeter', 'class': 'content', 'z': 2, 'x': 1435, 'y': 205, 'w': 330,
                     'h': 290, 'conn': 1})
@@ -85,8 +86,8 @@ def build():
         widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_tach', col))
     # --- the middle: gear, drive mode, speed in the open quarter, the scale's unit ------------------------------
     widgets += [
-        text('gear', CX - 130, CY - 112, 260, 163, '{{gearnum}}', 'a_gear', 'hot'),
-        text('mode', CX - 120, CY + 56, 240, 24, '{{mode}}', 'v_label', 'accent'),
+        text('gear', CX - 130, CY - 82, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),   # ink centred on the dial (the slant leans it right)
+        text('mode', CX - 120, CY + 92, 240, 24, '{{mode}}', 'v_label', 'accent'),
         text('rpm_u1', CX + 170, CY + 30, 120, 30, 'RPM', 'r_label', 'hot', 'left'),
         text('rpm_u2', CX + 170, CY + 58, 120, 30, 'x1000', 'r_label', 'dim', 'left'),
         text('speed', CX - 60, CY + 105, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24),   # 16 px of room for the lean
@@ -140,6 +141,8 @@ def build():
 
 if __name__ == '__main__':
     root = sys.argv[1] if len(sys.argv) > 1 else '.'
+    if len(sys.argv) > 2:
+        GLOW = [float(v) for v in sys.argv[2].split(',')]
     path = root + '/apps/cluster_themes/hud/layouts/apex.json'
     with open(path, 'w') as f:
         json.dump(build(), f, indent=2)

@@ -101,6 +101,12 @@
           1810,
           560
         ]
+      ],
+      "glow": [
+        0,
+        0,
+        0,
+        0
       ]
     },
     {
@@ -236,20 +242,21 @@
       "type": "text",
       "z": 5,
       "x": 830,
-      "y": 220,
+      "y": 250,
       "w": 260,
       "h": 163,
       "text": "{{gearnum}}",
       "font": "a_gear",
       "color": "hot",
-      "align": "center"
+      "align": "center",
+      "dx": -7
     },
     {
       "id": "mode",
       "type": "text",
       "z": 5,
       "x": 840,
-      "y": 388,
+      "y": 424,
       "w": 240,
       "h": 24,
       "text": "{{mode}}",

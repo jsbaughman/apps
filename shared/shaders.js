@@ -1790,6 +1790,7 @@ uniform vec4 u_panels;     // left panel's inner edge x, right panel's inner edg
 uniform vec4 u_bar[4];     // left x, y, width (0 = none), value 0..1
 uniform vec4 u_barZ;       // each bar's red zone from (0..1; 1 = none)
 uniform vec4 u_line[8];    // rule lines: from x, y, to x, y (all 0 = none)
+uniform vec4 u_glow;       // a soft glow fading outward from the gear's ring (0.5 of the radius): r, g, b, strength (0 = none)
 
 const vec3 WHITE = vec3(0.95, 0.96, 0.97);
 const vec3 TRACK = vec3(0.16, 0.16, 0.18);
@@ -1831,6 +1832,10 @@ void main() {
     c *= 1.0 - 0.85 * (1.0 - smoothstep(R + 6.0, R + 50.0, length(d - vec2(0.0, 14.0))));
     c = put(c, mix(vec3(0.0), vec3(0.035, 0.036, 0.04), smoothstep(R * 0.3, R, r)), cov(r - R - 8.0));
     c = put(c, vec3(0.45, 0.46, 0.5), cov(abs(r - R - 8.0) - 1.2));
+    if (u_glow.w > 0.0 && r > R * 0.5 - 1.0) {
+        float gl = 1.0 - smoothstep(R * 0.5, R * 0.86, r);
+        c += u_glow.rgb * u_glow.w * gl * gl;
+    }
     c = put(c, vec3(0.14, 0.14, 0.16), cov(abs(r - R * 0.5) - 0.8));
     if (r > R * 0.55 && r < R + 4.0) {
         float rel = mod(degrees(atan(d.y, d.x)) - u_tachA.x + 720.0, 360.0);
