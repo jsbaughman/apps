@@ -200,6 +200,7 @@
  *   (the GT3 look); "round": true for dots; with the setting "shiftCue" on "countin" (the default) the lights count in
  *   over the last second before an early, latched 5 Hz flash instead, and "from" is not used (shift_cue.js);
  * "off" the alpha of an unlit light (0.14).
+ * Text "dx": px the text moves inside its box (an italic right-aligned in a box wider than it, so the slanted ink isn't clipped).
  * Text "warnFlash": false: no flash over the warning limit (a tile that turns red itself).
  * Text "showWhen": "abnormal" (or "abnormal:oil" / "abnormal:coolant" on a plain label): empty while that temperature is
  *   normal and the setting "smartTemps" is on; temperature values take their band's colour, outside blue at 3 C and
@@ -2643,7 +2644,7 @@ class HudApp {
                 font = f;
             }
             const buf = textRaster.drawText(w.w, w.h, s, {
-                font, offsetY, color: color(this.theme, role), align: w.align, spacing: w.spacing,
+                font, offsetY, color: color(this.theme, role), align: w.align, spacing: w.spacing, x: w.dx || 0,
                 color2: w.color2 && role !== 'hot' ? color(this.theme, w.color2) : null,
                 glow: w.glow ? this.theme.glow : 0,
             });

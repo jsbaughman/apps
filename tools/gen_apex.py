@@ -89,8 +89,8 @@ def build():
         text('mode', CX - 120, CY + 56, 240, 24, '{{mode}}', 'v_label', 'accent'),
         text('rpm_u1', CX + 170, CY + 30, 120, 30, 'RPM', 'r_label', 'hot', 'left'),
         text('rpm_u2', CX + 170, CY + 58, 120, 30, 'x1000', 'r_label', 'dim', 'left'),
-        text('speed', CX - 60, CY + 105, 220, 76, '{{speed}}', 'a_speed', 'fg', 'right'),
-        text('speed_u', CX + 166, CY + 142, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left'),
+        text('speed', CX - 60, CY + 105, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24),   # 16 px of room for the lean
+        text('speed_u', CX + 178, CY + 142, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left'),
     ]
     # --- left: boost and oil temperature ------------------------------------------------------------------------
     widgets += readout(0, LX0, LX1, 140, 'Boost', '{{boost}}', '{{u:boostLc}}', bars[0],

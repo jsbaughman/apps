@@ -289,18 +289,19 @@
       "z": 5,
       "x": 900,
       "y": 437,
-      "w": 220,
+      "w": 240,
       "h": 76,
       "text": "{{speed}}",
       "font": "a_speed",
       "color": "fg",
-      "align": "right"
+      "align": "right",
+      "dx": -24
     },
     {
       "id": "speed_u",
       "type": "text",
       "z": 5,
-      "x": 1126,
+      "x": 1138,
       "y": 474,
       "w": 80,
       "h": 37,
