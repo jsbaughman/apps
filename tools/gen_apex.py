@@ -21,6 +21,8 @@ START, SWEEP, THOUSANDS = 100, 260, 8
 HEAD_H = 43                   # a_head's cell height
 HEAD_DY = -1                  # headings sit on the rule as v_title did
 GLOW = [0, 0, 0, 0]   # the glow outward from the gear's ring when the app has no dialGlow setting: r, g, b, strength (0 = none)
+CAR = [1570, 360, 50, 112]   # the tyre panel's car: centre x, y, half width, half length
+PERF, TYRES, POWER = 'rightPanel=performance', 'rightPanel=tyres', 'rightPanel=power'
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
@@ -47,7 +49,7 @@ def unit_labels(id_, x, y, w, align, lo_hi_by_unit):
     return out
 
 
-def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi):
+def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi, toggle=None, conn=None):
     """A left-panel block: label, a rule, the value and unit, the bar, min / max under it."""
     mid = (x0 + x1) / 2
     out = [text('r%d_l' % n, mid - 220, y + HEAD_DY, 440, HEAD_H, label, 'a_head', 'accent'),
@@ -55,6 +57,11 @@ def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi):
            text('r%d_u' % n, mid + 38, y + 84, 120, 36, unit_tok, 'm_unit', 'fg', 'left')]
     out += unit_labels('r%d_lo' % n, bar['x'] - 10, bar['y'] + 14, 80, 'left', lo)
     out += unit_labels('r%d_hi' % n, bar['x'] + bar['w'] - 70, bar['y'] + 14, 80, 'right', hi)
+    for w in out:                       # a panel shown by a setting (its min / max labels bring their own toggle)
+        if toggle and 'toggle' not in w:
+            w['toggle'] = toggle
+        if conn is not None:
+            w['conn'] = conn
     return out
 
 
@@ -68,15 +75,17 @@ def build():
         {'x': 140, 'y': 506, 'w': 420, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8},
         {'x': 300, 'y': 606, 'w': 200, 'signal': 'coolant', 'min': 40, 'max': 130, 'red': 0.85},
         {'x': 1420, 'y': 606, 'w': 200, 'signal': 'fuel', 'min': 0, 'max': 1, 'red': 1},
+        {'x': 1360, 'y': 296, 'w': 420, 'signal': 'powerPct', 'min': 0, 'max': 100, 'red': 1, 'toggle': POWER},
+        {'x': 1360, 'y': 506, 'w': 420, 'signal': 'torquePct', 'min': 0, 'max': 100, 'red': 1, 'toggle': POWER},
     ]
     lines = [[LX0, 192, LX1, 192], [LX0, 402, LX1, 402], [RX0, 192, RX1, 192],
-             [LX0, 560, LX1, 560], [RX0, 560, RX1, 560]]
+             [LX0, 560, LX1, 560], [RX0, 560, RX1, 560], [RX0, 402, RX1, 402, POWER]]
     widgets.append({'id': 'dash', 'type': 'cdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                     'tach': [CX, CY, R, BAND, START, SWEEP, THOUSANDS], 'zones': ZONES,
-                    'panels': [640, 1280, 120, 660], 'bars': bars, 'lines': lines, 'glow': GLOW})
+                    'panels': [640, 1280, 120, 660], 'bars': bars, 'lines': lines, 'glow': GLOW, 'car': CAR})
     # --- the G-meter --------------------------------------------------------------------------------------------
     widgets.append({'id': 'gmeter', 'type': 'gmeter', 'class': 'content', 'z': 2, 'x': 1435, 'y': 205, 'w': 330,
-                    'h': 290, 'conn': 1})
+                    'h': 290, 'conn': 1, 'toggle': PERF})
     # --- rev counter numbers, inside the marks ------------------------------------------------------------------
     num_r = R - BAND - 64
     for k in range(THOUSANDS + 1):
@@ -109,9 +118,26 @@ def build():
     ]
     # --- right: the G-meter's header and readouts ---------------------------------------------------------------
     widgets += [
-        text('perf', RX0, 140 + HEAD_DY, RX1 - RX0, HEAD_H, 'Performance', 'a_head', 'fg', conn=1),
-        text('g_vals', 1370, 506, 460, 42, '{{gSide}}    {{gFwd}}', 'v_title', 'fg', conn=1),
+        text('perf', RX0, 140 + HEAD_DY, RX1 - RX0, HEAD_H, 'Performance', 'a_head', 'fg', conn=1, toggle=PERF),
+        text('tyre_head', RX0, 140 + HEAD_DY, RX1 - RX0, HEAD_H, 'Tire Pressure', 'a_head', 'fg', conn=1, toggle=TYRES),
+        text('g_vals', 1370, 506, 460, 42, '{{gSide}}    {{gFwd}}', 'v_title', 'fg', conn=1, toggle=PERF),
     ]
+    # --- right, the third choice: horsepower and torque, as the left side's blocks, over % of the engine's peak ---------
+    widgets += readout(2, RX0, RX1, 140, 'Horsepower', '{{power}}', '{{u:powerLc}}', bars[4],
+                       [([POWER], '0')], [([POWER], '{{powerPeak}}')], toggle=POWER, conn=1)
+    widgets += readout(3, RX0, RX1, 350, 'Torque', '{{torque}}', '{{u:torque}}', bars[5],
+                       [([POWER], '0')], [([POWER], '{{torquePeak}}')], toggle=POWER, conn=1)
+    # --- right, the other choice: the four tyres round a car seen from above (pressure, temperature under it) -----
+    cx, cy, hw, hl = CAR
+    for pos, side, fy in (('FL', -1, -1), ('FR', 1, -1), ('RL', -1, 1), ('RR', 1, 1)):
+        ty = cy + fy * hl * 0.6                       # the tyre's centre, as the shader draws it
+        end = cx - hw - 96 if side < 0 else cx + hw + 122     # where the pressure's digits end
+        widgets += [
+            text('tp_' + pos, end - 140, ty - 40, 140, 47, '{{tyreP:%s}}' % pos, 'a_val', 'fg', 'right', conn=1, toggle=TYRES),
+            text('tpu_' + pos, end + 6, ty - 28, 50, 32, '{{u:pressure}}', 'm_tiny', 'fg', 'left', conn=1, toggle=TYRES),
+            text('tt_' + pos, end - 140, ty + 10, 190, 30, '{{tyreT:%s}} {{u:temp}}' % pos, 'r_label', 'dim', 'right', conn=1,
+                 toggle=TYRES),
+        ]
     # --- the bottom strip: clock, range, outside temperature; BMW's gear letter left uncovered ------------------
     widgets += [
         {'id': 'strip_cover_l', 'type': 'fill', 'class': 'content', 'z': 0, 'x': 0, 'y': 660, 'w': 1380, 'h': 60,

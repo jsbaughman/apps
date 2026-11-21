@@ -2,7 +2,7 @@
   "id": "cluster_themes",
   "title": "Cluster Themes",
   "description": "Redraws the instrument cluster as Apex: a needle rev counter with amber and red zones, boost and oil temperature, a G-meter, coolant and fuel; or Off for BMW's own cluster",
-  "version": "0.20.2",
+  "version": "0.20.3",
   "vendor": "custom",
   "loggingId": "OAC1",
   "iconGlyph": "CLU",
@@ -752,6 +752,26 @@
       ]
     },
     {
+      "key": "rightPanel",
+      "label": "Right side (Apex)",
+      "type": "choice",
+      "default": "performance",
+      "options": [
+        [
+          "performance",
+          "Performance (G-meter)"
+        ],
+        [
+          "tyres",
+          "Tire pressure"
+        ],
+        [
+          "power",
+          "Horsepower & torque"
+        ]
+      ]
+    },
+    {
       "key": "badge",
       "label": "Badge",
       "type": "choice",
@@ -1135,8 +1155,9 @@
     },
     "tankLitres": 65,
     "engine": {
-      "torqueNm": 500,
-      "powerKw": 285
+      "torqueNm": 650,
+      "powerKw": 375,
+      "_comment": "peaks for the power / torque % and bars: BMW S58, M3 / M4 Competition (503 hp, 479 lb-ft); the M40i is 285 kW, 500 Nm"
     }
   }
 }

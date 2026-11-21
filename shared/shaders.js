@@ -1774,7 +1774,7 @@ void main() {
 
 const CDASH = `// The Apex theme in one cluster-render "effect" layer (GLSL ES 1.00), layout made by tools/gen_apex.py: a black backdrop with
 // a faint carbon weave and red-glow side panels (u_panels), a round needle rev counter (u_tach, u_tachA) whose outer band
-// lights white up to the revs over fixed amber-to-red zones (u_zone), a red needle, up to 4 line bars with a marker and a red
+// lights white up to the revs over fixed amber-to-red zones (u_zone), a red needle, up to 6 line bars with a marker and a red
 // end zone (u_bar, u_barZ), and up to 8 thin rule lines (u_line). v_uv (0,0) is the top-left.
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
@@ -1787,9 +1787,10 @@ uniform vec4 u_tach;       // centre x, y, outer radius, band width (px)
 uniform vec4 u_tachA;      // start angle (deg, clockwise from 3 o'clock), sweep (deg), thousands on the scale, revs 0..1
 uniform vec2 u_zone;       // amber from, red from (0..1 of the scale)
 uniform vec4 u_panels;     // left panel's inner edge x, right panel's inner edge x, glow top y, glow bottom y
-uniform vec4 u_bar[4];     // left x, y, width (0 = none), value 0..1
-uniform vec4 u_barZ;       // each bar's red zone from (0..1; 1 = none)
+uniform vec4 u_bar[6];     // left x, y, width (0 = none), value 0..1
+uniform float u_barZ[6];   // each bar's red zone from (0..1; 1 = none)
 uniform vec4 u_line[8];    // rule lines: from x, y, to x, y (all 0 = none)
+uniform vec4 u_car;        // the tyre panel's car seen from above: centre x, y, half width, half length (0 = none)
 uniform vec4 u_glow;       // a soft glow fading outward from the gear's ring (0.5 of the radius): r, g, b, strength (0 = none)
 
 const vec3 WHITE = vec3(0.95, 0.96, 0.97);
@@ -1799,6 +1800,10 @@ const vec3 AMBER = vec3(0.95, 0.78, 0.1);
 
 float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
 vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
+float rboxd(vec2 p, vec2 c, vec2 h, float rad) {   // signed distance to a rounded box (centre, half size, corner)
+    vec2 q = abs(p - c) - h + rad;
+    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - rad;
+}
 float segd(vec2 p, vec2 a, vec2 b) {
     vec2 ba = b - a;
     float h = clamp(dot(p - a, ba) / max(dot(ba, ba), 0.001), 0.0, 1.0);
@@ -1867,16 +1872,33 @@ void main() {
         c = put(c, mix(RED, vec3(1.0, 0.55, 0.5), 0.25), cov(nd - wdt));
     }
     // the line bars: track, red end zone, white fill to the value, a marker
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 6; i++) {
         vec4 b = u_bar[i];
         if (b.z <= 0.0) continue;
         float t = (p.x - b.x) / b.z;
         float in1 = step(0.0, t) * step(t, 1.0);
         float bar = cov(abs(p.y - b.y) - 2.5) * in1;
-        float rz = i == 0 ? u_barZ.x : i == 1 ? u_barZ.y : i == 2 ? u_barZ.z : u_barZ.w;
+        float rz = u_barZ[i];
         c = put(c, t >= rz ? RED * 0.8 : vec3(0.42, 0.42, 0.45), bar);
         c = put(c, WHITE, bar * step(t, b.w));
         c = put(c, WHITE, cov(abs(p.x - (b.x + b.z * b.w)) - 2.0) * cov(abs(p.y - b.y) - 10.0));
+    }
+    // the tyre panel's car: body outline, windscreen and rear window, four tyres
+    if (u_car.z > 0.0) {
+        vec2 cc = u_car.xy, hb = u_car.zw;
+        float bd = rboxd(p, cc, hb, hb.x * 0.6);
+        c = put(c, vec3(0.03, 0.03, 0.035), cov(bd));
+        c = put(c, vec3(0.55, 0.56, 0.6), cov(abs(bd) - 1.2));
+        float wsY = cc.y - hb.y * 0.38, rwY = cc.y + hb.y * 0.5;
+        c = put(c, vec3(0.4, 0.41, 0.45), cov(abs(p.y - wsY) - 1.0) * step(abs(p.x - cc.x), hb.x * 0.72));
+        c = put(c, vec3(0.4, 0.41, 0.45), cov(abs(p.y - rwY) - 1.0) * step(abs(p.x - cc.x), hb.x * 0.6));
+        for (int k = 0; k < 4; k++) {
+            float sx = (k == 0 || k == 2) ? -1.0 : 1.0, sy = k < 2 ? -1.0 : 1.0;
+            vec2 tc = cc + vec2(sx * (hb.x + 9.0), sy * hb.y * 0.6);
+            float td = rboxd(p, tc, vec2(9.0, 24.0), 6.0);
+            c = put(c, vec3(0.2, 0.2, 0.22), cov(td));
+            c = put(c, vec3(0.6, 0.61, 0.65), cov(abs(td) - 1.0));
+        }
     }
     // rule lines
     for (int i = 0; i < 8; i++) {

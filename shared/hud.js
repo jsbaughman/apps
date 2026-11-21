@@ -95,9 +95,10 @@
  *   cdash     effect layer; the whole Apex theme (shaders.js cdash, layout made by tools/gen_apex.py): "tach" [cx, cy, outer r,
  *             band, start deg, sweep deg, thousands on the scale] (a needle rev counter, its band lit white up to the revs),
  *             "zones" [amber from, red from] rpm, "panels" [left inner x, right inner x, glow top y, glow bottom y] (red-glow side
- *             panels on a carbon backdrop), "bars" (at most 4 line bars: {x, y, w, signal, min, max, red: 0..1 where the red end
- *             zone starts}), "lines" (at most 8 rule lines [x0, y0, x1, y1]), "glow" [r, g, b, strength]
- *             (0..1: a soft glow fading outward from the ring round the gear)
+ *             panels on a carbon backdrop), "bars" (at most 6 line bars: {x, y, w, signal, min, max, red: 0..1 where the red end
+ *             zone starts, toggle}), "lines" (at most 8 rule lines [x0, y0, x1, y1, toggle]), "glow" [r, g, b, strength]
+ *             (0..1: a soft glow fading outward from the ring round the gear), "car" [cx, cy, half width, half length] (the
+ *             tyre panel's car, drawn while the "rightPanel" setting is "tyres")
  *   sdash     effect layer; the whole Sport theme (shaders.js sdash), optional "road" [horizonY, scale] (a road in the
  *             middle while no map shows, its dashes running with the speed): "geo" [yTop, yBend, yBottom, xBend] and
  *             "k" [above, below, round] for the left bracket's outer line (the right one is mirrored), "band"
@@ -1742,6 +1743,11 @@ class HudApp {
                 return (n > 0 ? '+' : '') + n;
             }
             case 'u:torque': return us ? 'lb-ft' : 'Nm';
+            case 'u:powerLc': return us ? 'hp' : 'kW';
+            case 'powerPeak': case 'torquePeak': {      // config.engine's peaks, as the power / torque % count from
+                const e = this.config.engine || {};
+                return tok === 'powerPeak' ? String(Math.round((e.powerKw || 285) * (us ? 1.34102 : 1))) : String(Math.round((e.torqueNm || 500) * (us ? 0.737562 : 1)));
+            }
             case 'power': {          // kW from the crank torque and rpm; hp in US units
                 const d = this.car.data(), rpm = this._raw('rpm');
                 if (!isNum(d.torque) || !isNum(rpm)) return '--';
@@ -2222,15 +2228,19 @@ class HudApp {
             c.uniform(ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], T[3]]);
             c.uniform(ref, 'u_zone', [Z[0] / (T[6] * 1000), Z[1] / (T[6] * 1000)]);
             c.uniform(ref, 'u_panels', [P[0] - w.x, P[1] - w.x, P[2] - w.y, P[3] - w.y]);
-            const bz = [0, 1, 2, 3].map((i) => { const b = (w.bars || [])[i]; return b && isNum(b.red) ? b.red : 1; });
-            c.uniform(ref, 'u_barZ', bz);
+            const bz = [0, 1, 2, 3, 4, 5].map((i) => { const b = (w.bars || [])[i]; return b && isNum(b.red) ? b.red : 1; });
+            c.uniform(ref, 'u_barZ', bz, { type: 'float' });
             // the glow round the gear's ring: the "dialGlow" setting (off / red / white), else the layout's own "glow"
             const GLOWS = { red: [0.95, 0.1, 0.12, 0.22], white: [0.85, 0.87, 0.92, 0.13], off: [0, 0, 0, 0] };
             const gk = this.setting('dialGlow'), gl = (GLOWS[gk] || w.glow || GLOWS.off).slice();
             if (this.nightOn) gl[3] *= 0.6;
             c.uniform(ref, 'u_glow', gl);
+            // the right panel: the G-meter, or the tyres with this car drawn in the middle ("car" [cx, cy, half w, half l])
+            const car = this.setting('rightPanel') === 'tyres' && w.car;
+            c.uniform(ref, 'u_car', car ? [car[0] - w.x, car[1] - w.y, car[2], car[3]] : [0, 0, 0, 0]);
             const ln = [];
-            (w.lines || []).slice(0, 8).forEach((l) => ln.push(l[0] - w.x, l[1] - w.y, l[2] - w.x, l[3] - w.y));
+            // a line's optional 5th item is a toggle, as a widget's (the tyre / power panels' own rules)
+            (w.lines || []).filter((l) => !l[4] || this._toggleOn(l[4])).slice(0, 8).forEach((l) => ln.push(l[0] - w.x, l[1] - w.y, l[2] - w.x, l[3] - w.y));
             while (ln.length < 32) ln.push(0);
             c.uniform(ref, 'u_line', ln, { type: 'vec4' });
         } else if (w.type === 'mdash') {
@@ -2791,7 +2801,7 @@ class HudApp {
         } else if (w.type === 'cdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
             const rpm = this._raw('rpm');
-            const bars = [0, 1, 2, 3].map((i) => (w.bars || [])[i]);
+            const bars = [0, 1, 2, 3, 4, 5].map((i) => { const b = (w.bars || [])[i]; return b && (!b.toggle || this._toggleOn(b.toggle)) ? b : null; });
             const bv = bars.map((b) => { const v = b && b.signal ? this._raw(b.signal) : null; return isNum(v) ? q((v - b.min) / (b.max - b.min)) : 0; });
             const rv = isNum(rpm) ? q(rpm / (T[6] * 1000)) : 0;
             const key = [rv].concat(bv).join('|');
