@@ -18,7 +18,7 @@ moves the pen. Digits get one shared advance (tabular), so a changing number
 doesn't shift sideways.
 """
 import base64, json, os
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, 'fonts-src')
@@ -72,8 +72,11 @@ CLUSTER_FONTS = [
     ('s_gear', 'Michroma-Regular.ttf', 70, DIGITS + 'PRNDSM-', 3),
     ('sc_num', 'Michroma-Regular.ttf', 44, DIGITS, 2),   # Supercar: the rev counter's numbers (Nov 21 2026: s_gear was too big on the car)
     # Apex: a light, upright condensed face for the needle dash
-    ('a_gear', 'BarlowSemiCondensed-Medium.ttf', 190, DIGITS + 'PRNDSM-', 3),
-    ('a_speed', 'BarlowSemiCondensed-Medium.ttf', 110, DIGITS + '-', 3),
+    ('a_gear', 'Outfit[wght].ttf', 200, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 6),   # hollow italic (Nov 21 2026)
+    ('a_speed', 'Outfit[wght].ttf', 116, DIGITS + '-', 0, 'ExtraBold', None, '', 0.2),   # bold italic
+    ('a_unit', 'Outfit[wght].ttf', 34, LOWER + '/', 0, 'Bold', None, '', 0.2),   # the speed's unit (mph, km/h)
+    ('a_tach', 'Outfit[wght].ttf', 58, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the rev counter's numbers, as the speed
+    ('a_head', 'Outfit[wght].ttf', 40, UPPER + LOWER + ' ', 0, 'Bold', None, '', 0.2),   # the panel headings, as the speed
     ('a_val', 'BarlowSemiCondensed-Medium.ttf', 56, DIGITS + '.-', 2),
     ('a_big', 'BarlowSemiCondensed-Medium.ttf', 100, DIGITS + '.-', 3),   # boost and oil temperature (Nov 21 2026: a_val too small)
     ('a_num', 'BarlowSemiCondensed-Medium.ttf', 46, DIGITS, 2),
@@ -120,17 +123,20 @@ PAD = 2
 ATLAS_W = 1024
 
 
-def bake(out, name, file, size, chars, stroke=0, weight=None, subs=None, tuck=''):
+def bake(out, name, file, size, chars, stroke=0, weight=None, subs=None, tuck='', slant=0.0, outline=0):
     """stroke: px of extra weight round every glyph (Michroma has one weight). weight: a named instance of a
     variable font (Orbitron: Regular .. Black), for the M theme's squared BMW-style gear, speed and numbers.
     subs: {char: glyph drawn for it} (Orbitron's zero is slashed; the M8's is plain, so its O stands in).
     tuck: characters added to a font after layouts were built on its cell height (° on value / y_val, Nov 7 2026):
-    they don't count towards the cell, and one that rises above it is drawn lower so its top meets the cell's."""
+    they don't count towards the cell, and one that rises above it is drawn lower so its top meets the cell's.
+    slant: an italic made by shearing (x shift per px above the baseline, 0.2 = about 11 degrees; the fonts have no italics).
+    outline: px; the glyph drawn hollow, only a ring that wide round its outline (Apex's gear)."""
     font = ImageFont.truetype(os.path.join(SRC, file), size)
     if weight: font.set_variation_by_name(weight)
     subs = subs or {}
     glyph = lambda c: subs.get(c, c)
     ink = [c for c in chars if c != ' ']
+    stroke = stroke + outline
     boxes = {c: font.getbbox(glyph(c), anchor='ls', stroke_width=stroke) for c in ink}
     top = min(b[1] for c, b in boxes.items() if c not in tuck)
     bottom = max(b[3] for c, b in boxes.items() if c not in tuck)
@@ -145,9 +151,18 @@ def bake(out, name, file, size, chars, stroke=0, weight=None, subs=None, tuck=''
             cells.append((c, None, 0, round(adv if adv else size * 0.25)))
             continue
         l, _, r, _ = boxes[c]
-        w = r - l + 2 * PAD
+        lean = int(round(slant * (PAD - top))) if slant else 0      # the sheared top's extra width
+        w = r - l + 2 * PAD + lean
         img = Image.new('L', (w, height), 0)
-        ImageDraw.Draw(img).text((PAD - l, PAD - top + drop.get(c, 0)), glyph(c), font=font, fill=255, anchor='ls', stroke_width=stroke, stroke_fill=255)
+        at = (PAD - l, PAD - top + drop.get(c, 0))
+        ImageDraw.Draw(img).text(at, glyph(c), font=font, fill=255, anchor='ls', stroke_width=stroke, stroke_fill=255)
+        if outline:
+            inner = Image.new('L', (w, height), 0)
+            ImageDraw.Draw(inner).text(at, glyph(c), font=font, fill=255, anchor='ls', stroke_width=stroke - outline, stroke_fill=255)
+            img = ImageChops.subtract(img, inner)
+        if slant:
+            base = PAD - top
+            img = img.transform(img.size, Image.AFFINE, (1, slant, -slant * base, 0, 1, 0), resample=Image.BICUBIC)
         shift = (tab - adv) / 2 if c in DIGITS else 0
         cells.append((c, img, round(l - PAD + shift), round(tab if c in DIGITS else adv)))
 

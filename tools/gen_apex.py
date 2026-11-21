@@ -18,6 +18,8 @@ import sys
 W, H = 1920, 660
 CX, CY, R, BAND = 960, 332, 318, 46
 START, SWEEP, THOUSANDS = 100, 260, 8
+HEAD_H = 43                   # a_head's cell height
+HEAD_DY = -1                  # headings sit on the rule as v_title did
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
@@ -47,7 +49,7 @@ def unit_labels(id_, x, y, w, align, lo_hi_by_unit):
 def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi):
     """A left-panel block: label, a rule, the value and unit, the bar, min / max under it."""
     mid = (x0 + x1) / 2
-    out = [text('r%d_l' % n, mid - 220, y, 440, 42, label, 'v_title', 'accent'),
+    out = [text('r%d_l' % n, mid - 220, y + HEAD_DY, 440, HEAD_H, label, 'a_head', 'accent'),
            text('r%d_v' % n, mid - 190, y + 72, 220, 47, tok, 'a_val', 'fg', 'right'),
            text('r%d_u' % n, mid + 38, y + 84, 120, 36, unit_tok, 'm_unit', 'fg', 'left')]
     out += unit_labels('r%d_lo' % n, bar['x'] - 10, bar['y'] + 14, 80, 'left', lo)
@@ -80,20 +82,20 @@ def build():
         a = math.radians(START + SWEEP * k / float(THOUSANDS))
         x, y = CX + num_r * math.cos(a), CY + num_r * math.sin(a)
         col = 'hot' if k * 1000 >= ZONES[1] else 'fg'
-        widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_val', col))
+        widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_tach', col))
     # --- the middle: gear, drive mode, speed in the open quarter, the scale's unit ------------------------------
     widgets += [
-        text('gear', CX - 110, CY - 100, 220, 145, '{{gearnum}}', 'a_gear', 'fg', hotWhen='now'),
+        text('gear', CX - 130, CY - 112, 260, 163, '{{gearnum}}', 'a_gear', 'hot'),
         text('mode', CX - 120, CY + 56, 240, 24, '{{mode}}', 'v_label', 'accent'),
         text('rpm_u1', CX + 170, CY + 40, 120, 24, 'RPM', 'v_label', 'hot', 'left'),
         text('rpm_u2', CX + 170, CY + 62, 120, 24, 'x1000', 'v_label', 'dim', 'left'),
-        text('speed', CX + 20, CY + 106, 200, 89, '{{speed}}', 'a_speed', 'fg', 'right'),
-        text('speed_u', CX + 100, CY + 196, 120, 24, '{{u:speed}}', 'v_label', 'dim', 'right'),
+        text('speed', CX - 60, CY + 92, 220, 89, '{{speed}}', 'a_speed', 'fg', 'right'),
+        text('speed_u', CX + 166, CY + 142, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left'),
     ]
     # --- left: boost and oil temperature ------------------------------------------------------------------------
     widgets += readout(0, LX0, LX1, 140, 'Boost', '{{boost}}', '{{u:boostLc}}', bars[0],
                        [(PSI, '0'), (BAR, '0')], [(PSI, '40'), (BAR, '2.8')])
-    widgets += readout(1, LX0, LX1, 350, 'Oil Temperature', '{{oil}}', '{{u:temp}}', bars[1],
+    widgets += readout(1, LX0, LX1, 350, 'Oil Temp', '{{oil}}', '{{u:temp}}', bars[1],
                        [(DEGF, '122'), (DEGC, '50')], [(DEGF, '302'), (DEGC, '150')])
     # --- the bottom row: coolant left, fuel right ---------------------------------------------------------------
     widgets += [
@@ -106,7 +108,7 @@ def build():
     ]
     # --- right: the G-meter's header and readouts ---------------------------------------------------------------
     widgets += [
-        text('perf', RX0, 140, RX1 - RX0, 42, 'Performance', 'v_title', 'fg', conn=1),
+        text('perf', RX0, 140 + HEAD_DY, RX1 - RX0, HEAD_H, 'Performance', 'a_head', 'fg', conn=1),
         text('g_vals', 1370, 506, 460, 42, '{{gSide}}    {{gFwd}}', 'v_title', 'fg', conn=1),
     ]
     # --- the bottom strip: clock, range, outside temperature; BMW's gear letter left uncovered ------------------
