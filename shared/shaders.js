@@ -1607,6 +1607,8 @@ uniform float u_nseg;
 uniform vec4 u_tach;       // the rev counter: centre x, y, inner and outer radius of its segments
 uniform vec4 u_tachA;      // its start angle (deg, clockwise from 3 o'clock), sweep (deg), segments, revs 0..1
 uniform float u_redFrom;   // 0..1 of the rev counter
+uniform vec2 u_zone;       // fixed zones (Supercar): yellow from, red from, 0..1 of the rev counter (y 0 = red from u_redFrom)
+uniform vec4 u_face;       // Supercar: x backdrop (0 black, 1 graphite, 2 carbon), y drop shadow px round the dial, z dial face on
 uniform vec4 u_ring[4];    // the ring gauges: centre x, y, radius, value 0..1 (radius 0 = none)
 uniform vec3 u_ringC[4];   // their colours
 uniform vec4 u_bar[3];     // the middle bars: left x, y, width (0 = none), value 0..1
@@ -1620,6 +1622,7 @@ const vec3 WHITE = vec3(0.93, 0.94, 0.96);
 const vec3 GREY = vec3(0.5, 0.53, 0.58);
 const vec3 TRACK = vec3(0.15, 0.16, 0.19);
 const vec3 RED = vec3(0.95, 0.12, 0.14);
+const vec3 AMBER = vec3(1.0, 0.7, 0.05);
 
 float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
 vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
@@ -1638,6 +1641,34 @@ float octd(vec2 p, vec4 r, float ch) {
 void main() {
     vec2 p = v_uv * u_size;
     vec3 c = vec3(0.0);
+    // Supercar's backdrop: graphite (a soft top-down gradient with a glow behind the dial) or carbon weave, then a drop
+    // shadow round the dial and its dark face, so the dial stands off the backdrop
+    if (u_face.x > 0.5) {
+        float gy = v_uv.y;
+        c = mix(vec3(0.13, 0.14, 0.16), vec3(0.0), smoothstep(0.0, 1.0, gy));
+        float glow = 1.0 - smoothstep(0.0, u_tach.w * 1.9, length(p - u_tach.xy));
+        c += vec3(0.05, 0.055, 0.065) * glow;
+        if (u_face.x > 1.5) {
+            vec2 q = p / 7.0;
+            vec2 cell = floor(q), fq = fract(q);
+            float dir = mod(cell.x + cell.y, 2.0);
+            float w = dir > 0.5 ? fq.x : fq.y;
+            float shade = 0.75 + 0.5 * (0.5 - abs(w - 0.5)) + 0.1 * sin((dir > 0.5 ? fq.y : fq.x) * 3.14159);
+            c *= mix(1.0, shade, 0.55);
+        }
+        c *= 1.0 - 0.35 * smoothstep(0.55, 1.1, abs(v_uv.x - 0.5) * 2.0);
+    }
+    if (u_face.y > 0.0) {
+        float rs = length(p - u_tach.xy - vec2(0.0, u_face.y * 0.3));
+        float sh = 1.0 - smoothstep(u_tach.w + 4.0, u_tach.w + u_face.y, rs);
+        c *= 1.0 - 0.9 * sh;
+    }
+    if (u_face.z > 0.5) {
+        float rf = length(p - u_tach.xy);
+        vec3 face = mix(vec3(0.0), vec3(0.03, 0.032, 0.036), smoothstep(0.0, u_tach.w, rf));
+        c = put(c, face, cov(rf - u_tach.w - 10.0));
+        c = put(c, vec3(0.42, 0.44, 0.48), cov(abs(rf - u_tach.w - 10.0) - 1.2));
+    }
     bool playing = u_vinyl.w > 0.5;
 
     // the music panel: a dark plate with cut corners and a thin edge
@@ -1684,15 +1715,17 @@ void main() {
                 float edge = min(within, 1.0 - within) * radians(u_tachA.y) / n * r;     // px to the segment's side
                 float m = cov(-min(r - u_tach.z, u_tach.w - r)) * clamp(edge - 1.5 + 0.5, 0.0, 1.0);
                 float mid = (k + 0.5) / n;
-                bool red = mid >= u_redFrom;
-                vec3 off = red ? vec3(0.3, 0.05, 0.06) : TRACK;
-                vec3 lit = red ? RED : mix(GREY, WHITE, mid);
+                float redF = u_zone.y > 0.0 ? u_zone.y : u_redFrom;
+                bool red = mid >= redF;
+                bool amber = u_zone.y > 0.0 && !red && mid >= u_zone.x;
+                vec3 off = red ? vec3(0.3, 0.05, 0.06) : amber ? vec3(0.3, 0.21, 0.02) : TRACK;
+                vec3 lit = red ? RED : amber ? AMBER : mix(GREY, WHITE, mid);
                 c = put(c, mid <= u_tachA.w ? lit : off, m);
                 // a thin ring inside, and a mark outside at every 1000
                 c = put(c, GREY * 0.8, cov(abs(r - (u_tach.z - 14.0)) - 0.7));
                 float per = u_tachA.y / 8.0;
                 float tk = abs(radians(mod(rel + per * 0.5, per) - per * 0.5)) * r;
-                c = put(c, f >= u_redFrom - 0.01 ? RED : WHITE, cov(tk - 1.5) * cov(abs(r - (u_tach.w + 9.0)) - 5.0));
+                c = put(c, f >= (u_zone.y > 0.0 ? u_zone.y : u_redFrom) - 0.01 ? RED : (u_zone.y > 0.0 && f >= u_zone.x - 0.01) ? AMBER : WHITE, cov(tk - 1.5) * cov(abs(r - (u_tach.w + 9.0)) - 5.0));
             }
         }
     }

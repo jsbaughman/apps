@@ -89,7 +89,9 @@
  *             20: [x0, y0, x1, y1, width, brightness 0..1]), "rings" (at most 4: {cx, cy, r, signal, min, max, color
  *             [r, g, b] 0..1}), "bars" (at most 3, gone while the map shows: {x, y, w, signal, min, max}), "panel" [x, y,
  *             w, h] (the music panel's plate), "vinyl" [cx, cy, r] (red label while something plays), "prog" [x, y, w]
- *             (the track's progress); the map window as fill ("hole", "holeWhen") with its corners cut "holeCut" px
+ *             (the track's progress); the map window as fill ("hole", "holeWhen") with its corners cut "holeCut" px;
+ *             Supercar adds "zones" [yellow from, red from] (rpm: fixed rev zones in amber and red) and "face" { bg: 0 black,
+ *             1 graphite, 2 carbon; shadow: px of drop shadow round the dial; dial: true for a dark dial face with a rim }
  *   sdash     effect layer; the whole Sport theme (shaders.js sdash), optional "road" [horizonY, scale] (a road in the
  *             middle while no map shows, its dashes running with the speed): "geo" [yTop, yBend, yBottom, xBend] and
  *             "k" [above, below, round] for the left bracket's outer line (the right one is mirrored), "band"
@@ -2191,6 +2193,10 @@ class HudApp {
             const T = w.tach;      // [cx, cy, inner r, outer r, start deg, sweep deg, segments]
             c.uniform(ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], T[3]]);
             c.uniform(ref, 'u_redFrom', [this._redMarks(VDASH_RPM)[0]]);
+            // Supercar: fixed rev zones ("zones": [yellow from, red from] rpm) and the backdrop ("face": { bg 0..2, shadow px, dial })
+            const Z = w.zones, F = w.face || {};
+            c.uniform(ref, 'u_zone', Z ? [Z[0] / VDASH_RPM, Z[1] / VDASH_RPM] : [0, 0]);
+            c.uniform(ref, 'u_face', [F.bg || 0, F.shadow || 0, F.dial ? 1 : 0, 0]);
             const rc = [];
             [0, 1, 2, 3].forEach((i) => { const g = (w.rings || [])[i]; rc.push.apply(rc, g && g.color ? g.color : [1, 1, 1]); });
             c.uniform(ref, 'u_ringC', rc, { type: 'vec3' });
