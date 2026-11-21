@@ -73,7 +73,7 @@ CLUSTER_FONTS = [
     ('sc_num', 'Michroma-Regular.ttf', 44, DIGITS, 2),   # Supercar: the rev counter's numbers (Nov 21 2026: s_gear was too big on the car)
     # Apex: a light, upright condensed face for the needle dash
     ('a_gear', 'Outfit[wght].ttf', 200, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 6),   # hollow italic (Nov 21 2026)
-    ('a_speed', 'Outfit[wght].ttf', 116, DIGITS + '-', 0, 'ExtraBold', None, '', 0.2),   # bold italic
+    ('a_speed', 'Outfit[wght].ttf', 98, DIGITS + '-', 0, 'ExtraBold', None, '', 0.2),   # bold italic
     ('a_unit', 'Outfit[wght].ttf', 34, LOWER + '/', 0, 'Bold', None, '', 0.2),   # the speed's unit (mph, km/h)
     ('a_tach', 'Outfit[wght].ttf', 58, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the rev counter's numbers, as the speed
     ('a_head', 'Outfit[wght].ttf', 40, UPPER + LOWER + ' ', 0, 'Bold', None, '', 0.2),   # the panel headings, as the speed

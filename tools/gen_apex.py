@@ -87,9 +87,9 @@ def build():
     widgets += [
         text('gear', CX - 130, CY - 112, 260, 163, '{{gearnum}}', 'a_gear', 'hot'),
         text('mode', CX - 120, CY + 56, 240, 24, '{{mode}}', 'v_label', 'accent'),
-        text('rpm_u1', CX + 170, CY + 40, 120, 24, 'RPM', 'v_label', 'hot', 'left'),
-        text('rpm_u2', CX + 170, CY + 62, 120, 24, 'x1000', 'v_label', 'dim', 'left'),
-        text('speed', CX - 60, CY + 92, 220, 89, '{{speed}}', 'a_speed', 'fg', 'right'),
+        text('rpm_u1', CX + 170, CY + 30, 120, 30, 'RPM', 'r_label', 'hot', 'left'),
+        text('rpm_u2', CX + 170, CY + 58, 120, 30, 'x1000', 'r_label', 'dim', 'left'),
+        text('speed', CX - 60, CY + 105, 220, 76, '{{speed}}', 'a_speed', 'fg', 'right'),
         text('speed_u', CX + 166, CY + 142, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left'),
     ]
     # --- left: boost and oil temperature ------------------------------------------------------------------------
