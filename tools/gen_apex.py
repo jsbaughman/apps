@@ -16,7 +16,7 @@ import math
 import sys
 
 W, H = 1920, 660
-CX, CY, R, BAND = 960, 330, 300, 34
+CX, CY, R, BAND = 960, 332, 318, 46
 START, SWEEP, THOUSANDS = 100, 260, 8
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
@@ -48,8 +48,8 @@ def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi):
     """A left-panel block: label, a rule, the value and unit, the bar, min / max under it."""
     mid = (x0 + x1) / 2
     out = [text('r%d_l' % n, mid - 220, y, 440, 42, label, 'v_title', 'accent'),
-           text('r%d_v' % n, mid - 210, y + 56, 240, 82, tok, 'a_big', 'fg', 'right'),
-           text('r%d_u' % n, mid + 38, y + 96, 120, 36, unit_tok, 'm_unit', 'fg', 'left')]
+           text('r%d_v' % n, mid - 190, y + 72, 220, 47, tok, 'a_val', 'fg', 'right'),
+           text('r%d_u' % n, mid + 38, y + 84, 120, 36, unit_tok, 'm_unit', 'fg', 'left')]
     out += unit_labels('r%d_lo' % n, bar['x'] - 10, bar['y'] + 14, 80, 'left', lo)
     out += unit_labels('r%d_hi' % n, bar['x'] + bar['w'] - 70, bar['y'] + 14, 80, 'right', hi)
     return out
@@ -80,7 +80,7 @@ def build():
         a = math.radians(START + SWEEP * k / float(THOUSANDS))
         x, y = CX + num_r * math.cos(a), CY + num_r * math.sin(a)
         col = 'hot' if k * 1000 >= ZONES[1] else 'fg'
-        widgets.append(text('rpm%d' % k, x - 35, y - 20, 70, 40, str(k), 'a_num', col))
+        widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_val', col))
     # --- the middle: gear, drive mode, speed in the open quarter, the scale's unit ------------------------------
     widgets += [
         text('gear', CX - 110, CY - 100, 220, 145, '{{gearnum}}', 'a_gear', 'fg', hotWhen='now'),
@@ -97,11 +97,12 @@ def build():
                        [(DEGF, '122'), (DEGC, '50')], [(DEGF, '302'), (DEGC, '150')])
     # --- the bottom row: coolant left, fuel right ---------------------------------------------------------------
     widgets += [
-        text('cool_v', 120, 590, 150, 30, '{{coolant}} {{u:temp}}', 'r_label', 'fg', 'right'),
+        text('cool_v', 100, 584, 140, 42, '{{coolant}}', 'v_title', 'fg', 'right'),
+        text('cool_u', 246, 590, 50, 36, '{{u:temp}}', 'm_unit', 'fg', 'left'),
         {'id': 'cool_i', 'type': 'icon', 'z': 5, 'x': 520, 'y': 590, 'w': 32, 'h': 32, 'icon': 'therm', 'color': 'fg'},
         {'id': 'fuel_i', 'type': 'icon', 'z': 5, 'x': 1370, 'y': 590, 'w': 32, 'h': 32, 'icon': 'fuel', 'color': 'fg',
          'conn': 1},
-        text('fuel_v', 1640, 590, 150, 30, '{{fuelPct}} %', 'r_label', 'fg', 'left', conn=1),
+        text('fuel_v', 1640, 584, 170, 42, '{{fuelPct}} %', 'v_title', 'fg', 'left', conn=1),
     ]
     # --- right: the G-meter's header and readouts ---------------------------------------------------------------
     widgets += [
@@ -114,12 +115,12 @@ def build():
          'color': 'bg', 'stripRow': 'l'},
         {'id': 'strip_cover_r', 'type': 'fill', 'class': 'content', 'z': 0, 'x': 1460, 'y': 660, 'w': 460, 'h': 60,
          'color': 'bg', 'stripRow': 'r'},
-        text('strip_time', 140, 674, 130, 30, '{{time}}', 'r_label', 'fg', 'right', z=3, stripRow='l'),
-        text('strip_ampm', 276, 674, 40, 30, '{{ampmLc}}', 'r_label', 'dim', 'left', z=3, stripRow='l'),
-        text('strip_range', 860, 674, 120, 30, '{{range}}', 'r_label', 'fg', 'right', z=3, stripRow='l'),
-        text('strip_range_u', 986, 674, 40, 30, '{{u:distLc}}', 'r_label', 'dim', 'left', z=3, stripRow='l'),
-        text('strip_out', 1670, 674, 80, 30, '{{ambientN}}', 'r_label', 'fg', 'right', z=3, stripRow='r'),
-        text('strip_out_u', 1756, 674, 40, 30, '{{u:temp}}', 'r_label', 'dim', 'left', z=3, stripRow='r'),
+        text('strip_time', 120, 670, 160, 42, '{{time}}', 'v_title', 'fg', 'right', z=3, stripRow='l'),
+        text('strip_ampm', 284, 678, 50, 32, '{{ampmLc}}', 'm_tiny', 'fg', 'left', z=3, stripRow='l'),
+        text('strip_range', 830, 670, 140, 42, '{{range}}', 'v_title', 'fg', 'right', z=3, stripRow='l'),
+        text('strip_range_u', 974, 678, 50, 32, '{{u:distLc}}', 'm_tiny', 'fg', 'left', z=3, stripRow='l'),
+        text('strip_out', 1640, 670, 110, 42, '{{ambientN}}', 'v_title', 'fg', 'right', z=3, stripRow='r'),
+        text('strip_out_u', 1754, 678, 50, 32, '{{u:temp}}', 'm_tiny', 'fg', 'left', z=3, stripRow='r'),
     ]
     return {
         'schemaVersion': 2,

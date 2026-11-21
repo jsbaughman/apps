@@ -1823,7 +1823,7 @@ void main() {
     float sideR = smoothstep(u_panels.y, u_size.x, p.x);
     float side = max(sideL, sideR);
     float foot = 1.0 - smoothstep(u_panels.w - 80.0, u_panels.w, p.y);
-    c += vec3(0.24, 0.025, 0.035) * side * side * foot;
+    c += vec3(0.13, 0.014, 0.02) * side * side * foot;
 
     vec2 d = p - u_tach.xy;
     float r = length(d), R = u_tach.z, B = u_tach.w;
@@ -1842,7 +1842,7 @@ void main() {
         vec3 z = zoneCol(f);
         bool inZone = f >= u_zone.x;
         vec3 off = inZone ? z * 0.35 : TRACK;
-        vec3 lit = inZone ? z : mix(vec3(0.75, 0.76, 0.78), WHITE, f);
+        vec3 lit = inZone ? z : mix(vec3(0.46, 0.47, 0.5), vec3(0.62, 0.63, 0.66), f);
         c = put(c, f <= u_tachA.w ? lit : off, band);
         // marks: a long one every 1000, a short one every 500, red / amber in the zone
         float per = u_tachA.y / u_tachA.z;
