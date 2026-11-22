@@ -16,10 +16,11 @@ import math
 import sys
 
 W, H = 1920, 660
-ARC = [960, 545, 600, 400]                 # centre x, y, horizontal and vertical radius (outer edge)
-START, SWEEP, BLOCKS, THOUSANDS, BAND = 175, 190, 24, 8, 0.21
+ARC = [960, 732, 621, 587]                 # centre x, y, horizontal and vertical radius (outer edge); a near-circle whose
+                                           # centre sits below its ends, so the ends lean outward as they come down
+START, SWEEP, BLOCKS, THOUSANDS, BAND = 195, 150, 24, 8, 0.15
 RED = 7000                                 # red from (rpm)
-NUMS_R = 0.71                             # the numbers' place, as a fraction of the arc's radius
+NUMS_R = 0.78                             # the numbers' place, as a fraction of the arc's radius
 
 # the scale numbers follow the Units setting (one condition each)
 US, METRIC = 'units=us', 'units=metric'
@@ -53,14 +54,14 @@ def build():
     widgets = []
     minis = [
         # staggered along the arc, as in the reference photo: the upper scales sit further in, the lower ones further out
-        {'x': 170, 'y': 330, 'w': 210, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8},
+        {'x': 210, 'y': 330, 'w': 210, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8},
         {'x': 90, 'y': 490, 'w': 210, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
-        {'x': 1540, 'y': 330, 'w': 210, 'signal': 'fuel', 'min': 0, 'max': 1, 'red': 1},
+        {'x': 1500, 'y': 330, 'w': 210, 'signal': 'fuel', 'min': 0, 'max': 1, 'red': 1},
         {'x': 1620, 'y': 490, 'w': 210, 'signal': 'coolant', 'min': 40, 'max': 130, 'red': 0.85},
     ]
     widgets.append({'id': 'dash', 'type': 'ldash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                     'arc': ARC + [START, SWEEP, BLOCKS, THOUSANDS, BAND], 'red': RED,
-                    'band': [560, 318, 800, 56], 'minis': minis})
+                    'band': [560, 334, 800, 56], 'minis': minis})
     # the arc's numbers, inside the blocks
     cx, cy, rx, ry = ARC
     for k in range(THOUSANDS + 1):
@@ -71,8 +72,8 @@ def build():
     widgets += [
         text('gear', 830, 300, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),
         text('mode', 1060, 268, 220, 24, '{{mode}}', 'v_label', 'hot', 'left'),
-        text('rpm_d', 680, 323, 190, 47, '{{rpm}}', 'a_tach', 'ink', 'right', dx=-6),
-        text('rpm_u', 1130, 333, 160, 30, 'RPM', 'r_label', 'ink', 'left'),
+        text('rpm_d', 680, 339, 190, 47, '{{rpm}}', 'a_tach', 'ink', 'right', dx=-6),
+        text('rpm_u', 1130, 349, 160, 30, 'RPM', 'r_label', 'ink', 'left'),
     ]
     # the speed, bottom middle under the band
     widgets += [
