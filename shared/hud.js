@@ -2750,7 +2750,13 @@ class HudApp {
         } else if (w.type === 'nav') this._navUpdate(x, now, force);
         else if (w.type === 'garland') this._garlandTick(x, now);
         else if (w.type === 'text') {
-            if (!force && now - x.lastPaint < (w.rate || TEXT_MS)) return;
+            // with a "rate": looked at once per rate, on its own clock, painted only when it changed (a slow text that never
+            // changes is no longer resolved on every 50 ms tick, 0.21.6). Without one: as before, painted at most every
+            // TEXT_MS, a change shown as soon as that has passed
+            if (!force) {
+                if (w.rate) { if (now - (x.lastCheck || 0) < w.rate) return; x.lastCheck = now; }
+                else if (now - x.lastPaint < TEXT_MS) return;
+            }
             let s = (w.navHide && this.navShown) || smartTemps.hidden(this, w) || !this._shownNow(w) ? '' : this._resolve(w.text);   // nav turn showing / "showWhen"
             let role = w.color || 'fg';
             if (w.colorBy === 'verdict' && this.score.last) role = VERDICT[this.score.last.verdict] || role;

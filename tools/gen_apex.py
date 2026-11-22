@@ -200,6 +200,17 @@ def build():
         if w.get('id') in OWN_IDS:
             w['own'] = True
             w['conn'] = 2
+    # how often each text is looked at (0.21.6): the slow readings once a second, fixed labels and units every 2 s; the
+    # fast ones (speed, gear, boost, hp, torque: FAST), the drive mode, the G readings and anything that can flash over a
+    # warning limit (oil, coolant: the flash is 300 ms) keep the default 200 ms
+    for w in widgets:
+        if w['type'] != 'text' or 'rate' in w:
+            continue
+        txt = w['text']
+        if any(k in txt for k in ('{{oil}}', '{{coolant}}', '{{boost}}', '{{mode}}', '{{gSide}}', '{{gFwd}}', '{{rpm}}')):
+            continue
+        tokens = [x.split('}}')[0] for x in txt.split('{{')[1:]]
+        w['rate'] = 2000 if all(tk.startswith('u:') for tk in tokens) else 1000
     return {
         'schemaVersion': 2,
         'name': 'Apex',

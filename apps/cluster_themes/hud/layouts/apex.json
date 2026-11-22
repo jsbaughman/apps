@@ -197,7 +197,8 @@
       "text": "0",
       "font": "a_tach",
       "color": "fg",
-      "align": "center"
+      "align": "center",
+      "rate": 2000
     },
     {
       "id": "rpm1",
@@ -210,7 +211,8 @@
       "text": "1",
       "font": "a_tach",
       "color": "fg",
-      "align": "center"
+      "align": "center",
+      "rate": 2000
     },
     {
       "id": "rpm2",
@@ -223,7 +225,8 @@
       "text": "2",
       "font": "a_tach",
       "color": "fg",
-      "align": "center"
+      "align": "center",
+      "rate": 2000
     },
     {
       "id": "rpm3",
@@ -236,7 +239,8 @@
       "text": "3",
       "font": "a_tach",
       "color": "fg",
-      "align": "center"
+      "align": "center",
+      "rate": 2000
     },
     {
       "id": "rpm4",
@@ -249,7 +253,8 @@
       "text": "4",
       "font": "a_tach",
       "color": "fg",
-      "align": "center"
+      "align": "center",
+      "rate": 2000
     },
     {
       "id": "rpm5",
@@ -262,7 +267,8 @@
       "text": "5",
       "font": "a_tach",
       "color": "fg",
-      "align": "center"
+      "align": "center",
+      "rate": 2000
     },
     {
       "id": "rpm6",
@@ -275,7 +281,8 @@
       "text": "6",
       "font": "a_tach",
       "color": "fg",
-      "align": "center"
+      "align": "center",
+      "rate": 2000
     },
     {
       "id": "rpm7",
@@ -288,7 +295,8 @@
       "text": "7",
       "font": "a_tach",
       "color": "hot",
-      "align": "center"
+      "align": "center",
+      "rate": 2000
     },
     {
       "id": "rpm8",
@@ -301,7 +309,8 @@
       "text": "8",
       "font": "a_tach",
       "color": "hot",
-      "align": "center"
+      "align": "center",
+      "rate": 2000
     },
     {
       "id": "gear",
@@ -363,7 +372,8 @@
       "text": "RPM",
       "font": "r_label",
       "color": "hot",
-      "align": "left"
+      "align": "left",
+      "rate": 2000
     },
     {
       "id": "rpm_u2",
@@ -376,7 +386,8 @@
       "text": "x1000",
       "font": "r_label",
       "color": "dim",
-      "align": "left"
+      "align": "left",
+      "rate": 2000
     },
     {
       "id": "speed",
@@ -408,7 +419,8 @@
       "font": "a_unit",
       "color": "fg",
       "align": "left",
-      "toggle": "tachSpeed"
+      "toggle": "tachSpeed",
+      "rate": 2000
     },
     {
       "id": "r0_l",
@@ -422,7 +434,8 @@
       "font": "a_head",
       "color": "accent",
       "align": "center",
-      "toggle": "!leftStyle=gauges"
+      "toggle": "!leftStyle=gauges",
+      "rate": 2000
     },
     {
       "id": "r0_v",
@@ -453,7 +466,8 @@
       "font": "m_unit",
       "color": "fg",
       "align": "left",
-      "toggle": "!leftStyle=gauges"
+      "toggle": "!leftStyle=gauges",
+      "rate": 2000
     },
     {
       "id": "r0_lo_00",
@@ -467,7 +481,8 @@
       "font": "a_lim",
       "color": "dim",
       "align": "left",
-      "toggle": "!leftStyle=gauges&units=us"
+      "toggle": "!leftStyle=gauges&units=us",
+      "rate": 2000
     },
     {
       "id": "r0_lo_10",
@@ -481,7 +496,8 @@
       "font": "a_lim",
       "color": "dim",
       "align": "left",
-      "toggle": "!leftStyle=gauges&units=metric"
+      "toggle": "!leftStyle=gauges&units=metric",
+      "rate": 2000
     },
     {
       "id": "r0_hi_00",
@@ -495,7 +511,8 @@
       "font": "a_lim",
       "color": "dim",
       "align": "right",
-      "toggle": "!leftStyle=gauges&units=us"
+      "toggle": "!leftStyle=gauges&units=us",
+      "rate": 2000
     },
     {
       "id": "r0_hi_10",
@@ -509,7 +526,8 @@
       "font": "a_lim",
       "color": "dim",
       "align": "right",
-      "toggle": "!leftStyle=gauges&units=metric"
+      "toggle": "!leftStyle=gauges&units=metric",
+      "rate": 2000
     },
     {
       "id": "r1_l",
@@ -523,7 +541,8 @@
       "font": "a_head",
       "color": "accent",
       "align": "center",
-      "toggle": "!leftStyle=gauges"
+      "toggle": "!leftStyle=gauges",
+      "rate": 2000
     },
     {
       "id": "r1_v",
@@ -551,7 +570,8 @@
       "font": "m_unit",
       "color": "fg",
       "align": "left",
-      "toggle": "!leftStyle=gauges"
+      "toggle": "!leftStyle=gauges",
+      "rate": 2000
     },
     {
       "id": "r1_lo_00",
@@ -565,7 +585,8 @@
       "font": "a_lim",
       "color": "dim",
       "align": "left",
-      "toggle": "!leftStyle=gauges&units=us"
+      "toggle": "!leftStyle=gauges&units=us",
+      "rate": 2000
     },
     {
       "id": "r1_lo_10",
@@ -579,7 +600,8 @@
       "font": "a_lim",
       "color": "dim",
       "align": "left",
-      "toggle": "!leftStyle=gauges&units=metric"
+      "toggle": "!leftStyle=gauges&units=metric",
+      "rate": 2000
     },
     {
       "id": "r1_hi_00",
@@ -593,7 +615,8 @@
       "font": "a_lim",
       "color": "dim",
       "align": "right",
-      "toggle": "!leftStyle=gauges&units=us"
+      "toggle": "!leftStyle=gauges&units=us",
+      "rate": 2000
     },
     {
       "id": "r1_hi_10",
@@ -607,7 +630,8 @@
       "font": "a_lim",
       "color": "dim",
       "align": "right",
-      "toggle": "!leftStyle=gauges&units=metric"
+      "toggle": "!leftStyle=gauges&units=metric",
+      "rate": 2000
     },
     {
       "id": "g0_l",
@@ -621,7 +645,8 @@
       "font": "a_head",
       "color": "accent",
       "align": "left",
-      "toggle": "leftStyle=gauges"
+      "toggle": "leftStyle=gauges",
+      "rate": 2000
     },
     {
       "id": "g0_v",
@@ -652,7 +677,8 @@
       "font": "m_unit",
       "color": "fg",
       "align": "left",
-      "toggle": "leftStyle=gauges"
+      "toggle": "leftStyle=gauges",
+      "rate": 2000
     },
     {
       "id": "g0_lo_00",
@@ -666,7 +692,8 @@
       "font": "a_sm",
       "color": "dim",
       "align": "left",
-      "toggle": "leftStyle=gauges&units=us"
+      "toggle": "leftStyle=gauges&units=us",
+      "rate": 2000
     },
     {
       "id": "g0_mid_00",
@@ -680,7 +707,8 @@
       "font": "a_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "leftStyle=gauges&units=us"
+      "toggle": "leftStyle=gauges&units=us",
+      "rate": 2000
     },
     {
       "id": "g0_hi_00",
@@ -694,7 +722,8 @@
       "font": "a_sm",
       "color": "hot",
       "align": "right",
-      "toggle": "leftStyle=gauges&units=us"
+      "toggle": "leftStyle=gauges&units=us",
+      "rate": 2000
     },
     {
       "id": "g0_lo_10",
@@ -708,7 +737,8 @@
       "font": "a_sm",
       "color": "dim",
       "align": "left",
-      "toggle": "leftStyle=gauges&units=metric"
+      "toggle": "leftStyle=gauges&units=metric",
+      "rate": 2000
     },
     {
       "id": "g0_mid_10",
@@ -722,7 +752,8 @@
       "font": "a_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "leftStyle=gauges&units=metric"
+      "toggle": "leftStyle=gauges&units=metric",
+      "rate": 2000
     },
     {
       "id": "g0_hi_10",
@@ -736,7 +767,8 @@
       "font": "a_sm",
       "color": "hot",
       "align": "right",
-      "toggle": "leftStyle=gauges&units=metric"
+      "toggle": "leftStyle=gauges&units=metric",
+      "rate": 2000
     },
     {
       "id": "g1_l",
@@ -750,7 +782,8 @@
       "font": "a_head",
       "color": "accent",
       "align": "left",
-      "toggle": "leftStyle=gauges"
+      "toggle": "leftStyle=gauges",
+      "rate": 2000
     },
     {
       "id": "g1_v",
@@ -778,7 +811,8 @@
       "font": "m_unit",
       "color": "fg",
       "align": "left",
-      "toggle": "leftStyle=gauges"
+      "toggle": "leftStyle=gauges",
+      "rate": 2000
     },
     {
       "id": "g1_lo_00",
@@ -792,7 +826,8 @@
       "font": "a_sm",
       "color": "dim",
       "align": "left",
-      "toggle": "leftStyle=gauges&units=us"
+      "toggle": "leftStyle=gauges&units=us",
+      "rate": 2000
     },
     {
       "id": "g1_mid_00",
@@ -806,7 +841,8 @@
       "font": "a_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "leftStyle=gauges&units=us"
+      "toggle": "leftStyle=gauges&units=us",
+      "rate": 2000
     },
     {
       "id": "g1_hi_00",
@@ -820,7 +856,8 @@
       "font": "a_sm",
       "color": "hot",
       "align": "right",
-      "toggle": "leftStyle=gauges&units=us"
+      "toggle": "leftStyle=gauges&units=us",
+      "rate": 2000
     },
     {
       "id": "g1_lo_10",
@@ -834,7 +871,8 @@
       "font": "a_sm",
       "color": "dim",
       "align": "left",
-      "toggle": "leftStyle=gauges&units=metric"
+      "toggle": "leftStyle=gauges&units=metric",
+      "rate": 2000
     },
     {
       "id": "g1_mid_10",
@@ -848,7 +886,8 @@
       "font": "a_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "leftStyle=gauges&units=metric"
+      "toggle": "leftStyle=gauges&units=metric",
+      "rate": 2000
     },
     {
       "id": "g1_hi_10",
@@ -862,7 +901,8 @@
       "font": "a_sm",
       "color": "hot",
       "align": "right",
-      "toggle": "leftStyle=gauges&units=metric"
+      "toggle": "leftStyle=gauges&units=metric",
+      "rate": 2000
     },
     {
       "id": "cool_v",
@@ -888,7 +928,8 @@
       "text": "{{u:temp}}",
       "font": "m_unit",
       "color": "fg",
-      "align": "left"
+      "align": "left",
+      "rate": 2000
     },
     {
       "id": "cool_i",
@@ -925,7 +966,8 @@
       "font": "v_title",
       "color": "fg",
       "align": "left",
-      "conn": 1
+      "conn": 1,
+      "rate": 1000
     },
     {
       "id": "perf",
@@ -940,7 +982,8 @@
       "color": "fg",
       "align": "center",
       "conn": 1,
-      "toggle": "rightPanel=performance"
+      "toggle": "rightPanel=performance",
+      "rate": 2000
     },
     {
       "id": "tyre_head",
@@ -955,7 +998,8 @@
       "color": "fg",
       "align": "center",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 2000
     },
     {
       "id": "g_vals",
@@ -985,7 +1029,8 @@
       "color": "accent",
       "align": "center",
       "toggle": "rightPanel=power",
-      "conn": 1
+      "conn": 1,
+      "rate": 2000
     },
     {
       "id": "r2_v",
@@ -1016,7 +1061,8 @@
       "color": "fg",
       "align": "left",
       "toggle": "rightPanel=power",
-      "conn": 1
+      "conn": 1,
+      "rate": 2000
     },
     {
       "id": "r2_lo_00",
@@ -1031,7 +1077,8 @@
       "color": "dim",
       "align": "left",
       "toggle": "rightPanel=power",
-      "conn": 1
+      "conn": 1,
+      "rate": 2000
     },
     {
       "id": "r2_hi_00",
@@ -1046,7 +1093,8 @@
       "color": "dim",
       "align": "right",
       "toggle": "rightPanel=power",
-      "conn": 1
+      "conn": 1,
+      "rate": 1000
     },
     {
       "id": "r3_l",
@@ -1061,7 +1109,8 @@
       "color": "accent",
       "align": "center",
       "toggle": "rightPanel=power",
-      "conn": 1
+      "conn": 1,
+      "rate": 2000
     },
     {
       "id": "r3_v",
@@ -1092,7 +1141,8 @@
       "color": "fg",
       "align": "left",
       "toggle": "rightPanel=power",
-      "conn": 1
+      "conn": 1,
+      "rate": 2000
     },
     {
       "id": "r3_lo_00",
@@ -1107,7 +1157,8 @@
       "color": "dim",
       "align": "left",
       "toggle": "rightPanel=power",
-      "conn": 1
+      "conn": 1,
+      "rate": 2000
     },
     {
       "id": "r3_hi_00",
@@ -1122,7 +1173,8 @@
       "color": "dim",
       "align": "right",
       "toggle": "rightPanel=power",
-      "conn": 1
+      "conn": 1,
+      "rate": 1000
     },
     {
       "id": "tp_FL",
@@ -1137,7 +1189,8 @@
       "color": "fg",
       "align": "right",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 1000
     },
     {
       "id": "tpu_FL",
@@ -1152,7 +1205,8 @@
       "color": "fg",
       "align": "left",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 2000
     },
     {
       "id": "tt_FL",
@@ -1167,7 +1221,8 @@
       "color": "dim",
       "align": "right",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 1000
     },
     {
       "id": "tp_FR",
@@ -1182,7 +1237,8 @@
       "color": "fg",
       "align": "right",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 1000
     },
     {
       "id": "tpu_FR",
@@ -1197,7 +1253,8 @@
       "color": "fg",
       "align": "left",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 2000
     },
     {
       "id": "tt_FR",
@@ -1212,7 +1269,8 @@
       "color": "dim",
       "align": "right",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 1000
     },
     {
       "id": "tp_RL",
@@ -1227,7 +1285,8 @@
       "color": "fg",
       "align": "right",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 1000
     },
     {
       "id": "tpu_RL",
@@ -1242,7 +1301,8 @@
       "color": "fg",
       "align": "left",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 2000
     },
     {
       "id": "tt_RL",
@@ -1257,7 +1317,8 @@
       "color": "dim",
       "align": "right",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 1000
     },
     {
       "id": "tp_RR",
@@ -1272,7 +1333,8 @@
       "color": "fg",
       "align": "right",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 1000
     },
     {
       "id": "tpu_RR",
@@ -1287,7 +1349,8 @@
       "color": "fg",
       "align": "left",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 2000
     },
     {
       "id": "tt_RR",
@@ -1302,7 +1365,8 @@
       "color": "dim",
       "align": "right",
       "conn": 1,
-      "toggle": "rightPanel=tyres"
+      "toggle": "rightPanel=tyres",
+      "rate": 1000
     },
     {
       "id": "strip_cover_l",
@@ -1340,7 +1404,8 @@
       "font": "v_title",
       "color": "fg",
       "align": "right",
-      "stripRow": "l"
+      "stripRow": "l",
+      "rate": 1000
     },
     {
       "id": "strip_ampm",
@@ -1354,7 +1419,8 @@
       "font": "m_tiny",
       "color": "fg",
       "align": "left",
-      "stripRow": "l"
+      "stripRow": "l",
+      "rate": 1000
     },
     {
       "id": "strip_range",
@@ -1368,7 +1434,8 @@
       "font": "v_title",
       "color": "fg",
       "align": "right",
-      "stripRow": "l"
+      "stripRow": "l",
+      "rate": 1000
     },
     {
       "id": "strip_range_u",
@@ -1382,7 +1449,8 @@
       "font": "m_tiny",
       "color": "fg",
       "align": "left",
-      "stripRow": "l"
+      "stripRow": "l",
+      "rate": 2000
     },
     {
       "id": "strip_out",
@@ -1396,7 +1464,8 @@
       "font": "v_title",
       "color": "fg",
       "align": "right",
-      "stripRow": "r"
+      "stripRow": "r",
+      "rate": 1000
     },
     {
       "id": "strip_out_u",
@@ -1410,7 +1479,8 @@
       "font": "m_tiny",
       "color": "fg",
       "align": "left",
-      "stripRow": "r"
+      "stripRow": "r",
+      "rate": 2000
     }
   ]
 }
