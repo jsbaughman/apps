@@ -20,6 +20,7 @@ A needle dash in a mid-engine supercar style, on a carbon backdrop with a muted 
 - **Left:** boost (0 to 40 psi, red from 30) and oil temperature, each a value over a line bar with a marker, its range and a red end zone.
 - **Right:** a G-meter under a Performance heading, with the side and fore-aft g under it.
 - **Background** (Settings): the red glow at the sides (default), or carbon twill lit from the tach out to the sides, with a deeper drop shadow round the tach.
+- **Gear** (Settings): the gear outlined (default) or solid, in red.
 - **Glow round the gear** (Settings, off by default): a soft red or white glow fading outward from the ring round the gear.
 - **Bottom:** coolant and fuel as small bars, and under them the clock, range and outside temperature, with BMW's own gear letter.
 

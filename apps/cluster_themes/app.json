@@ -2,7 +2,7 @@
   "id": "cluster_themes",
   "title": "Cluster Themes",
   "description": "Redraws the instrument cluster as Apex: a needle rev counter with amber and red zones, boost and oil temperature, a G-meter, coolant and fuel; or Off for BMW's own cluster",
-  "version": "0.20.4",
+  "version": "0.20.5",
   "vendor": "custom",
   "loggingId": "OAC1",
   "iconGlyph": "CLU",
@@ -744,6 +744,22 @@
         [
           "carbon",
           "Carbon, lit from the tach"
+        ]
+      ]
+    },
+    {
+      "key": "gearStyle",
+      "label": "Gear (Apex)",
+      "type": "choice",
+      "default": "outline",
+      "options": [
+        [
+          "outline",
+          "Outlined"
+        ],
+        [
+          "solid",
+          "Solid"
         ]
       ]
     },
