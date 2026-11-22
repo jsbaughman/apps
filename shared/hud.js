@@ -96,7 +96,7 @@
  *             band, start deg, sweep deg, thousands on the scale] (a needle rev counter, its band lit white up to the revs),
  *             "zones" [amber from, red from] rpm, "panels" [left inner x, right inner x, glow top y, glow bottom y] (red-glow side
  *             panels on a carbon backdrop), "bars" (at most 6 line bars: {x, y, w, signal, min, max, red: 0..1 where the red end
- *             zone starts, toggle}), "lines" (at most 8 rule lines [x0, y0, x1, y1, toggle]), "glow" [r, g, b, strength]
+ *             zone starts, h: px thick (5), toggle}), "lines" (at most 8 rule lines [x0, y0, x1, y1, toggle]), "glow" [r, g, b, strength]
  *             (0..1: a soft glow fading outward from the ring round the gear), "car" [cx, cy, half width, half length] (the
  *             tyre panel's car, drawn while the "rightPanel" setting is "tyres")
  *   sdash     effect layer; the whole Sport theme (shaders.js sdash), optional "road" [horizonY, scale] (a road in the
@@ -2230,6 +2230,7 @@ class HudApp {
             c.uniform(ref, 'u_panels', [P[0] - w.x, P[1] - w.x, P[2] - w.y, P[3] - w.y]);
             const bz = [0, 1, 2, 3, 4, 5].map((i) => { const b = (w.bars || [])[i]; return b && isNum(b.red) ? b.red : 1; });
             c.uniform(ref, 'u_barZ', bz, { type: 'float' });
+            c.uniform(ref, 'u_barH', [0, 1, 2, 3, 4, 5].map((i) => { const b = (w.bars || [])[i]; return b && isNum(b.h) ? b.h / 2 : 2.5; }), { type: 'float' });
             // the glow round the gear's ring: the "dialGlow" setting (off / red / white), else the layout's own "glow"
             const GLOWS = { red: [0.95, 0.1, 0.12, 0.22], white: [0.85, 0.87, 0.92, 0.13], off: [0, 0, 0, 0] };
             const gk = this.setting('dialGlow'), gl = (GLOWS[gk] || w.glow || GLOWS.off).slice();

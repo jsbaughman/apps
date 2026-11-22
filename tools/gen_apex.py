@@ -45,7 +45,7 @@ def unit_labels(id_, x, y, w, align, lo_hi_by_unit):
     out = []
     for j, (conds, label) in enumerate(lo_hi_by_unit):
         for i, cond in enumerate(conds):
-            out.append(text('%s_%d%d' % (id_, j, i), x, y, w, 30, label, 'r_label', 'dim', align, toggle=cond))
+            out.append(text('%s_%d%d' % (id_, j, i), x, y, w, 26, label, 'a_lim', 'dim', align, toggle=cond))
     return out
 
 
@@ -55,8 +55,8 @@ def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi, toggle=None, conn=N
     out = [text('r%d_l' % n, mid - 220, y + HEAD_DY, 440, HEAD_H, label, 'a_head', 'accent'),
            text('r%d_v' % n, mid - 190, y + 77, 220, 42, tok, 'a_tp', 'fg', 'right'),
            text('r%d_u' % n, mid + 38, y + 84, 120, 36, unit_tok, 'm_unit', 'fg', 'left')]
-    out += unit_labels('r%d_lo' % n, bar['x'] - 10, bar['y'] + 14, 80, 'left', lo)
-    out += unit_labels('r%d_hi' % n, bar['x'] + bar['w'] - 70, bar['y'] + 14, 80, 'right', hi)
+    out += unit_labels('r%d_lo' % n, bar['x'] - 2, bar['y'] + 16, 80, 'left', lo)
+    out += unit_labels('r%d_hi' % n, bar['x'] + bar['w'] - 78, bar['y'] + 16, 80, 'right', hi)
     for w in out:                       # a panel shown by a setting (its min / max labels bring their own toggle)
         if toggle and 'toggle' not in w:
             w['toggle'] = toggle
@@ -71,12 +71,12 @@ def build():
     LX0, LX1 = 110, 590            # the left panel's content
     RX0, RX1 = 1330, 1810          # the right panel's content
     bars = [
-        {'x': 140, 'y': 296, 'w': 420, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
-        {'x': 140, 'y': 506, 'w': 420, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8},
+        {'x': 140, 'y': 296, 'w': 420, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75, 'h': 9},
+        {'x': 140, 'y': 506, 'w': 420, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8, 'h': 9},
         {'x': 300, 'y': 606, 'w': 200, 'signal': 'coolant', 'min': 40, 'max': 130, 'red': 0.85},
         {'x': 1420, 'y': 606, 'w': 200, 'signal': 'fuel', 'min': 0, 'max': 1, 'red': 1},
-        {'x': 1360, 'y': 296, 'w': 420, 'signal': 'powerPct', 'min': 0, 'max': 100, 'red': 1, 'toggle': POWER},
-        {'x': 1360, 'y': 506, 'w': 420, 'signal': 'torquePct', 'min': 0, 'max': 100, 'red': 1, 'toggle': POWER},
+        {'x': 1360, 'y': 296, 'w': 420, 'signal': 'powerPct', 'min': 0, 'max': 100, 'red': 1, 'h': 9, 'toggle': POWER},
+        {'x': 1360, 'y': 506, 'w': 420, 'signal': 'torquePct', 'min': 0, 'max': 100, 'red': 1, 'h': 9, 'toggle': POWER},
     ]
     lines = [[LX0, 192, LX1, 192], [LX0, 402, LX1, 402], [RX0, 192, RX1, 192],
              [LX0, 560, LX1, 560], [RX0, 560, RX1, 560], [RX0, 402, RX1, 402, POWER]]

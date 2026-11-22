@@ -1789,6 +1789,7 @@ uniform vec2 u_zone;       // amber from, red from (0..1 of the scale)
 uniform vec4 u_panels;     // left panel's inner edge x, right panel's inner edge x, glow top y, glow bottom y
 uniform vec4 u_bar[6];     // left x, y, width (0 = none), value 0..1
 uniform float u_barZ[6];   // each bar's red zone from (0..1; 1 = none)
+uniform float u_barH[6];   // each bar's half height (px)
 uniform vec4 u_line[8];    // rule lines: from x, y, to x, y (all 0 = none)
 uniform float u_bgStyle;   // the backdrop: 0 the side panels' red glow on a faint weave, 1 carbon twill lit from the dial out
 uniform vec4 u_car;        // the tyre panel's car seen from above: centre x, y, half width, half length (0 = none)
@@ -1891,11 +1892,12 @@ void main() {
         if (b.z <= 0.0) continue;
         float t = (p.x - b.x) / b.z;
         float in1 = step(0.0, t) * step(t, 1.0);
-        float bar = cov(abs(p.y - b.y) - 2.5) * in1;
+        float hh = u_barH[i];
+        float bar = cov(abs(p.y - b.y) - hh) * in1;
         float rz = u_barZ[i];
         c = put(c, t >= rz ? RED * 0.8 : vec3(0.42, 0.42, 0.45), bar);
         c = put(c, WHITE, bar * step(t, b.w));
-        c = put(c, WHITE, cov(abs(p.x - (b.x + b.z * b.w)) - 2.0) * cov(abs(p.y - b.y) - 10.0));
+        c = put(c, WHITE, cov(abs(p.x - (b.x + b.z * b.w)) - 2.0) * cov(abs(p.y - b.y) - hh - 7.5));
     }
     // the tyre panel's car: body outline, windscreen and rear window, four tyres
     if (u_car.z > 0.0) {

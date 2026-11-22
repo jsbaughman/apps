@@ -80,6 +80,7 @@ CLUSTER_FONTS = [
     ('a_head', 'Outfit[wght].ttf', 40, UPPER + LOWER + ' ', 0, 'Bold', None, '', 0.2),   # the panel headings, as the speed
     ('a_val', 'BarlowSemiCondensed-Medium.ttf', 56, DIGITS + '.-', 2),
     ('a_tp', 'BarlowSemiCondensed-Medium.ttf', 48, DIGITS + '.-', 2),   # the tyre pressures, 15 % under a_val (Nov 21 2026)
+    ('a_lim', 'BarlowSemiCondensed-SemiBold.ttf', 30, DIGITS + '.-', 0),   # the bars' end numbers, 25 % over r_label
     ('a_big', 'BarlowSemiCondensed-Medium.ttf', 100, DIGITS + '.-', 3),   # boost and oil temperature (Nov 21 2026: a_val too small)
     ('a_num', 'BarlowSemiCondensed-Medium.ttf', 46, DIGITS, 2),
     ('s_val', 'Michroma-Regular.ttf', 26, DIGITS + ':+-.', 1),
