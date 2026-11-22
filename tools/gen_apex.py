@@ -23,6 +23,8 @@ HEAD_DY = -1                  # headings sit on the rule as v_title did
 GLOW = [0, 0, 0, 0]   # the glow outward from the gear's ring when the app has no dialGlow setting: r, g, b, strength (0 = none)
 CAR = [1570, 360, 50, 112]   # the tyre panel's car: centre x, y, half width, half length
 PERF, TYRES, POWER = 'rightPanel=performance', 'rightPanel=tyres', 'rightPanel=power'
+LBARS, LGAUGE = '!leftStyle=gauges', 'leftStyle=gauges'   # the left side's two styles
+LX0, LX1 = 110, 590            # the left panel's content
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
@@ -60,8 +62,28 @@ def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi, toggle=None, conn=N
     for w in out:                       # a panel shown by a setting (its min / max labels bring their own toggle)
         if toggle and 'toggle' not in w:
             w['toggle'] = toggle
+        elif toggle and w['toggle'] != toggle:
+            w['toggle'] = toggle + '&' + w['toggle']
         if conn is not None:
             w['conn'] = conn
+    return out
+
+
+def gauge(n, y, label, tok, unit_tok, bar, scale_by_unit):
+    """A hatched-gauge block: the heading left and the value right on one row (the rule under them is the shader's),
+    the scale's numbers above the gauge (min, middle, max in red)."""
+    t = LGAUGE
+    out = [text('g%d_l' % n, LX0, y + HEAD_DY, 300, HEAD_H, label, 'a_head', 'accent', 'left', toggle=t),
+           text('g%d_v' % n, LX1 - 238, y + 1, 180, 42, tok, 'a_tp', 'fg', 'right', toggle=t),
+           text('g%d_u' % n, LX1 - 52, y + 8, 60, 36, unit_tok, 'm_unit', 'fg', 'left', toggle=t)]
+    x0 = bar['x'] + bar['h'] / 2 * 0.45                       # the scale starts over the gauge's top-left corner
+    ly = bar['y'] - bar['h'] / 2 - 14 - 10 - 27               # above the ticks
+    for j, (conds, (lo, mid, hi)) in enumerate(scale_by_unit):
+        for i, cond in enumerate(conds):
+            c = t + '&' + cond
+            out += [text('g%d_lo_%d%d' % (n, j, i), x0 - 4, ly, 90, 23, lo, 'a_sm', 'dim', 'left', toggle=c),
+                    text('g%d_mid_%d%d' % (n, j, i), x0 + bar['w'] / 2 - 45, ly, 90, 23, mid, 'a_sm', 'dim', 'center', toggle=c),
+                    text('g%d_hi_%d%d' % (n, j, i), x0 + bar['w'] - 86, ly, 90, 23, hi, 'a_sm', 'hot', 'right', toggle=c)]
     return out
 
 
@@ -71,12 +93,15 @@ def build():
     LX0, LX1 = 110, 590            # the left panel's content
     RX0, RX1 = 1330, 1810          # the right panel's content
     bars = [
-        {'x': 140, 'y': 296, 'w': 420, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75, 'h': 9},
-        {'x': 140, 'y': 506, 'w': 420, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8, 'h': 9},
-        {'x': 300, 'y': 606, 'w': 200, 'signal': 'coolant', 'min': 40, 'max': 130, 'red': 0.85},
-        {'x': 1420, 'y': 606, 'w': 200, 'signal': 'fuel', 'min': 0, 'max': 1, 'red': 1},
+        {'x': 140, 'y': 296, 'w': 420, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75, 'h': 9, 'toggle': LBARS},
+        {'x': 140, 'y': 506, 'w': 420, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8, 'h': 9, 'toggle': LBARS},
+        {'x': 300, 'y': 606, 'w': 200, 'signal': 'coolant', 'min': 40, 'max': 130, 'red': 0.85, 'mini': 18},
+        {'x': 1420, 'y': 606, 'w': 200, 'signal': 'fuel', 'min': 0, 'max': 1, 'red': 1, 'mini': 18},
         {'x': 1360, 'y': 296, 'w': 420, 'signal': 'powerPct', 'min': 0, 'max': 100, 'red': 1, 'h': 9, 'toggle': POWER},
         {'x': 1360, 'y': 506, 'w': 420, 'signal': 'torquePct', 'min': 0, 'max': 100, 'red': 1, 'h': 9, 'toggle': POWER},
+        # the left side's other style: slanted gauges
+        {'x': 120, 'y': 284, 'w': 440, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75, 'h': 30, 'style': 'gauge', 'toggle': LGAUGE},
+        {'x': 120, 'y': 494, 'w': 440, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8, 'h': 30, 'style': 'gauge', 'toggle': LGAUGE},
     ]
     lines = [[LX0, 192, LX1, 192], [LX0, 402, LX1, 402], [RX0, 192, RX1, 192],
              [LX0, 560, LX1, 560], [RX0, 560, RX1, 560], [RX0, 402, RX1, 402, POWER]]
@@ -105,9 +130,12 @@ def build():
     ]
     # --- left: boost and oil temperature ------------------------------------------------------------------------
     widgets += readout(0, LX0, LX1, 140, 'Boost', '{{boost}}', '{{u:boostLc}}', bars[0],
-                       [(PSI, '0'), (BAR, '0')], [(PSI, '40'), (BAR, '2.8')])
+                       [(PSI, '0'), (BAR, '0')], [(PSI, '40'), (BAR, '2.8')], toggle=LBARS)
     widgets += readout(1, LX0, LX1, 350, 'Oil Temp', '{{oil}}', '{{u:temp}}', bars[1],
-                       [(DEGF, '122'), (DEGC, '50')], [(DEGF, '302'), (DEGC, '150')])
+                       [(DEGF, '122'), (DEGC, '50')], [(DEGF, '302'), (DEGC, '150')], toggle=LBARS)
+    # --- left, the other style: heading and value on one row, a hatched gauge under a tick scale ------------------
+    widgets += gauge(0, 140, 'Boost', '{{boost}}', '{{u:boostLc}}', bars[6], [(PSI, ('0', '20', '40')), (BAR, ('0', '1.4', '2.8'))])
+    widgets += gauge(1, 350, 'Oil Temp', '{{oil}}', '{{u:temp}}', bars[7], [(DEGF, ('122', '212', '302')), (DEGC, ('50', '100', '150'))])
     # --- the bottom row: coolant left, fuel right ---------------------------------------------------------------
     widgets += [
         text('cool_v', 100, 584, 140, 42, '{{coolant}}', 'v_title', 'fg', 'right'),

@@ -21,6 +21,7 @@ A needle dash in a mid-engine supercar style, on a carbon backdrop with a muted 
 - **Right:** a G-meter under a Performance heading, with the side and fore-aft g under it.
 - **Background** (Settings): the red glow at the sides (default), or carbon twill lit from the tach out to the sides, with a deeper drop shadow round the tach.
 - **Tach response** (Settings): Quick (default), Instant, or Smooth like BMW's own tach.
+- **Left side** (Settings): Bars (default), or Gauges: the heading and value on one row over a slanted gauge with a tick scale and a red needle; Gauge fill makes it striped (default) or solid.
 - **Gear** (Settings): the gear outlined (default) or solid, in red.
 - **Glow round the gear** (Settings, off by default): a soft red or white glow fading outward from the ring round the gear.
 - **Bottom:** coolant and fuel as small bars, and under them the clock, range and outside temperature, with BMW's own gear letter.

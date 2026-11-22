@@ -41,7 +41,8 @@
           "min": 0,
           "max": 2.758,
           "red": 0.75,
-          "h": 9
+          "h": 9,
+          "toggle": "!leftStyle=gauges"
         },
         {
           "x": 140,
@@ -51,7 +52,8 @@
           "min": 50,
           "max": 150,
           "red": 0.8,
-          "h": 9
+          "h": 9,
+          "toggle": "!leftStyle=gauges"
         },
         {
           "x": 300,
@@ -60,7 +62,8 @@
           "signal": "coolant",
           "min": 40,
           "max": 130,
-          "red": 0.85
+          "red": 0.85,
+          "mini": 18
         },
         {
           "x": 1420,
@@ -69,7 +72,8 @@
           "signal": "fuel",
           "min": 0,
           "max": 1,
-          "red": 1
+          "red": 1,
+          "mini": 18
         },
         {
           "x": 1360,
@@ -92,6 +96,30 @@
           "red": 1,
           "h": 9,
           "toggle": "rightPanel=power"
+        },
+        {
+          "x": 120,
+          "y": 284,
+          "w": 440,
+          "signal": "boost",
+          "min": 0,
+          "max": 2.758,
+          "red": 0.75,
+          "h": 30,
+          "style": "gauge",
+          "toggle": "leftStyle=gauges"
+        },
+        {
+          "x": 120,
+          "y": 494,
+          "w": 440,
+          "signal": "oil",
+          "min": 50,
+          "max": 150,
+          "red": 0.8,
+          "h": 30,
+          "style": "gauge",
+          "toggle": "leftStyle=gauges"
         }
       ],
       "lines": [
@@ -382,7 +410,8 @@
       "text": "Boost",
       "font": "a_head",
       "color": "accent",
-      "align": "center"
+      "align": "center",
+      "toggle": "!leftStyle=gauges"
     },
     {
       "id": "r0_v",
@@ -395,7 +424,8 @@
       "text": "{{boost}}",
       "font": "a_tp",
       "color": "fg",
-      "align": "right"
+      "align": "right",
+      "toggle": "!leftStyle=gauges"
     },
     {
       "id": "r0_u",
@@ -408,7 +438,8 @@
       "text": "{{u:boostLc}}",
       "font": "m_unit",
       "color": "fg",
-      "align": "left"
+      "align": "left",
+      "toggle": "!leftStyle=gauges"
     },
     {
       "id": "r0_lo_00",
@@ -422,7 +453,7 @@
       "font": "a_lim",
       "color": "dim",
       "align": "left",
-      "toggle": "units=us"
+      "toggle": "!leftStyle=gauges&units=us"
     },
     {
       "id": "r0_lo_10",
@@ -436,7 +467,7 @@
       "font": "a_lim",
       "color": "dim",
       "align": "left",
-      "toggle": "units=metric"
+      "toggle": "!leftStyle=gauges&units=metric"
     },
     {
       "id": "r0_hi_00",
@@ -450,7 +481,7 @@
       "font": "a_lim",
       "color": "dim",
       "align": "right",
-      "toggle": "units=us"
+      "toggle": "!leftStyle=gauges&units=us"
     },
     {
       "id": "r0_hi_10",
@@ -464,7 +495,7 @@
       "font": "a_lim",
       "color": "dim",
       "align": "right",
-      "toggle": "units=metric"
+      "toggle": "!leftStyle=gauges&units=metric"
     },
     {
       "id": "r1_l",
@@ -477,7 +508,8 @@
       "text": "Oil Temp",
       "font": "a_head",
       "color": "accent",
-      "align": "center"
+      "align": "center",
+      "toggle": "!leftStyle=gauges"
     },
     {
       "id": "r1_v",
@@ -490,7 +522,8 @@
       "text": "{{oil}}",
       "font": "a_tp",
       "color": "fg",
-      "align": "right"
+      "align": "right",
+      "toggle": "!leftStyle=gauges"
     },
     {
       "id": "r1_u",
@@ -503,7 +536,8 @@
       "text": "{{u:temp}}",
       "font": "m_unit",
       "color": "fg",
-      "align": "left"
+      "align": "left",
+      "toggle": "!leftStyle=gauges"
     },
     {
       "id": "r1_lo_00",
@@ -517,7 +551,7 @@
       "font": "a_lim",
       "color": "dim",
       "align": "left",
-      "toggle": "units=us"
+      "toggle": "!leftStyle=gauges&units=us"
     },
     {
       "id": "r1_lo_10",
@@ -531,7 +565,7 @@
       "font": "a_lim",
       "color": "dim",
       "align": "left",
-      "toggle": "units=metric"
+      "toggle": "!leftStyle=gauges&units=metric"
     },
     {
       "id": "r1_hi_00",
@@ -545,7 +579,7 @@
       "font": "a_lim",
       "color": "dim",
       "align": "right",
-      "toggle": "units=us"
+      "toggle": "!leftStyle=gauges&units=us"
     },
     {
       "id": "r1_hi_10",
@@ -559,7 +593,259 @@
       "font": "a_lim",
       "color": "dim",
       "align": "right",
-      "toggle": "units=metric"
+      "toggle": "!leftStyle=gauges&units=metric"
+    },
+    {
+      "id": "g0_l",
+      "type": "text",
+      "z": 5,
+      "x": 110,
+      "y": 139,
+      "w": 300,
+      "h": 43,
+      "text": "Boost",
+      "font": "a_head",
+      "color": "accent",
+      "align": "left",
+      "toggle": "leftStyle=gauges"
+    },
+    {
+      "id": "g0_v",
+      "type": "text",
+      "z": 5,
+      "x": 352,
+      "y": 141,
+      "w": 180,
+      "h": 42,
+      "text": "{{boost}}",
+      "font": "a_tp",
+      "color": "fg",
+      "align": "right",
+      "toggle": "leftStyle=gauges"
+    },
+    {
+      "id": "g0_u",
+      "type": "text",
+      "z": 5,
+      "x": 538,
+      "y": 148,
+      "w": 60,
+      "h": 36,
+      "text": "{{u:boostLc}}",
+      "font": "m_unit",
+      "color": "fg",
+      "align": "left",
+      "toggle": "leftStyle=gauges"
+    },
+    {
+      "id": "g0_lo_00",
+      "type": "text",
+      "z": 5,
+      "x": 123,
+      "y": 218,
+      "w": 90,
+      "h": 23,
+      "text": "0",
+      "font": "a_sm",
+      "color": "dim",
+      "align": "left",
+      "toggle": "leftStyle=gauges&units=us"
+    },
+    {
+      "id": "g0_mid_00",
+      "type": "text",
+      "z": 5,
+      "x": 302,
+      "y": 218,
+      "w": 90,
+      "h": 23,
+      "text": "20",
+      "font": "a_sm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "leftStyle=gauges&units=us"
+    },
+    {
+      "id": "g0_hi_00",
+      "type": "text",
+      "z": 5,
+      "x": 481,
+      "y": 218,
+      "w": 90,
+      "h": 23,
+      "text": "40",
+      "font": "a_sm",
+      "color": "hot",
+      "align": "right",
+      "toggle": "leftStyle=gauges&units=us"
+    },
+    {
+      "id": "g0_lo_10",
+      "type": "text",
+      "z": 5,
+      "x": 123,
+      "y": 218,
+      "w": 90,
+      "h": 23,
+      "text": "0",
+      "font": "a_sm",
+      "color": "dim",
+      "align": "left",
+      "toggle": "leftStyle=gauges&units=metric"
+    },
+    {
+      "id": "g0_mid_10",
+      "type": "text",
+      "z": 5,
+      "x": 302,
+      "y": 218,
+      "w": 90,
+      "h": 23,
+      "text": "1.4",
+      "font": "a_sm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "leftStyle=gauges&units=metric"
+    },
+    {
+      "id": "g0_hi_10",
+      "type": "text",
+      "z": 5,
+      "x": 481,
+      "y": 218,
+      "w": 90,
+      "h": 23,
+      "text": "2.8",
+      "font": "a_sm",
+      "color": "hot",
+      "align": "right",
+      "toggle": "leftStyle=gauges&units=metric"
+    },
+    {
+      "id": "g1_l",
+      "type": "text",
+      "z": 5,
+      "x": 110,
+      "y": 349,
+      "w": 300,
+      "h": 43,
+      "text": "Oil Temp",
+      "font": "a_head",
+      "color": "accent",
+      "align": "left",
+      "toggle": "leftStyle=gauges"
+    },
+    {
+      "id": "g1_v",
+      "type": "text",
+      "z": 5,
+      "x": 352,
+      "y": 351,
+      "w": 180,
+      "h": 42,
+      "text": "{{oil}}",
+      "font": "a_tp",
+      "color": "fg",
+      "align": "right",
+      "toggle": "leftStyle=gauges"
+    },
+    {
+      "id": "g1_u",
+      "type": "text",
+      "z": 5,
+      "x": 538,
+      "y": 358,
+      "w": 60,
+      "h": 36,
+      "text": "{{u:temp}}",
+      "font": "m_unit",
+      "color": "fg",
+      "align": "left",
+      "toggle": "leftStyle=gauges"
+    },
+    {
+      "id": "g1_lo_00",
+      "type": "text",
+      "z": 5,
+      "x": 123,
+      "y": 428,
+      "w": 90,
+      "h": 23,
+      "text": "122",
+      "font": "a_sm",
+      "color": "dim",
+      "align": "left",
+      "toggle": "leftStyle=gauges&units=us"
+    },
+    {
+      "id": "g1_mid_00",
+      "type": "text",
+      "z": 5,
+      "x": 302,
+      "y": 428,
+      "w": 90,
+      "h": 23,
+      "text": "212",
+      "font": "a_sm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "leftStyle=gauges&units=us"
+    },
+    {
+      "id": "g1_hi_00",
+      "type": "text",
+      "z": 5,
+      "x": 481,
+      "y": 428,
+      "w": 90,
+      "h": 23,
+      "text": "302",
+      "font": "a_sm",
+      "color": "hot",
+      "align": "right",
+      "toggle": "leftStyle=gauges&units=us"
+    },
+    {
+      "id": "g1_lo_10",
+      "type": "text",
+      "z": 5,
+      "x": 123,
+      "y": 428,
+      "w": 90,
+      "h": 23,
+      "text": "50",
+      "font": "a_sm",
+      "color": "dim",
+      "align": "left",
+      "toggle": "leftStyle=gauges&units=metric"
+    },
+    {
+      "id": "g1_mid_10",
+      "type": "text",
+      "z": 5,
+      "x": 302,
+      "y": 428,
+      "w": 90,
+      "h": 23,
+      "text": "100",
+      "font": "a_sm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "leftStyle=gauges&units=metric"
+    },
+    {
+      "id": "g1_hi_10",
+      "type": "text",
+      "z": 5,
+      "x": 481,
+      "y": 428,
+      "w": 90,
+      "h": 23,
+      "text": "150",
+      "font": "a_sm",
+      "color": "hot",
+      "align": "right",
+      "toggle": "leftStyle=gauges&units=metric"
     },
     {
       "id": "cool_v",

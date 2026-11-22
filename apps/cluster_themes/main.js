@@ -27,7 +27,7 @@ mgu.run({
             title: ctx.spec.title, what: 'cluster',
             look: { name: 'Themes', style: 'hero', tags: { apex: 'needle dash · G-meter' } },
             tabs: ['look', 'readouts', 'badge', 'map', 'alerts', 'gmeter', 'settings'],
-            settings: ['units', 'tempUnits', 'pressureUnits', 'clock', 'timeZone', 'tankLitres', 'redline', 'shiftBefore', 'coldGuard', 'showBoost', 'nightDim', 'apexBackdrop', 'tachResponse', 'gearStyle', 'dialGlow', 'rightPanel', 'cameraNotch', 'keepStrip', 'holiday', 'demo'],
+            settings: ['units', 'tempUnits', 'pressureUnits', 'clock', 'timeZone', 'tankLitres', 'redline', 'shiftBefore', 'coldGuard', 'showBoost', 'nightDim', 'apexBackdrop', 'tachResponse', 'gearStyle', 'dialGlow', 'leftStyle', 'gaugeFill', 'rightPanel', 'cameraNotch', 'keepStrip', 'holiday', 'demo'],
             // the drive mode check's candidates this app's app.json listens to (issue #8; shared/hud.js modeDiagLines)
             modeCheck: ['HMI', 'MDrive', 'Engine', 'Sport2'],
         }).start();

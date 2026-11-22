@@ -95,8 +95,9 @@
  *   cdash     effect layer; the whole Apex theme (shaders.js cdash, layout made by tools/gen_apex.py): "tach" [cx, cy, outer r,
  *             band, start deg, sweep deg, thousands on the scale] (a needle rev counter, its band lit white up to the revs),
  *             "zones" [amber from, red from] rpm, "panels" [left inner x, right inner x, glow top y, glow bottom y] (red-glow side
- *             panels on a carbon backdrop), "bars" (at most 6 line bars: {x, y, w, signal, min, max, red: 0..1 where the red end
- *             zone starts, h: px thick (5), toggle}), "lines" (at most 8 rule lines [x0, y0, x1, y1, toggle]), "glow" [r, g, b, strength]
+ *             panels on a carbon backdrop), "bars" (at most 8 bars: {x, y, w, signal, min, max, red: 0..1 where the red end
+ *             zone starts, h: px thick (5), style: "hatch" for a slanted hatched gauge with a scale and needle, "gauge" striped or solid by the "gaugeFill" setting,
+ *             mini: px thick as a small gauge without a scale while "leftStyle" is "gauges", toggle}), "lines" (at most 8 rule lines [x0, y0, x1, y1, toggle]), "glow" [r, g, b, strength]
  *             (0..1: a soft glow fading outward from the ring round the gear), "car" [cx, cy, half width, half length] (the
  *             tyre panel's car, drawn while the "rightPanel" setting is "tyres")
  *   sdash     effect layer; the whole Sport theme (shaders.js sdash), optional "road" [horizonY, scale] (a road in the
@@ -2104,6 +2105,8 @@ class HudApp {
 
     /** "key" is on while that bool setting is on; "!key" while it is off. */
     _toggleOn(t) {
+        // "a&b": on while both parts are (each part any of the forms below)
+        if (t.indexOf('&') > 0) return t.split('&').every((part) => this._toggleOn(part));
         const not = t.charAt(0) === '!';
         const k = not ? t.slice(1) : t, eq = k.indexOf('=');
         const on = eq > 0 ? String(this.setting(k.slice(0, eq))) === k.slice(eq + 1) : this.setting(k) !== false;
@@ -2228,9 +2231,12 @@ class HudApp {
             c.uniform(ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], T[3]]);
             c.uniform(ref, 'u_zone', [Z[0] / (T[6] * 1000), Z[1] / (T[6] * 1000)]);
             c.uniform(ref, 'u_panels', [P[0] - w.x, P[1] - w.x, P[2] - w.y, P[3] - w.y]);
-            const bz = [0, 1, 2, 3, 4, 5].map((i) => { const b = (w.bars || [])[i]; return b && isNum(b.red) ? b.red : 1; });
+            const bz = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = (w.bars || [])[i]; return b && isNum(b.red) ? b.red : 1; });
             c.uniform(ref, 'u_barZ', bz, { type: 'float' });
-            c.uniform(ref, 'u_barH', [0, 1, 2, 3, 4, 5].map((i) => { const b = (w.bars || [])[i]; return b && isNum(b.h) ? b.h / 2 : 2.5; }), { type: 'float' });
+            // a bar with "mini": a line normally, a small gauge (no scale, "mini" px thick) while the left side shows gauges
+            const gaugesOn = this.setting('leftStyle') === 'gauges', solidOn = this.setting('gaugeFill') === 'solid';
+            c.uniform(ref, 'u_barH', [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = (w.bars || [])[i]; return !b ? 2.5 : b.mini && gaugesOn ? b.mini / 2 : isNum(b.h) ? b.h / 2 : 2.5; }), { type: 'float' });
+            c.uniform(ref, 'u_barS', [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = (w.bars || [])[i]; return !b ? 0 : b.style === 'hatch' ? 1 : b.style === 'gauge' ? (solidOn ? 2 : 1) : b.mini && gaugesOn ? (solidOn ? 4 : 3) : 0; }), { type: 'float' });
             // the glow round the gear's ring: the "dialGlow" setting (off / red / white), else the layout's own "glow"
             const GLOWS = { red: [0.95, 0.1, 0.12, 0.22], white: [0.85, 0.87, 0.92, 0.13], off: [0, 0, 0, 0] };
             const gk = this.setting('dialGlow'), gl = (GLOWS[gk] || w.glow || GLOWS.off).slice();
@@ -2806,7 +2812,7 @@ class HudApp {
         } else if (w.type === 'cdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
             const rpm = this._raw('rpm');
-            const bars = [0, 1, 2, 3, 4, 5].map((i) => { const b = (w.bars || [])[i]; return b && (!b.toggle || this._toggleOn(b.toggle)) ? b : null; });
+            const bars = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = (w.bars || [])[i]; return b && (!b.toggle || this._toggleOn(b.toggle)) ? b : null; });
             const bv = bars.map((b) => { const v = b && b.signal ? this._raw(b.signal) : null; return isNum(v) ? q((v - b.min) / (b.max - b.min)) : 0; });
             const rv = isNum(rpm) ? q(rpm / (T[6] * 1000)) : 0;
             const key = [rv].concat(bv).join('|');

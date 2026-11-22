@@ -1787,9 +1787,11 @@ uniform vec4 u_tach;       // centre x, y, outer radius, band width (px)
 uniform vec4 u_tachA;      // start angle (deg, clockwise from 3 o'clock), sweep (deg), thousands on the scale, revs 0..1
 uniform vec2 u_zone;       // amber from, red from (0..1 of the scale)
 uniform vec4 u_panels;     // left panel's inner edge x, right panel's inner edge x, glow top y, glow bottom y
-uniform vec4 u_bar[6];     // left x, y, width (0 = none), value 0..1
-uniform float u_barZ[6];   // each bar's red zone from (0..1; 1 = none)
-uniform float u_barH[6];   // each bar's half height (px)
+uniform vec4 u_bar[8];     // left x, y, width (0 = none), value 0..1
+uniform float u_barZ[8];   // each bar's red zone from (0..1; 1 = none)
+uniform float u_barH[8];   // each bar's half height (px)
+uniform float u_barS[8];   // each bar's style: 0 a line with a marker, 1 a slanted striped gauge with a scale and a needle, 2 the
+                           // same solid, 3 / 4 the striped / solid gauge without the scale (the small bottom ones)
 uniform vec4 u_line[8];    // rule lines: from x, y, to x, y (all 0 = none)
 uniform float u_bgStyle;   // the backdrop: 0 the side panels' red glow on a faint weave, 1 carbon twill lit from the dial out
 uniform vec4 u_car;        // the tyre panel's car seen from above: centre x, y, half width, half length (0 = none)
@@ -1887,9 +1889,36 @@ void main() {
         c = put(c, mix(RED, vec3(1.0, 0.55, 0.5), 0.25), cov(nd - wdt));
     }
     // the line bars: track, red end zone, white fill to the value, a marker
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 8; i++) {
         vec4 b = u_bar[i];
         if (b.z <= 0.0) continue;
+        if (u_barS[i] > 0.5) {
+            // hatched gauge: a parallelogram leaning right, slanted stripes (white to the value, grey past it, red in
+            // the red zone), a scale line with ticks above it, a red needle along the slant at the value
+            float hh = u_barH[i], k = 0.45, dy = p.y - b.y;
+            float xs = p.x + dy * k;
+            float t = (xs - b.x) / b.z;
+            float rz = u_barZ[i];
+            float inside = step(abs(dy), hh) * step(0.0, t) * step(t, 1.0);
+            float st = u_barS[i];
+            bool solid = abs(st - 2.0) < 0.5 || st > 3.5, scaled = st < 2.5;
+            float stripe = solid ? 1.0 : smoothstep(0.42, 0.5, fract(xs / 9.0)) * (1.0 - smoothstep(0.92, 1.0, fract(xs / 9.0)));   // 2: solid
+            vec3 on = t >= rz ? RED : WHITE;
+            vec3 off = t >= rz ? RED * 0.55 : vec3(0.24, 0.24, 0.27);
+            c = put(c, t <= b.w ? on : off, inside * stripe);
+            float ly = b.y - hh - 14.0, x0 = b.x + hh * k;
+            float ts = (p.x - x0) / b.z;
+            float onScale = step(0.0, ts) * step(ts, 1.0);
+            if (scaled) c = put(c, vec3(0.55, 0.56, 0.6), cov(abs(p.y - ly) - 0.7) * onScale);
+            float tk = abs(fract(ts * 10.0 + 0.5) - 0.5) * b.z / 10.0;
+            float major = step(abs(fract(ts * 2.0 + 0.5) - 0.5) * b.z / 2.0, 1.5);
+            float tl = major > 0.5 ? 10.0 : 6.0;
+            if (scaled) c = put(c, vec3(0.55, 0.56, 0.6), cov(tk - 0.8) * step(ly - tl, p.y) * step(p.y, ly) * step(-0.02, ts) * step(ts, 1.02));
+            float nx = b.x + b.z * b.w - dy * k;
+            float nOn = scaled ? step(-(hh + 30.0), dy) * step(dy, hh + 12.0) : step(-(hh + 7.0), dy) * step(dy, hh + 7.0);
+            c = put(c, RED, cov(abs(p.x - nx) * 0.91 - 1.4) * nOn);
+            continue;
+        }
         float t = (p.x - b.x) / b.z;
         float in1 = step(0.0, t) * step(t, 1.0);
         float hh = u_barH[i];
