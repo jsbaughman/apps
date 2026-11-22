@@ -2235,6 +2235,7 @@ class HudApp {
             const gk = this.setting('dialGlow'), gl = (GLOWS[gk] || w.glow || GLOWS.off).slice();
             if (this.nightOn) gl[3] *= 0.6;
             c.uniform(ref, 'u_glow', gl);
+            c.uniform(ref, 'u_bgStyle', [this.setting('apexBackdrop') === 'carbon' ? 1 : 0]);   // the backdrop setting
             // the right panel: the G-meter, or the tyres with this car drawn in the middle ("car" [cx, cy, half w, half l])
             const car = this.setting('rightPanel') === 'tyres' && w.car;
             c.uniform(ref, 'u_car', car ? [car[0] - w.x, car[1] - w.y, car[2], car[3]] : [0, 0, 0, 0]);

@@ -133,7 +133,7 @@ def build():
         ty = cy + fy * hl * 0.6                       # the tyre's centre, as the shader draws it
         end = cx - hw - 96 if side < 0 else cx + hw + 122     # where the pressure's digits end
         widgets += [
-            text('tp_' + pos, end - 140, ty - 40, 140, 47, '{{tyreP:%s}}' % pos, 'a_val', 'fg', 'right', conn=1, toggle=TYRES),
+            text('tp_' + pos, end - 140, ty + 7 - 42, 140, 42, '{{tyreP:%s}}' % pos, 'a_tp', 'fg', 'right', conn=1, toggle=TYRES),
             text('tpu_' + pos, end + 6, ty - 28, 50, 32, '{{u:pressure}}', 'm_tiny', 'fg', 'left', conn=1, toggle=TYRES),
             text('tt_' + pos, end - 140, ty + 10, 190, 30, '{{tyreT:%s}} {{u:temp}}' % pos, 'r_label', 'dim', 'right', conn=1,
                  toggle=TYRES),

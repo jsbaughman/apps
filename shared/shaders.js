@@ -1790,6 +1790,7 @@ uniform vec4 u_panels;     // left panel's inner edge x, right panel's inner edg
 uniform vec4 u_bar[6];     // left x, y, width (0 = none), value 0..1
 uniform float u_barZ[6];   // each bar's red zone from (0..1; 1 = none)
 uniform vec4 u_line[8];    // rule lines: from x, y, to x, y (all 0 = none)
+uniform float u_bgStyle;   // the backdrop: 0 the side panels' red glow on a faint weave, 1 carbon twill lit from the dial out
 uniform vec4 u_car;        // the tyre panel's car seen from above: centre x, y, half width, half length (0 = none)
 uniform vec4 u_glow;       // a soft glow fading outward from the gear's ring (0.5 of the radius): r, g, b, strength (0 = none)
 
@@ -1817,24 +1818,37 @@ vec3 zoneCol(float f) {   // amber at the zone's start, through orange, to red a
 
 void main() {
     vec2 p = v_uv * u_size;
-    // backdrop: near black with a faint carbon weave
-    vec2 q = p / 6.0;
-    vec2 cell = floor(q), fq = fract(q);
-    float dir = mod(cell.x + cell.y, 2.0);
-    float w = dir > 0.5 ? fq.x : fq.y;
-    vec3 c = vec3(0.045, 0.046, 0.05) * (0.7 + 0.6 * (0.5 - abs(w - 0.5)));
+    vec3 c;
+    if (u_bgStyle > 0.5) {
+        // carbon: a 2 x 2 twill (7 px strands, the over-strand two cells long, stepping one cell a row), lit brightest
+        // round the dial and fading to black at the screen's sides, a little darker towards the bottom
+        vec2 q = p / 7.0;
+        vec2 cell = floor(q), fq = fract(q);
+        bool across = mod(cell.x + cell.y, 4.0) < 2.0;
+        float lit = across ? 0.62 + 0.38 * sin(3.14159 * fq.y) : 0.3 + 0.22 * sin(3.14159 * fq.x);
+        lit *= smoothstep(0.0, 0.12, across ? fq.y : fq.x) * smoothstep(1.0, 0.88, across ? fq.y : fq.x) * 0.55 + 0.45;
+        float side = 1.0 - smoothstep(u_tach.z * 0.95, u_size.x * 0.52, abs(p.x - u_tach.x));
+        c = vec3(0.115, 0.118, 0.126) * lit * pow(side, 1.4) * mix(1.0, 0.72, v_uv.y);
+    } else {
+        // near black with a faint carbon weave
+        vec2 q = p / 6.0;
+        vec2 cell = floor(q), fq = fract(q);
+        float dir = mod(cell.x + cell.y, 2.0);
+        float w = dir > 0.5 ? fq.x : fq.y;
+        c = vec3(0.045, 0.046, 0.05) * (0.7 + 0.6 * (0.5 - abs(w - 0.5)));
+    }
     // the side panels: a muted red glow strongest at the screen's outer edges, fading in towards the dial (to the
     // panel's inner edge), and out just above the bottom strip
     float sideL = 1.0 - smoothstep(0.0, u_panels.x, p.x);
     float sideR = smoothstep(u_panels.y, u_size.x, p.x);
-    float side = max(sideL, sideR);
+    float glowS = max(sideL, sideR);
     float foot = 1.0 - smoothstep(u_panels.w - 80.0, u_panels.w, p.y);
-    c += vec3(0.13, 0.014, 0.02) * side * side * foot;
+    c += vec3(0.13, 0.014, 0.02) * glowS * glowS * foot * (1.0 - u_bgStyle);
 
     vec2 d = p - u_tach.xy;
     float r = length(d), R = u_tach.z, B = u_tach.w;
     // the dial: drop shadow, a black face, a thin bezel
-    c *= 1.0 - 0.85 * (1.0 - smoothstep(R + 6.0, R + 50.0, length(d - vec2(0.0, 14.0))));
+    c *= 1.0 - 0.85 * (1.0 - smoothstep(R + 6.0, R + (u_bgStyle > 0.5 ? 60.0 : 50.0), length(d - vec2(0.0, 14.0))));
     c = put(c, mix(vec3(0.0), vec3(0.035, 0.036, 0.04), smoothstep(R * 0.3, R, r)), cov(r - R - 8.0));
     c = put(c, vec3(0.45, 0.46, 0.5), cov(abs(r - R - 8.0) - 1.2));
     if (u_glow.w > 0.0 && r > R * 0.5 - 1.0) {

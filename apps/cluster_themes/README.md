@@ -19,6 +19,7 @@ A needle dash in a mid-engine supercar style, on a carbon backdrop with a muted 
 - **Middle:** a round rev counter, 0 to 8000 rpm, its band lit grey up to the revs, amber from 6500 rpm and red from 7000, with a red needle. The gear is a hollow red italic in the middle with the drive mode under it; the speed sits in the open quarter at the bottom right, in a bold italic with its unit.
 - **Left:** boost (0 to 40 psi, red from 30) and oil temperature, each a value over a line bar with a marker, its range and a red end zone.
 - **Right:** a G-meter under a Performance heading, with the side and fore-aft g under it.
+- **Background** (Settings): the red glow at the sides (default), or carbon twill lit from the tach out to the sides, with a deeper drop shadow round the tach.
 - **Glow round the gear** (Settings, off by default): a soft red or white glow fading outward from the ring round the gear.
 - **Bottom:** coolant and fuel as small bars, and under them the clock, range and outside temperature, with BMW's own gear letter.
 
