@@ -82,6 +82,8 @@ CLUSTER_FONTS = [
     ('a_tp', 'BarlowSemiCondensed-Medium.ttf', 48, DIGITS + '.-', 0),   # the readouts' numbers (tyres, boost, oil, hp, torque); no extra stroke since 0.21.5
     ('a_lim', 'BarlowSemiCondensed-SemiBold.ttf', 30, DIGITS + '.-', 0),   # the bars' end numbers, 25 % over r_label
     ('a_sm', 'Outfit[wght].ttf', 26, DIGITS + '.-', 0, 'SemiBold', None, '', 0.2),   # the hatched gauges' scale numbers, italic
+    ('vl_sm', 'Outfit[wght].ttf', 31, DIGITS + '.-', 0, 'SemiBold', None, '', 0.2),   # Veloce's side scale numbers, a_sm + 20 %
+    ('vl_lab', 'BarlowSemiCondensed-SemiBold.ttf', 29, UPPER + LOWER + DIGITS + '/°%.: -'),   # Veloce's side labels and values, r_label + 20 %
     ('a_big', 'BarlowSemiCondensed-Medium.ttf', 100, DIGITS + '.-', 3),   # boost and oil temperature (Nov 21 2026: a_val too small)
     ('a_num', 'BarlowSemiCondensed-Medium.ttf', 46, DIGITS, 2),
     ('s_val', 'Michroma-Regular.ttf', 26, DIGITS + ':+-.', 1),

@@ -36,14 +36,16 @@ def text(id_, x, y, w, h, t, font, color='fg', align='center', **kw):
 def mini_block(n, mini, label, value, unit, nums, conn=None):
     """A side scale's texts: the label and value on one row above it, its min / middle / max numbers just above the line."""
     x, y, w = mini['x'], mini['y'], mini['w']
-    out = [text('m%d_l' % n, x, y - 84, 170, 30, label, 'r_label', 'fg', 'left'),
-           text('m%d_v' % n, x + w - 150, y - 86, 104, 30, value, 'r_label', 'fg', 'right'),
-           text('m%d_u' % n, x + w - 42, y - 86, 50, 30, unit, 'r_label', 'dim', 'left')]
+    # 20 % larger than the first version (vl_lab, vl_sm, 0.21.7), on the same baselines (the label row's bottom at y - 54,
+    # the scale numbers' at y - 19)
+    out = [text('m%d_l' % n, x, y - 54 - 33, 210, 33, label, 'vl_lab', 'fg', 'left'),
+           text('m%d_v' % n, x + w - 136, y - 54 - 33, 130, 33, value, 'vl_lab', 'fg', 'right'),
+           text('m%d_u' % n, x + w, y - 54 - 33, 60, 33, unit, 'vl_lab', 'dim', 'left')]
     for cond, (lo, mid, hi) in nums:
         tag = 'us' if cond == US else 'm'
-        out += [text('m%d_lo_%s' % (n, tag), x - 30, y - 42, 60, 23, lo, 'a_sm', 'dim', 'center', toggle=cond),
-                text('m%d_mid_%s' % (n, tag), x + w / 2 - 30, y - 42, 60, 23, mid, 'a_sm', 'dim', 'center', toggle=cond),
-                text('m%d_hi_%s' % (n, tag), x + w - 30, y - 42, 60, 23, hi, 'a_sm', 'hot', 'center', toggle=cond)]
+        out += [text('m%d_lo_%s' % (n, tag), x - 36, y - 19 - 25, 72, 25, lo, 'vl_sm', 'dim', 'center', toggle=cond),
+                text('m%d_mid_%s' % (n, tag), x + w / 2 - 36, y - 19 - 25, 72, 25, mid, 'vl_sm', 'dim', 'center', toggle=cond),
+                text('m%d_hi_%s' % (n, tag), x + w - 36, y - 19 - 25, 72, 25, hi, 'vl_sm', 'hot', 'center', toggle=cond)]
     if conn is not None:
         for t in out:
             t['conn'] = conn
@@ -102,6 +104,20 @@ def build():
         text('strip_out', 1640, 670, 110, 42, '{{ambientN}}', 'v_title', 'fg', 'right', z=3, stripRow='r'),
         text('strip_out_u', 1754, 678, 50, 32, '{{u:temp}}', 'm_tiny', 'fg', 'left', z=3, stripRow='r'),
     ]
+    # as Apex (0.21.6): the speed, gear and boost looked at on every 50 ms tick, each on its own small image layer (a change
+    # uploads only that small picture's changed rect); the slow readings once a second, fixed labels and units every 2 s;
+    # the drive mode, the rpm digits and oil / coolant (they flash over their warning limit, 300 ms) at the default 200 ms
+    for w in widgets:
+        if w.get('id') in ('gear', 'speed', 'm1_v'):
+            w['rate'] = 45
+            w['own'] = True
+            w['conn'] = 2
+        elif w['type'] == 'text' and 'rate' not in w:
+            txt = w['text']
+            if any(k in txt for k in ('{{oil}}', '{{coolant}}', '{{boost}}', '{{mode}}', '{{gSide}}', '{{gFwd}}', '{{rpm}}')):
+                continue
+            tokens = [x.split('}}')[0] for x in txt.split('{{')[1:]]
+            w['rate'] = 2000 if all(tk.startswith('u:') for tk in tokens) else 1000
     return {
         'schemaVersion': 2,
         'name': 'Veloce',
