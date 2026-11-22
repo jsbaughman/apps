@@ -44,6 +44,10 @@ An Italian supercar style dash on a dark hex-cell backdrop.
 
 Veloce has no map window; with "Show Waze map inside the theme" on, Waze stays in its usual place. The layout is made by `tools/gen_veloce.py`.
 
+## Starting with the car
+
+Since 0.22.0 the app starts by itself when the head unit powers up (autostart), without its page, and draws the cluster from then on; opening it from the apps menu shows the page over that same drawing. If the head unit starts a second copy when the page is opened, the older one stops drawing (data/running.json) so the cluster is drawn once.
+
 ## Off and drive modes
 
 - **Off (BMW's own cluster):** pick it as the theme and the app draws nothing, so BMW's cluster comes back.
