@@ -59,7 +59,7 @@ def build():
     ]
     widgets.append({'id': 'dash', 'type': 'ldash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                     'arc': ARC + [START, SWEEP, BLOCKS, THOUSANDS, BAND], 'red': RED,
-                    'band': [560, 318, 800, 56], 'minis': minis})
+                    'band': [560, 318, 800, 56, 878, 1036], 'minis': minis})
     # the arc's numbers, inside the blocks
     cx, cy, rx, ry = ARC
     for k in range(THOUSANDS + 1):
@@ -68,7 +68,7 @@ def build():
         widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_tach', 'hot' if k * 1000 >= RED else 'fg'))
     # the middle: the gear over the band, the drive mode beside it, the rpm in digits in the band
     widgets += [
-        text('gear', 830, 252, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),
+        text('gear', 830, 260, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),
         text('mode', 1060, 268, 220, 24, '{{mode}}', 'v_label', 'hot', 'left'),
         text('rpm_d', 680, 323, 190, 47, '{{rpm}}', 'a_tach', 'ink', 'right', dx=-6),
         text('rpm_u', 1130, 333, 160, 30, 'RPM', 'r_label', 'ink', 'left'),
