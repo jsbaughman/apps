@@ -39,7 +39,6 @@ const TYPES = {
     swatchimg: [],
     boxes: ['boxes'],
     atext: ['text', 'font'],
-    gtext: ['text', 'font'],
     dial: ['measure'],
     meter: ['signal', 'min', 'max'],
     gmeter: [],

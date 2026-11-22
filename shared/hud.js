@@ -2209,6 +2209,8 @@ class HudApp {
                     ' px; the glyphs keep their shape at w ' + x.cells * a.cellW + ', h ' + a.cellH);
             }
         } else if (w.type === 'gtext') {
+            throw new Error('gtext is withdrawn (0.21.4): it took the car\'s displays down');
+            // eslint-disable-next-line no-unreachable
             const a = this._atlasSpaced(w.font, x.ci);
             x.atlas = a;
             c.bind(ref, 'u_font', a.ref);

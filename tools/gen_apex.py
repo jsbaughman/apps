@@ -26,7 +26,7 @@ PERF, TYRES, POWER = 'rightPanel=performance', 'rightPanel=tyres', 'rightPanel=p
 LBARS, LGAUGE = '!leftStyle=gauges', 'leftStyle=gauges'   # the left side's two styles
 LX0, LX1 = 110, 590            # the left panel's content
 FAST = 45                     # ms: the speed, gear and boost redraw on every 50 ms tick (other text every 200)
-FAST_IDS = ('gear', 'gear_s', 'speed', 'r0_v', 'g0_v')   # drawn by the GPU while "fastNumbers" is on
+FAST_IDS = ()   # Fast numbers withdrawn in 0.21.4: the GPU text (gtext) took the car's displays down (Nov 22 2026)
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
