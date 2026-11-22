@@ -2000,6 +2000,7 @@ void main() {
     vec3 c = vec3(cell) * vec3(0.95, 0.97, 1.0);
     c = put(c, vec3(0.085 + 0.07 * near) * vec3(0.95, 0.97, 1.0), cov(e - 1.1) * (0.3 + 0.6 * near));
     c *= 1.0 - 0.6 * smoothstep(0.6, 1.0, abs(v_uv.x - 0.5) * 2.0);
+    c *= 1.0 - smoothstep(0.6, 0.95, v_uv.y);    // fading to black well above the bottom strip
 
     // the middle band: a grey strip, lighter in its middle, fading out at both ends
     if (u_band.z > 0.0) {
