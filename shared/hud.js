@@ -208,6 +208,7 @@
  *   over the last second before an early, latched 5 Hz flash instead, and "from" is not used (shift_cue.js);
  * "off" the alpha of an unlit light (0.14).
  * Text "dx": px the text moves inside its box (an italic right-aligned in a box wider than it, so the slanted ink isn't clipped).
+ * Text "rate": ms between redraws (default TEXT_MS, 200; the Apex speed, gear and boost use 45: every tick).
  * Text "warnFlash": false: no flash over the warning limit (a tile that turns red itself).
  * Text "showWhen": "abnormal" (or "abnormal:oil" / "abnormal:coolant" on a plain label): empty while that temperature is
  *   normal and the setting "smartTemps" is on; temperature values take their band's colour, outside blue at 3 C and
@@ -1021,7 +1022,7 @@ class HudApp {
                 const m = await rd.value('boost', dme.boost);
                 if (isNum(m)) { this.boostDme = (m - baro) / 100; this.boostDmeAt = Date.now(); }
             })().catch((e) => this.log.info('engine unit boost: ' + (e && e.message || e))).then(() => { busy = false; });
-        }), 400);
+        }), 200);   // every 200 ms (was 400): a read waits for the last one (busy), so the engine unit is never asked twice at once
     }
 
     stop() {
@@ -1793,6 +1794,9 @@ class HudApp {
             case 'gearnum': {
                 const d = this.car.data();
                 if (d.stage === 'P' || d.stage === 'R' || d.stage === 'N') return d.stage;
+                // "gearSource" quick: in drive and moving, the gear worked out from the rpm / speed ratio (car.js GearGuess,
+                // learnt over the first minutes of driving) as soon as it knows one; the gearbox signal comes slower
+                if (this.setting('gearSource') === 'quick' && !d.demo && isNum(this.car.guessed) && isNum(d.speed) && d.speed > 8) return String(this.car.guessed);
                 return isNum(d.gear) && d.gear > 0 ? String(d.gear) : (d.gear === 0 ? 'N' : '-');
             }
             case 'stage': {          // the selector letter alone: P R N, or D / S / M by the shifter programme

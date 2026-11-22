@@ -25,6 +25,7 @@ CAR = [1570, 360, 50, 112]   # the tyre panel's car: centre x, y, half width, ha
 PERF, TYRES, POWER = 'rightPanel=performance', 'rightPanel=tyres', 'rightPanel=power'
 LBARS, LGAUGE = '!leftStyle=gauges', 'leftStyle=gauges'   # the left side's two styles
 LX0, LX1 = 110, 590            # the left panel's content
+FAST = 45                     # ms: the speed, gear and boost redraw on every 50 ms tick (other text every 200)
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
@@ -38,7 +39,7 @@ DEGC = ['units=metric']
 def text(id_, x, y, w, h, t, font, color='fg', align='center', **kw):
     d = {'id': id_, 'type': 'text', 'z': 5, 'x': int(round(x)), 'y': int(round(y)), 'w': int(w), 'h': int(h),
          'text': t, 'font': font, 'color': color, 'align': align}
-    d.update(kw)
+    d.update({k: v for k, v in kw.items() if v is not None})
     return d
 
 
@@ -55,7 +56,7 @@ def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi, toggle=None, conn=N
     """A left-panel block: label, a rule, the value and unit, the bar, min / max under it."""
     mid = (x0 + x1) / 2
     out = [text('r%d_l' % n, mid - 220, y + HEAD_DY, 440, HEAD_H, label, 'a_head', 'accent'),
-           text('r%d_v' % n, mid - 190, y + 77, 220, 42, tok, 'a_tp', 'fg', 'right'),
+           text('r%d_v' % n, mid - 190, y + 77, 220, 42, tok, 'a_tp', 'fg', 'right', rate=FAST if tok in ('{{boost}}', '{{power}}', '{{torque}}') else None),
            text('r%d_u' % n, mid + 38, y + 84, 120, 36, unit_tok, 'm_unit', 'fg', 'left')]
     out += unit_labels('r%d_lo' % n, bar['x'] - 2, bar['y'] + 16, 80, 'left', lo)
     out += unit_labels('r%d_hi' % n, bar['x'] + bar['w'] - 78, bar['y'] + 16, 80, 'right', hi)
@@ -74,7 +75,7 @@ def gauge(n, y, label, tok, unit_tok, bar, scale_by_unit):
     the scale's numbers above the gauge (min, middle, max in red)."""
     t = LGAUGE
     out = [text('g%d_l' % n, LX0, y + HEAD_DY, 300, HEAD_H, label, 'a_head', 'accent', 'left', toggle=t),
-           text('g%d_v' % n, LX1 - 238, y + 1, 180, 42, tok, 'a_tp', 'fg', 'right', toggle=t),
+           text('g%d_v' % n, LX1 - 238, y + 1, 180, 42, tok, 'a_tp', 'fg', 'right', toggle=t, rate=FAST if tok == '{{boost}}' else None),
            text('g%d_u' % n, LX1 - 52, y + 8, 60, 36, unit_tok, 'm_unit', 'fg', 'left', toggle=t)]
     x0 = bar['x'] + bar['h'] / 2 * 0.45                       # the scale starts over the gauge's top-left corner
     ly = bar['y'] - bar['h'] / 2 - 14 - 10 - 27               # above the ticks
@@ -120,12 +121,12 @@ def build():
         widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_tach', col))
     # --- the middle: gear, drive mode, speed in the open quarter, the scale's unit ------------------------------
     widgets += [
-        text('gear', CX - 130, CY - 82, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7, toggle='!gearStyle=solid'),   # ink centred on the dial (the slant leans it right)
-        text('gear_s', CX - 130, CY - 76, 260, 151, '{{gearnum}}', 'a_gear_s', 'hot', dx=-12, toggle='gearStyle=solid'),   # the solid one
+        text('gear', CX - 130, CY - 82, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7, toggle='!gearStyle=solid', rate=FAST),   # ink centred on the dial (the slant leans it right)
+        text('gear_s', CX - 130, CY - 76, 260, 151, '{{gearnum}}', 'a_gear_s', 'hot', dx=-12, toggle='gearStyle=solid', rate=FAST),   # the solid one
         text('mode', CX - 120, CY + 92, 240, 24, '{{mode}}', 'v_label', 'accent'),
         text('rpm_u1', CX + 170, CY + 30, 120, 30, 'RPM', 'r_label', 'hot', 'left'),
         text('rpm_u2', CX + 170, CY + 58, 120, 30, 'x1000', 'r_label', 'dim', 'left'),
-        text('speed', CX - 60, CY + 105, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24),   # 16 px of room for the lean
+        text('speed', CX - 60, CY + 105, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24, rate=FAST),   # 16 px of room for the lean
         text('speed_u', CX + 178, CY + 142, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left'),
     ]
     # --- left: boost and oil temperature ------------------------------------------------------------------------
