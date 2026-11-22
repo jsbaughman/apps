@@ -61,7 +61,7 @@ def build():
     ]
     widgets.append({'id': 'dash', 'type': 'ldash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                     'arc': ARC + [START, SWEEP, BLOCKS, THOUSANDS, BAND], 'red': RED,
-                    'band': [560, 334, 800, 56], 'minis': minis})
+                    'band': [560, 354, 800, 56], 'minis': minis})
     # the arc's numbers, inside the blocks
     cx, cy, rx, ry = ARC
     for k in range(THOUSANDS + 1):
@@ -70,15 +70,15 @@ def build():
         widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_tach', 'hot' if k * 1000 >= RED else 'fg'))
     # the middle: the gear over the band, the drive mode beside it, the rpm in digits in the band
     widgets += [
-        text('gear', 830, 300, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),
-        text('mode', 1040, 400, 220, 24, '{{mode}}', 'v_label', 'hot', 'left'),
-        text('rpm_d', 680, 339, 190, 47, '{{rpm}}', 'a_tach', 'ink', 'right', dx=-6),
-        text('rpm_u', 1130, 349, 160, 30, 'RPM', 'r_label', 'ink', 'left'),
+        text('gear', 830, 320, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),
+        text('mode', 1040, 420, 220, 24, '{{mode}}', 'v_label', 'hot', 'left'),
+        text('rpm_d', 680, 359, 190, 47, '{{rpm}}', 'a_tach', 'ink', 'right', dx=-6),
+        text('rpm_u', 1130, 369, 160, 30, 'RPM', 'r_label', 'ink', 'left'),
     ]
     # the speed, bottom middle under the band
     widgets += [
-        text('speed', 790, 488, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24, conn=1),
-        text('speed_u', 1008, 525, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', conn=1),
+        text('speed', 790, 508, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24, conn=1),
+        text('speed_u', 1008, 545, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', conn=1),
     ]
     # the side scales
     widgets += mini_block(0, minis[0], 'Oil Temp', '{{oil}}', '{{u:temp}}',
