@@ -102,7 +102,7 @@
  *             tyre panel's car, drawn while the "rightPanel" setting is "tyres")
  *   ldash     effect layer; the whole Veloce theme (shaders.js ldash, layout made by tools/gen_veloce.py): "arc" [cx, cy, rx,
  *             ry, start deg, sweep deg, blocks, thousands, band fraction] (a wide elliptical rev arc of bevelled blocks, lit to
- *             the revs), "red" rpm (red from), "band" [x, y, w, h, gap left x, gap right x] (a grey strip across the middle, with an optional gap for the gear), "minis" (at most 4 small
+ *             the revs), "red" rpm (red from), "band" [x, y, w, h] (a grey strip across the middle), "minis" (at most 4 small
  *             scales: {x, y (the line), w, signal, min, max, red: 0..1 where the red zone starts}) on a hex-cell backdrop
  *   sdash     effect layer; the whole Sport theme (shaders.js sdash), optional "road" [horizonY, scale] (a road in the
  *             middle while no map shows, its dashes running with the speed): "geo" [yTop, yBend, yBottom, xBend] and
@@ -2234,7 +2234,6 @@ class HudApp {
             c.uniform(ref, 'u_arc', [A[0] - w.x, A[1] - w.y, A[2], A[3]]);
             c.uniform(ref, 'u_red', [(w.red || 7000) / (A[7] * 1000), A[8] || 0.16, A[7]]);
             c.uniform(ref, 'u_band', [B[0] - w.x, B[1] - w.y, B[2], B[3]]);
-            c.uniform(ref, 'u_bandG', B.length >= 6 ? [B[4] - w.x, B[5] - w.x] : [0, 0]);
             c.uniform(ref, 'u_miniZ', [0, 1, 2, 3].map((i) => { const m = (w.minis || [])[i]; return m && isNum(m.red) ? m.red : 1; }));
         } else if (w.type === 'cdash') {
             // Apex (tools/gen_apex.py): "tach" [cx, cy, outer r, band, start deg, sweep deg, thousands], "zones" [amber, red] rpm,

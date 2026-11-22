@@ -1970,7 +1970,6 @@ uniform vec4 u_arc;        // centre x, y, horizontal radius, vertical radius (o
 uniform vec4 u_arcA;       // start angle (deg, clockwise from 3 o'clock), sweep (deg), blocks, revs 0..1
 uniform vec3 u_red;        // red from (0..1 of the scale), band thickness as a fraction of the radius, thousands
 uniform vec4 u_band;       // the middle band: x, y, w, h (w 0 = none)
-uniform vec2 u_bandG;      // a gap in the band for the gear: left x, right x (equal = none)
 uniform vec4 u_mini[4];    // small scales: left x, y (the scale line), width (0 = none), value 0..1
 uniform vec4 u_miniZ;      // each scale's red zone from (0..1; 1 = none)
 
@@ -2007,7 +2006,6 @@ void main() {
         float bx = (p.x - u_band.x) / u_band.z, by = (p.y - u_band.y) / u_band.w;
         if (bx > 0.0 && bx < 1.0 && by > 0.0 && by < 1.0) {
             float fade = smoothstep(0.0, 0.18, bx) * smoothstep(1.0, 0.82, bx);
-            fade *= 1.0 - smoothstep(u_bandG.x - 8.0, u_bandG.x, p.x) * smoothstep(u_bandG.y + 8.0, u_bandG.y, p.x);   // the gear's gap
             vec3 bc = mix(vec3(0.26, 0.27, 0.29), vec3(0.4, 0.41, 0.43), 1.0 - abs(by - 0.5) * 2.0);
             c = mix(c, bc, 0.85 * fade);
         }
