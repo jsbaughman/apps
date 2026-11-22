@@ -71,7 +71,7 @@ def build():
     # the middle: the gear over the band, the drive mode beside it, the rpm in digits in the band
     widgets += [
         text('gear', 830, 300, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),
-        text('mode', 1060, 268, 220, 24, '{{mode}}', 'v_label', 'hot', 'left'),
+        text('mode', 1040, 400, 220, 24, '{{mode}}', 'v_label', 'hot', 'left'),
         text('rpm_d', 680, 339, 190, 47, '{{rpm}}', 'a_tach', 'ink', 'right', dx=-6),
         text('rpm_u', 1130, 349, 160, 30, 'RPM', 'r_label', 'ink', 'left'),
     ]

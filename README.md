@@ -8,9 +8,11 @@
 
 <img src="apps/cluster_themes/icon.png" width="72" align="left" alt="Cluster Themes icon">
 
-Redraws the whole instrument cluster as Apex, a needle dash with boost, oil temperature and a G-meter, or Off for BMW's own cluster. Pick it on the center screen, or let it follow the SPORT / COMFORT / ECO PRO buttons. [Read more](apps/cluster_themes/README.md)
+Redraws the whole instrument cluster as Apex, a needle dash with boost, oil temperature and a G-meter; Veloce, a wide arc of lit tiles with a big hollow gear; or Off for BMW's own cluster. Pick it on the center screen, or let it follow the SPORT / COMFORT / ECO PRO buttons. [Read more](apps/cluster_themes/README.md)
 
 <p align="center"><img src="docs/images/cluster-apex.png" width="900" alt="Apex"></p>
+
+<p align="center"><img src="docs/images/cluster-veloce.png" width="900" alt="Veloce"></p>
 <p align="center"><img src="docs/images/cluster-sport.png" width="900" alt="Sport theme"></p>
 <p align="center"><img src="docs/images/cluster-dyno.png" width="900" alt="Dyno theme"></p>
 

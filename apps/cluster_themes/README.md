@@ -6,6 +6,8 @@ Redraws the whole instrument cluster in a theme of your choice. Open **Cluster T
 
 <p align="center"><img src="../../docs/images/cluster-apex.png" width="900" alt="Apex"></p>
 
+<p align="center"><img src="../../docs/images/cluster-veloce.png" width="900" alt="Veloce"></p>
+
 <p align="center"><img src="../../docs/images/page-cluster-themes.png" width="900" alt="The Cluster Themes page on the center screen"></p>
 
 ## Themes
@@ -27,6 +29,17 @@ A needle dash in a mid-engine supercar style, on a carbon backdrop with a muted 
 - **Bottom:** coolant and fuel as small bars, and under them the clock, range and outside temperature, with BMW's own gear letter.
 
 Apex has no map window; with "Show Waze map inside the theme" on, Waze stays in its usual place. The layout is made by `tools/gen_apex.py`.
+
+### Veloce
+
+An Italian supercar style dash on a dark hex-cell backdrop.
+
+- **Top:** a wide arc of rounded tiles, 0 to 8000 rpm, three to each thousand. The tiles light pale silver up to the revs, with a thin red needle across them at the exact rpm. From 7000 rpm the tiles are a muted red that glows when lit, and the arc's inner rail turns red.
+- **Middle:** the gear big and hollow in red over a grey band, with the rpm in digits on the band and the drive mode beside the gear. The speed sits under it in a bold italic with its unit.
+- **Sides:** four small scales stepped along the arc, each with its name and value above it, italic min / middle / max numbers and a red needle: oil temperature and boost on the left, fuel and coolant on the right. The car doesn't send oil pressure, so boost takes its place.
+- **Bottom:** the clock, range and outside temperature, with BMW's own gear letter.
+
+Veloce has no map window; with "Show Waze map inside the theme" on, Waze stays in its usual place. The layout is made by `tools/gen_veloce.py`.
 
 ## Off and drive modes
 
