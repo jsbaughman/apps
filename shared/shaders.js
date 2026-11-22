@@ -2108,4 +2108,42 @@ void main() {
 }
 `;
 
-module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH };
+const GTEXT = `// GPU text with true spacing ("gtext", the "Fast numbers" setting), GLSL ES 1.00: each glyph of the R8 atlas bound to
+// u_font (u_grid cells of u_cell px) drawn at its own x (u_xs, layer px, increasing), so italics keep their lean and a
+// narrow "." its narrow place; a new value is one uniform message, no pixels. v_uv (0,0) is the top-left.
+precision highp float;
+varying vec2 v_uv;
+uniform sampler2D u_font;
+uniform vec4 u_text[8];
+uniform vec4 u_xs[8];
+uniform float u_n;
+uniform vec2 u_grid;
+uniform vec2 u_cell;
+uniform vec2 u_size;
+uniform vec4 u_color;
+
+float pick(vec4 v, float lane) { return lane < 0.5 ? v.x : lane < 1.5 ? v.y : lane < 2.5 ? v.z : v.w; }
+
+void main() {
+    vec2 p = v_uv * u_size;
+    float ink = 0.0;
+    for (int i = 0; i < 32; i++) {
+        float fi = float(i);
+        if (fi >= u_n) break;
+        float slot = floor(fi / 4.0), lane = fi - slot * 4.0;
+        vec4 tv = u_text[0], xv = u_xs[0];
+        for (int j = 1; j < 8; j++) if (float(j) == slot) { tv = u_text[j]; xv = u_xs[j]; }
+        float x0 = pick(xv, lane);
+        if (x0 > p.x) break;
+        float lx = p.x - x0;
+        float c = pick(tv, lane);
+        if (c < 0.0 || lx >= u_cell.x) continue;
+        float col = mod(c, u_grid.x), row = floor(c / u_grid.x);
+        vec2 uv = vec2((col * u_cell.x + lx) / (u_grid.x * u_cell.x), (row + p.y / u_cell.y) / u_grid.y);
+        ink = max(ink, texture2D(u_font, uv).r);
+    }
+    gl_FragColor = vec4(u_color.rgb, u_color.a * ink);
+}
+`;
+
+module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gtext: GTEXT };

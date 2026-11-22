@@ -26,6 +26,7 @@ PERF, TYRES, POWER = 'rightPanel=performance', 'rightPanel=tyres', 'rightPanel=p
 LBARS, LGAUGE = '!leftStyle=gauges', 'leftStyle=gauges'   # the left side's two styles
 LX0, LX1 = 110, 590            # the left panel's content
 FAST = 45                     # ms: the speed, gear and boost redraw on every 50 ms tick (other text every 200)
+FAST_IDS = ('gear', 'gear_s', 'speed', 'r0_v', 'g0_v')   # drawn by the GPU while "fastNumbers" is on
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
@@ -181,6 +182,18 @@ def build():
         text('strip_out', 1640, 670, 110, 42, '{{ambientN}}', 'v_title', 'fg', 'right', z=3, stripRow='r'),
         text('strip_out_u', 1754, 678, 50, 32, '{{u:temp}}', 'm_tiny', 'fg', 'left', z=3, stripRow='r'),
     ]
+    # "Fast numbers": the speed, gear and boost drawn by the GPU (gtext, a uniform message a change) while that setting
+    # is on, the usual pixel text otherwise
+    out = []
+    for w in widgets:
+        if w.get('id') in FAST_IDS and w['type'] == 'text':
+            both = lambda base, cond: cond if not base else base + '&' + cond
+            g = dict(w, id=w['id'] + '_gpu', type='gtext', toggle=both(w.get('toggle'), 'fastNumbers'), conn=2)
+            w = dict(w, toggle=both(w.get('toggle'), '!fastNumbers'))
+            out += [w, g]
+        else:
+            out.append(w)
+    widgets = out
     return {
         'schemaVersion': 2,
         'name': 'Apex',

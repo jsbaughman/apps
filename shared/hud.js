@@ -127,6 +127,9 @@
  *             widest advance and h = its cell height, logged at creation), and a new value is one uniform
  *             message of glyph codes. "text" tokens as text, "font", "color" role, "align" left | right | center.
  *             Up to 32 cells; only the characters the font has.
+ *   gtext     effect layer (shaders.js gtext): text drawn by the GPU from a spaced glyph atlas, each glyph at its own advance
+ *             (italics keep their lean), "text", "font", "color", "align", "dx", "rate" as a text widget; a new value is a
+ *             uniform message, no pixels (the "Fast numbers" setting). h should be the font's cell height.
  *   meter     effect layer (shaders.js meter): a segmented bar, "signal" between "min" and "max" (raw units: km/h, C,
  *             bar, rpm), "segments" (20), "gap" px (4), "vertical": true fills upward; "colors" [3 roles] lit below
  *             "at"[0] / up to "at"[1] / past it (fractions of the bar), "trackColor" (track); "peak": ms (true = 3 s)
@@ -529,6 +532,8 @@ class HudApp {
         this.widgets = new Map();        // widget.id -> { w, ref, sheet | null, last, lastPaint }
         this.sheets = [];                // the packed image layers: { ref, klass, z, x, y, w, h, members, buf }
         this.boostFes = null; this.boostFesAt = 0;    // bar, from the sport display signal
+        this.boostCount = {};                         // boost readings by source, for the readings check
+        this.rates = null; this.ratesAt = 0; this.ratesBase = null;
         this.boostDme = null; this.boostDmeAt = 0;    // bar, from the engine unit (fallback)
         this.needsBoost = false;         // a shown widget uses boost (the engine unit is only asked then)
         this.intakeDme = null; this.intakeDmeAt = 0;  // C, intake air from the engine unit (config.dme.intake)
@@ -797,6 +802,7 @@ class HudApp {
                     if (typeof raw !== 'number' || raw === BOOST_SCALE.invalid) return;
                     this.boostFes = raw * BOOST_SCALE.factor + BOOST_SCALE.offset;
                     this.boostFesAt = Date.now();
+                    this.boostCount.fes = (this.boostCount.fes || 0) + 1;
                 },
                 // the HMI's sport display: power and torque in % of the car's maximum (car_vitals, MIT); 255 = none
                 statusVehicleDynamicEngine: (v) => {
@@ -1020,7 +1026,7 @@ class HudApp {
                     if (isNum(b)) baro = b;
                 }
                 const m = await rd.value('boost', dme.boost);
-                if (isNum(m)) { this.boostDme = (m - baro) / 100; this.boostDmeAt = Date.now(); }
+                if (isNum(m)) { this.boostDme = (m - baro) / 100; this.boostDmeAt = Date.now(); this.boostCount.dme = (this.boostCount.dme || 0) + 1; }
             })().catch((e) => this.log.info('engine unit boost: ' + (e && e.message || e))).then(() => { busy = false; });
         }), 200);   // every 200 ms (was 400): a read waits for the last one (busy), so the engine unit is never asked twice at once
     }
@@ -1073,6 +1079,58 @@ class HudApp {
         this.log.info('glyph atlas "' + fontName + '"' + (ci ? ' on connection ' + (ci + 1) : '') + ': ' + chars.length + ' glyphs in ' +
             cellW + 'x' + cellH + ' cells, ' + w + 'x' + h + ' R8 asset, ' + mib(a.bytes) + ' of pixel memory');
         return a;
+    }
+
+    /**
+     * A spaced atlas (gtext): every glyph drawn from a pen at x "pen" in a cell wide enough for its whole ink (italics
+     * lean past their advance), with each glyph's advance kept, so the text can be laid out as hud_text lays it out.
+     */
+    _atlasSpaced(fontName, ci) {
+        const key = ci + ':' + fontName + ':spaced';
+        if (this.atlases.has(key)) return this.atlases.get(key);
+        const font = textRaster.loadFont(fontName), glyphs = font.metrics.glyphs;
+        const chars = Object.keys(glyphs).filter((ch) => ch.length === 1 && ch >= ' ' && ch <= '~').sort().slice(0, 64);
+        if (!chars.length) throw new Error('font "' + fontName + '" has no printable glyphs for an atlas');
+        const pen = 2 - Math.min(0, Math.min.apply(null, chars.map((ch) => glyphs[ch].ox || 0)));
+        const cellW = Math.ceil(Math.max.apply(null, chars.map((ch) => pen + (glyphs[ch].ox || 0) + glyphs[ch].w))) + 2;
+        const cellH = font.metrics.cellHeight;
+        const cols = Math.max(1, Math.min(16, Math.floor(2048 / cellW))), rows = Math.ceil(chars.length / cols);
+        const w = cols * cellW, h = rows * cellH;
+        const buf = Buffer.alloc(w * h, 0);
+        chars.forEach((ch, i) => {
+            const cell = textRaster.mask(cellW, cellH, ch, { font: fontName, align: 'left', x: pen });
+            const cx = (i % cols) * cellW, cy = Math.floor(i / cols) * cellH;
+            for (let y = 0; y < cellH; y++) cell.copy(buf, (cy + y) * w + cx, y * cellW, (y + 1) * cellW);
+        });
+        const c = this._clientAt(ci);
+        const ref = c.asset({ target: this.target, format: 'r8', w, h, sampling: 'bilinear' });
+        if (!ref) throw new Error('font "' + fontName + '": atlas asset refused (' + w + 'x' + h + ')');
+        c.pixels(ref, null, buf);
+        const adv = {};
+        chars.forEach((ch) => { adv[ch] = glyphs[ch].advance; });
+        const a = { ref, c, ci, cols, rows, cellW, cellH, chars, pen, adv, bytes: w * h * 2 };
+        this.atlases.set(key, a);
+        this.log.info('glyph atlas "' + fontName + '" (spaced)' + (ci ? ' on connection ' + (ci + 1) : '') + ': ' + chars.length + ' glyphs in ' +
+            cellW + 'x' + cellH + ' cells, ' + w + 'x' + h + ' R8 asset, ' + mib(a.bytes) + ' of pixel memory');
+        return a;
+    }
+
+    /** gtext: the glyph codes and each glyph cell's left x (layer px), laid out as hud_text does (align, "dx"). */
+    _gtextLayout(x, s) {
+        const a = x.atlas, w = x.w, text = String(s).slice(0, 32);
+        let width = 0;
+        for (const ch of text) width += a.adv[ch] !== undefined ? a.adv[ch] : (a.adv[' '] || 0);
+        let pen = (w.dx || 0) + (w.align === 'right' ? w.w - width : w.align === 'center' ? Math.round((w.w - width) / 2) : 0);
+        const codes = [], xs = [];
+        for (const ch of text) {
+            const k = a.chars.indexOf(ch);
+            codes.push(k < 0 ? -1 : k);
+            xs.push(Math.round(pen - a.pen));
+            pen += a.adv[ch] !== undefined ? a.adv[ch] : (a.adv[' '] || 0);
+        }
+        const n = codes.length;
+        while (codes.length < 32) { codes.push(-1); xs.push(1e5); }
+        return { codes, xs, n };
     }
 
     _atlasBytes() {
@@ -1274,7 +1332,8 @@ class HudApp {
 
     _status() {
         // the Waze map's state rides along while that setting is on (and redraws the page's Map tab when it changes)
-        const s = this.statusText() + (this.waze && this.setting('mapInTheme') === true ? '; Waze: ' + this.waze.info().text : '');
+        const s = this.statusText() + (this.waze && this.setting('mapInTheme') === true ? '; Waze: ' + this.waze.info().text : '')
+            + (this.setting('readingsCheck') === true && this.rates ? '; readings a second: ' + this.rates : '');
         const d = this.modeDiagLines().join('\n');
         if (s === this.lastStatus && d === this.lastDiag) return;
         this.lastStatus = s; this.lastDiag = d;
@@ -2149,6 +2208,18 @@ class HudApp {
                 this.log.info('widget "' + w.id + '": ' + x.cells + ' cells of ' + (w.w / x.cells).toFixed(1) + 'x' + w.h +
                     ' px; the glyphs keep their shape at w ' + x.cells * a.cellW + ', h ' + a.cellH);
             }
+        } else if (w.type === 'gtext') {
+            const a = this._atlasSpaced(w.font, x.ci);
+            x.atlas = a;
+            c.bind(ref, 'u_font', a.ref);
+            c.uniform(ref, 'u_grid', [a.cols, a.rows]);
+            c.uniform(ref, 'u_cell', [a.cellW, a.cellH]);
+            c.uniform(ref, 'u_size', [w.w, w.h]);
+            c.uniform(ref, 'u_color', rgba(color(t, w.color || 'fg')));
+            const g = this._gtextLayout(x, '');
+            c.uniform(ref, 'u_text', g.codes, { type: 'vec4' });
+            c.uniform(ref, 'u_xs', g.xs, { type: 'vec4' });
+            c.uniform(ref, 'u_n', [0]);
         } else if (w.type === 'gridlabels') this._paintGridLabels(x);
         else if (w.type === 'nav') this._navCreate(x);
         else if (w.type === 'garland') { x.tw = new Garland.Twinkle(w); this._blit(x, null, Garland.paint(w, x.tw.lvl, null)); }
@@ -2594,6 +2665,7 @@ class HudApp {
     _tick() {
         const now = Date.now();
         this._smoothRpm(now);
+        this._readingsCheck(now);
         this._cueTick(now);
         if (now - (this.bumpAt || 0) >= 1000) { this.bumpAt = now; smartTemps.bumpTick(this); }
         // the 0-60 timer only on the car's own data (the demo drive would set a best time)
@@ -2628,6 +2700,21 @@ class HudApp {
     }
 
     /** BMW-like tach: a 120 ms filter, and a readout that moves in 50 rpm steps, only by 40 rpm or more. */
+    /** The readings check (setting "readingsCheck"): how many times a second each reading arrived over the last 2 s. */
+    _readingsCheck(now) {
+        if (this.setting('readingsCheck') !== true) { if (this.rates) { this.rates = null; this._status(); } return; }
+        if (now - this.ratesAt < 2000) return;
+        const cur = Object.assign({}, this.car.counts || {}, { boostSport: this.boostCount.fes || 0, boostEngine: this.boostCount.dme || 0 });
+        const base = this.ratesBase, dt = (now - this.ratesAt) / 1000;
+        this.ratesBase = cur; this.ratesAt = now;
+        if (!base) return;
+        const r = (k) => Math.round(((cur[k] || 0) - (base[k] || 0)) / dt);
+        const bs = r('boostSport'), be = r('boostEngine');
+        const boost = bs ? bs + ' (sport display)' : be ? be + ' (engine unit)' : '0';
+        this.rates = 'rpm ' + r('rpm') + ', speed ' + r('speed') + ', gear ' + r('gear') + ', boost ' + boost;
+        this._status();
+    }
+
     _smoothRpm(now) {
         const test = this._testRpm(now);
         const raw = isNum(test) ? test : this.car.data().rpm;
@@ -2649,6 +2736,15 @@ class HudApp {
             if (!force && s === x.last) return;
             x.last = s; x.lastPaint = now;
             x.c.uniform(x.ref, 'u_text', this._atlasCodes(x, s), { type: 'vec4' });
+        } else if (w.type === 'gtext') {
+            if (!force && now - x.lastPaint < (w.rate || TEXT_MS)) return;
+            const s = this._resolve(w.text);
+            if (!force && s === x.last) return;
+            x.last = s; x.lastPaint = now;
+            const g = this._gtextLayout(x, s);
+            x.c.uniform(x.ref, 'u_text', g.codes, { type: 'vec4' });
+            x.c.uniform(x.ref, 'u_xs', g.xs, { type: 'vec4' });
+            x.c.uniform(x.ref, 'u_n', [g.n]);
         } else if (w.type === 'nav') this._navUpdate(x, now, force);
         else if (w.type === 'garland') this._garlandTick(x, now);
         else if (w.type === 'text') {

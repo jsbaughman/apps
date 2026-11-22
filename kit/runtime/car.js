@@ -108,6 +108,7 @@ class Car {
         this.S = Object.assign({}, SCALE, over);
         this.live = {}; this.lastCar = 0; this.listeners = [];
         this.sim = new Sim(); this.simData = this.sim.sample();
+        this.counts = {};
         this.demoActive = false; this.guess = new GearGuess();
         const sc = (k, raw) => {
             const c = this.S[k];
@@ -117,6 +118,7 @@ class Car {
         const put = (k, v, tick) => {
             if (v === null || v === undefined || (typeof v === 'number' && !isFinite(v))) return;
             this.live[k] = v; this.lastCar = Date.now();
+            this.counts[k] = (this.counts[k] || 0) + 1;      // readings per field, for an app's readings check
             // learned gear while driving; nothing at a standstill - the guess can't tell P, N or D
             // there, and "N" shown in park or in D was wrong
             if (k === 'rpm' || k === 'speed') { const g = this.guess.feed(this.live.rpm, this.live.speed); if (g !== null || this.live.speed < 3) this.guessed = this.live.speed < 3 ? undefined : g; }
