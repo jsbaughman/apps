@@ -227,7 +227,7 @@
  * Text "colorBy": "verdict" colours it by the last shift's grade. Text "near": ["speed" | "rpm", i] turns it
  * "nearColor" (fg) while scale label i is the one nearest the value (BMW lights up the label by the needle).
  *
- * rpm is smoothed (a 120 ms filter, and the readout moves in 50 rpm steps only when it changes by 40 or
+ * rpm is smoothed (a 120 ms filter, 40 ms or none by the "tachResponse" setting, and the readout moves in 50 rpm steps only when it changes by 40 or
  * more), so idle wobble doesn't show, as on BMW's own tach. Shift scoring uses the raw rpm.
  * Boost: FES displayBoostPressure while it's valid, else (app.json config.dme) the engine unit over
  * read-only UDS, absolute pressure minus outside air pressure, as cauliflowermossgrape's car_vitals does.
@@ -320,7 +320,7 @@ const PLACE_KEYS = ['hudX', 'hudY', 'hudScale'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
-const LIVE_KEYS = ['warnOil', 'warnCoolant', 'warnBoost', 'badge', 'badgeBMW', 'gFlipLat', 'gFlipLong', 'gRange', 'gTrail'];
+const LIVE_KEYS = ['tachResponse', 'warnOil', 'warnCoolant', 'warnBoost', 'badge', 'badgeBMW', 'gFlipLat', 'gFlipLong', 'gRange', 'gTrail'];
 // g (after cauliflowermossgrape's G-Force, MIT, idea only): a sample over G_BAD is a bad reading, not a corner;
 // the rest are averaged over G_AVG_MS so kerbs and potholes don't throw the dot about
 const G_BAD = 3;
@@ -2610,7 +2610,10 @@ class HudApp {
         const dt = this.lastTickT ? Math.min(500, now - this.lastTickT) : 0;
         this.lastTickT = now;
         if (!isNum(raw)) { this.rpmF = null; this.rpmShown = null; return; }
-        this.rpmF = isNum(this.rpmF) ? this.rpmF + (raw - this.rpmF) * (1 - Math.exp(-dt / 120)) : raw;
+        // the "tachResponse" setting: smooth (120 ms, as BMW's), quick (40 ms) or instant (no filter)
+        const tau = { smooth: 120, quick: 40, instant: 0 }[this.setting('tachResponse')];
+        const k = tau === 0 ? 1 : 1 - Math.exp(-dt / (isNum(tau) ? tau : 120));
+        this.rpmF = isNum(this.rpmF) ? this.rpmF + (raw - this.rpmF) * k : raw;
         if (!isNum(this.rpmShown) || Math.abs(this.rpmF - this.rpmShown) >= 40) this.rpmShown = Math.max(0, Math.round(this.rpmF / 50) * 50);
     }
 
