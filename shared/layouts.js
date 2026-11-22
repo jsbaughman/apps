@@ -32,6 +32,7 @@ const TYPES = {
     mview: ['path', 'scale', 'dial', 'dialAng', 'line'],
     vdash: ['tach', 'segs'],
     cdash: ['tach'],
+    ldash: ['arc'],
     mtach: ['side', 'y0', 'y8', 'ym', 'xm', 'kTop', 'kBot', 'wBot', 'wTop'],
     icon: ['icon'],
     swatch: [],

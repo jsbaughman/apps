@@ -100,6 +100,10 @@
  *             mini: px thick as a small gauge without a scale while "leftStyle" is "gauges", toggle}), "lines" (at most 8 rule lines [x0, y0, x1, y1, toggle]), "glow" [r, g, b, strength]
  *             (0..1: a soft glow fading outward from the ring round the gear), "car" [cx, cy, half width, half length] (the
  *             tyre panel's car, drawn while the "rightPanel" setting is "tyres")
+ *   ldash     effect layer; the whole Veloce theme (shaders.js ldash, layout made by tools/gen_veloce.py): "arc" [cx, cy, rx,
+ *             ry, start deg, sweep deg, blocks, thousands, band fraction] (a wide elliptical rev arc of bevelled blocks, lit to
+ *             the revs), "red" rpm (red from), "band" [x, y, w, h] (a grey strip across the middle), "minis" (at most 4 small
+ *             scales: {x, y (the line), w, signal, min, max, red: 0..1 where the red zone starts}) on a hex-cell backdrop
  *   sdash     effect layer; the whole Sport theme (shaders.js sdash), optional "road" [horizonY, scale] (a road in the
  *             middle while no map shows, its dashes running with the speed): "geo" [yTop, yBend, yBottom, xBend] and
  *             "k" [above, below, round] for the left bracket's outer line (the right one is mirrored), "band"
@@ -2222,6 +2226,15 @@ class HudApp {
             x.prog = pr ? [pr[0] - w.x, pr[1] - w.y, pr[2]] : [0, 0, 0];
             c.uniform(ref, 'u_hole', this._hole(w));
             c.uniform(ref, 'u_holeC', [isNum(w.holeCut) ? w.holeCut : 40]);
+        } else if (w.type === 'ldash') {
+            // Veloce (tools/gen_veloce.py): "arc" [cx, cy, rx, ry, start deg, sweep deg, blocks, thousands, band fraction],
+            // "red" rpm (red from), "band" [x, y, w, h], "minis" (up to 4: {x, y, w, signal, min, max, red}); target px
+            const A = w.arc, B = w.band || [0, 0, 0, 0];
+            c.uniform(ref, 'u_size', [w.w, w.h]);
+            c.uniform(ref, 'u_arc', [A[0] - w.x, A[1] - w.y, A[2], A[3]]);
+            c.uniform(ref, 'u_red', [(w.red || 7000) / (A[7] * 1000), A[8] || 0.16]);
+            c.uniform(ref, 'u_band', [B[0] - w.x, B[1] - w.y, B[2], B[3]]);
+            c.uniform(ref, 'u_miniZ', [0, 1, 2, 3].map((i) => { const m = (w.minis || [])[i]; return m && isNum(m.red) ? m.red : 1; }));
         } else if (w.type === 'cdash') {
             // Apex (tools/gen_apex.py): "tach" [cx, cy, outer r, band, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "panels" [left inner x, right inner x, glow top y, bottom y], "bars" (up to 4: {x, y, w, signal, min, max, red}),
@@ -2809,6 +2822,19 @@ class HudApp {
             x.c.uniform(x.ref, 'u_rpm', [vals[1]]);
             x.c.uniform(x.ref, 'u_fuel', [vals[2]]);
             x.c.uniform(x.ref, 'u_oil', [vals[3]]);
+        } else if (w.type === 'ldash') {
+            const A = w.arc, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
+            const rpm = this._raw('rpm');
+            const ms = [0, 1, 2, 3].map((i) => (w.minis || [])[i]);
+            const mv = ms.map((m) => { const v = m && m.signal ? this._raw(m.signal) : null; return isNum(v) ? q((v - m.min) / (m.max - m.min)) : 0; });
+            const rv = isNum(rpm) ? q(rpm / (A[7] * 1000)) : 0;
+            const key = [rv].concat(mv).join('|');
+            if (!force && key === x.last) return;
+            x.last = key;
+            x.c.uniform(x.ref, 'u_arcA', [A[4], A[5], A[6], rv]);
+            const mu = [];
+            ms.forEach((m, i) => mu.push(m ? m.x - w.x : 0, m ? m.y - w.y : 0, m ? m.w : 0, mv[i]));
+            x.c.uniform(x.ref, 'u_mini', mu, { type: 'vec4' });
         } else if (w.type === 'cdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
             const rpm = this._raw('rpm');

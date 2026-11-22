@@ -1955,4 +1955,112 @@ void main() {
 }
 `;
 
-module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH };
+const LDASH = `// The Veloce theme in one cluster-render "effect" layer (GLSL ES 1.00), layout made by tools/gen_veloce.py: a hex-cell
+// backdrop, a wide elliptical rev arc of bevelled blocks (u_arc, u_arcA) lit silver up to the revs and red from the redline
+// (u_red), a grey band across the middle (u_band), and up to 4 small horizontal scales with a red end zone and a red needle
+// (u_mini, u_miniZ). v_uv (0,0) is the top-left.
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 v_uv;
+uniform vec2 u_size;
+uniform vec4 u_arc;        // centre x, y, horizontal radius, vertical radius (outer edge of the blocks)
+uniform vec4 u_arcA;       // start angle (deg, clockwise from 3 o'clock), sweep (deg), blocks, revs 0..1
+uniform vec2 u_red;        // red from (0..1 of the scale), band thickness as a fraction of the radius
+uniform vec4 u_band;       // the middle band: x, y, w, h (w 0 = none)
+uniform vec4 u_mini[4];    // small scales: left x, y (the scale line), width (0 = none), value 0..1
+uniform vec4 u_miniZ;      // each scale's red zone from (0..1; 1 = none)
+
+const vec3 RED = vec3(0.95, 0.1, 0.1);
+
+float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
+vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
+
+// distance to the nearest hex cell edge (pointy-top hexagons, cell size s)
+float hexEdge(vec2 p, float s) {
+    vec2 r = vec2(1.0, 1.7320508);
+    vec2 h = r * 0.5;
+    vec2 a = mod(p / s, r) - h;
+    vec2 b = mod(p / s - h, r) - h;
+    vec2 g = dot(a, a) < dot(b, b) ? a : b;
+    vec2 q = abs(g);
+    float d = max(dot(q, normalize(vec2(1.0, 1.7320508))), q.x);
+    return (0.5 - d) * s;           // px to the edge
+}
+
+void main() {
+    vec2 p = v_uv * u_size;
+    // backdrop: hex cells, their edges lit a little, brighter round the arc and fading to black at the sides and bottom
+    float e = hexEdge(p, 34.0);
+    vec2 an = (p - u_arc.xy) / u_arc.zw;
+    float near = 1.0 - smoothstep(0.55, 1.45, length(an * vec2(0.85, 1.0)));
+    float cell = 0.035 + 0.02 * near;
+    vec3 c = vec3(cell) * vec3(0.95, 0.97, 1.0);
+    c = put(c, vec3(0.16 + 0.12 * near) * vec3(0.95, 0.97, 1.0), cov(e - 1.1) * (0.35 + 0.65 * near));
+    c *= 1.0 - 0.6 * smoothstep(0.6, 1.0, abs(v_uv.x - 0.5) * 2.0);
+
+    // the middle band: a grey strip, lighter in its middle, fading out at both ends
+    if (u_band.z > 0.0) {
+        float bx = (p.x - u_band.x) / u_band.z, by = (p.y - u_band.y) / u_band.w;
+        if (bx > 0.0 && bx < 1.0 && by > 0.0 && by < 1.0) {
+            float fade = smoothstep(0.0, 0.18, bx) * smoothstep(1.0, 0.82, bx);
+            vec3 bc = mix(vec3(0.26, 0.27, 0.29), vec3(0.4, 0.41, 0.43), 1.0 - abs(by - 0.5) * 2.0);
+            c = mix(c, bc, 0.85 * fade);
+        }
+    }
+
+    // the rev arc: blocks round an ellipse, bevelled, lit silver to the revs, red from the redline (glowing when lit)
+    {
+        float rn = length(an);
+        float th = u_red.y;
+        float ang = mod(degrees(atan(an.y, an.x)) - u_arcA.x + 720.0, 360.0);
+        float f = ang / u_arcA.y;
+        float n = u_arcA.z;
+        float k = floor(f * n), within = fract(f * n);
+        float mid = (k + 0.5) / n;
+        bool red = mid >= u_red.x;
+        bool lit = mid <= u_arcA.w;
+        float rad = length(u_arc.zw * an / max(rn, 0.001));           // the ellipse's radius in px this way
+        float gapPx = min(within, 1.0 - within) * radians(u_arcA.y) / n * rad;
+        float radPx = min(rn - (1.0 - th), 1.0 - rn) * rad;          // px inside the band
+        float inBlock = step(f, 1.0) * clamp(gapPx - 3.0, 0.0, 1.0) * clamp(radPx + 0.5, 0.0, 1.0);
+        if (inBlock > 0.0) {
+            float across = clamp((rn - (1.0 - th)) / th, 0.0, 1.0);  // 0 inner .. 1 outer edge
+            float bevel = smoothstep(0.0, 5.0, min(gapPx - 3.0, radPx));
+            vec3 base;
+            if (red) base = lit ? mix(vec3(0.75, 0.05, 0.05), vec3(1.0, 0.25, 0.2), across) : vec3(0.28, 0.04, 0.05);
+            else base = lit ? mix(vec3(0.62, 0.63, 0.66), vec3(0.93, 0.94, 0.96), across) : mix(vec3(0.12, 0.12, 0.13), vec3(0.2, 0.2, 0.22), across);
+            vec3 edge = base * (lit ? 1.15 : 1.6) + 0.04;
+            c = put(c, mix(edge, base, bevel), inBlock);
+        } else if (red && lit && f <= 1.0) {
+            // a soft red glow round the lit redline blocks
+            float away = max(rn - 1.0, (1.0 - th) - rn) * rad;
+            c += RED * 0.35 * (1.0 - smoothstep(0.0, 18.0, away));
+        }
+        // a thin red line inside the arc from the redline on
+        float inner = abs(rn - (1.0 - th - 0.025)) * rad;
+        c = put(c, RED, cov(inner - 1.2) * step(u_red.x, f) * step(f, 1.0));
+    }
+
+    // the small scales: a line with ticks, a red end zone, a red needle at the value
+    for (int i = 0; i < 4; i++) {
+        vec4 m = u_mini[i];
+        if (m.z <= 0.0) continue;
+        float t = (p.x - m.x) / m.z;
+        float on = step(-0.005, t) * step(t, 1.005);
+        float rz = i == 0 ? u_miniZ.x : i == 1 ? u_miniZ.y : i == 2 ? u_miniZ.z : u_miniZ.w;
+        c = put(c, vec3(0.75, 0.76, 0.8), cov(abs(p.y - m.y) - 0.9) * on);
+        c = put(c, RED, cov(abs(p.y - m.y - 4.0) - 3.0) * step(rz, t) * on);
+        float tk = abs(fract(t * 8.0 + 0.5) - 0.5) * m.z / 8.0;
+        float major = step(abs(fract(t * 2.0 + 0.5) - 0.5) * m.z / 2.0, 1.5);
+        c = put(c, t >= rz ? RED : vec3(0.75, 0.76, 0.8), cov(tk - 0.9) * step(m.y - (major > 0.5 ? 12.0 : 7.0), p.y) * step(p.y, m.y) * on);
+        float nx = m.x + m.z * m.w;
+        c = put(c, RED, cov(abs(p.x - nx) - 1.6) * step(m.y - 16.0, p.y) * step(p.y, m.y + 10.0));
+    }
+    gl_FragColor = vec4(c, 1.0);
+}
+`;
+
+module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH };

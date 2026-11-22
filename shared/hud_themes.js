@@ -107,6 +107,17 @@ const THEMES = {
         ink: [12, 12, 14, 255], accent: [255, 92, 58, 255], well: [0, 0, 0, 255], faint: [96, 100, 110, 255],
         hot: [238, 24, 26, 255],
     },
+    // Veloce (layout veloce.json, tools/gen_veloce.py): an Italian supercar style, silver arc blocks on hex cells, red accents.
+    veloce: {
+        name: 'Veloce',
+        fg: [240, 241, 244, 255], dim: [150, 152, 160, 255], track: [44, 44, 50, 255], arc: [240, 241, 244, 255],
+        glow: 0, stripe: false,
+        bar: { low: [240, 241, 244], mid: [240, 241, 244], high: [242, 26, 26], midAt: 'shift' },
+        rev: { from: [242, 26, 26], to: [242, 26, 26] },
+        bg: [0, 0, 0, 255], panel: [0, 0, 0, 255], line: [128, 130, 138, 255], head: [226, 228, 232, 255],
+        ink: [20, 20, 24, 255], accent: [242, 40, 36, 255], well: [0, 0, 0, 255], faint: [96, 100, 110, 255],
+        hot: [242, 26, 26, 255],
+    },
     // Minimal (layout minimal.json): white on black, nothing but the speed, the gear and a fuel line.
     minimal: {
         name: 'Minimal',

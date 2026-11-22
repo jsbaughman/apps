@@ -25,7 +25,7 @@ mgu.run({
         hud.start();
         new Page(ctx, hud, {
             title: ctx.spec.title, what: 'cluster',
-            look: { name: 'Themes', style: 'hero', tags: { apex: 'needle dash · G-meter' } },
+            look: { name: 'Themes', style: 'hero', tags: { apex: 'needle dash · G-meter', veloce: 'arc · hex' } },
             tabs: ['look', 'readouts', 'badge', 'map', 'alerts', 'gmeter', 'settings'],
             settings: ['units', 'tempUnits', 'pressureUnits', 'clock', 'timeZone', 'tankLitres', 'redline', 'shiftBefore', 'coldGuard', 'showBoost', 'nightDim', 'apexBackdrop', 'tachResponse', 'gearStyle', 'dialGlow', 'leftStyle', 'gaugeFill', 'rightPanel', 'cameraNotch', 'keepStrip', 'holiday', 'demo'],
             // the drive mode check's candidates this app's app.json listens to (issue #8; shared/hud.js modeDiagLines)
