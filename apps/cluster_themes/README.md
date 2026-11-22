@@ -26,6 +26,7 @@ A needle dash in a mid-engine supercar style, on a carbon backdrop with a muted 
 - **Left side** (Settings): Bars (default), or Gauges: the heading and value on one row over a slanted gauge with a tick scale and a red needle; Gauge fill makes it striped (default) or solid.
 - **Gear** (Settings): the gear outlined (default) or solid, in red.
 - **Gear display** (Settings): from the gearbox (BMW's signal, default), or Quick: worked out from speed and revs once the app has learnt your gears over a few minutes of driving, so it changes the moment you shift.
+- **Speed in the tach** (Settings, on by default): turn it off to leave the open quarter of the tach empty.
 - **Readings check** (Settings, off by default): the status line on the app's page shows how many times a second the car sends rpm, speed, gear and boost, and where boost comes from.
 - **Glow round the gear** (Settings, off by default): a soft red or white glow fading outward from the ring round the gear.
 - **Bottom:** coolant and fuel as small bars, and under them the clock, range and outside temperature, with BMW's own gear letter.

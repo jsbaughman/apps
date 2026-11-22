@@ -27,6 +27,8 @@ LBARS, LGAUGE = '!leftStyle=gauges', 'leftStyle=gauges'   # the left side's two 
 LX0, LX1 = 110, 590            # the left panel's content
 FAST = 45                     # ms: the speed, gear and boost redraw on every 50 ms tick (other text every 200)
 FAST_IDS = ()   # Fast numbers withdrawn in 0.21.4: the GPU text (gtext) took the car's displays down (Nov 22 2026)
+OWN_IDS = ('gear', 'gear_s', 'speed', 'r0_v', 'g0_v')   # each on its own small image layer (0.21.5): a change uploads only that
+                                                        # small picture's changed rect, not a rect of a big shared sheet
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
@@ -57,7 +59,7 @@ def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi, toggle=None, conn=N
     """A left-panel block: label, a rule, the value and unit, the bar, min / max under it."""
     mid = (x0 + x1) / 2
     out = [text('r%d_l' % n, mid - 220, y + HEAD_DY, 440, HEAD_H, label, 'a_head', 'accent'),
-           text('r%d_v' % n, mid - 190, y + 77, 220, 42, tok, 'a_tp', 'fg', 'right', rate=FAST if tok in ('{{boost}}', '{{power}}', '{{torque}}') else None),
+           text('r%d_v' % n, mid - 190, y + 79, 220, 38, tok, 'a_tp', 'fg', 'right', rate=FAST if tok in ('{{boost}}', '{{power}}', '{{torque}}') else None),
            text('r%d_u' % n, mid + 38, y + 84, 120, 36, unit_tok, 'm_unit', 'fg', 'left')]
     out += unit_labels('r%d_lo' % n, bar['x'] - 2, bar['y'] + 16, 80, 'left', lo)
     out += unit_labels('r%d_hi' % n, bar['x'] + bar['w'] - 78, bar['y'] + 16, 80, 'right', hi)
@@ -76,7 +78,7 @@ def gauge(n, y, label, tok, unit_tok, bar, scale_by_unit):
     the scale's numbers above the gauge (min, middle, max in red)."""
     t = LGAUGE
     out = [text('g%d_l' % n, LX0, y + HEAD_DY, 300, HEAD_H, label, 'a_head', 'accent', 'left', toggle=t),
-           text('g%d_v' % n, LX1 - 238, y + 1, 180, 42, tok, 'a_tp', 'fg', 'right', toggle=t, rate=FAST if tok == '{{boost}}' else None),
+           text('g%d_v' % n, LX1 - 238, y + 3, 180, 38, tok, 'a_tp', 'fg', 'right', toggle=t, rate=FAST if tok == '{{boost}}' else None),
            text('g%d_u' % n, LX1 - 52, y + 8, 60, 36, unit_tok, 'm_unit', 'fg', 'left', toggle=t)]
     x0 = bar['x'] + bar['h'] / 2 * 0.45                       # the scale starts over the gauge's top-left corner
     ly = bar['y'] - bar['h'] / 2 - 14 - 10 - 27               # above the ticks
@@ -127,8 +129,8 @@ def build():
         text('mode', CX - 120, CY + 92, 240, 24, '{{mode}}', 'v_label', 'accent'),
         text('rpm_u1', CX + 170, CY + 30, 120, 30, 'RPM', 'r_label', 'hot', 'left'),
         text('rpm_u2', CX + 170, CY + 58, 120, 30, 'x1000', 'r_label', 'dim', 'left'),
-        text('speed', CX - 60, CY + 105, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24, rate=FAST),   # 16 px of room for the lean
-        text('speed_u', CX + 178, CY + 142, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left'),
+        text('speed', CX - 60, CY + 105, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24, rate=FAST, toggle='tachSpeed'),   # 16 px of room for the lean
+        text('speed_u', CX + 178, CY + 142, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', toggle='tachSpeed'),
     ]
     # --- left: boost and oil temperature ------------------------------------------------------------------------
     widgets += readout(0, LX0, LX1, 140, 'Boost', '{{boost}}', '{{u:boostLc}}', bars[0],
@@ -164,7 +166,7 @@ def build():
         ty = cy + fy * hl * 0.6                       # the tyre's centre, as the shader draws it
         end = cx - hw - 96 if side < 0 else cx + hw + 122     # where the pressure's digits end
         widgets += [
-            text('tp_' + pos, end - 140, ty + 7 - 42, 140, 42, '{{tyreP:%s}}' % pos, 'a_tp', 'fg', 'right', conn=1, toggle=TYRES),
+            text('tp_' + pos, end - 140, ty + 7 - 40, 140, 38, '{{tyreP:%s}}' % pos, 'a_tp', 'fg', 'right', conn=1, toggle=TYRES),
             text('tpu_' + pos, end + 6, ty - 28, 50, 32, '{{u:pressure}}', 'm_tiny', 'fg', 'left', conn=1, toggle=TYRES),
             text('tt_' + pos, end - 140, ty + 10, 190, 30, '{{tyreT:%s}} {{u:temp}}' % pos, 'r_label', 'dim', 'right', conn=1,
                  toggle=TYRES),
@@ -194,6 +196,10 @@ def build():
         else:
             out.append(w)
     widgets = out
+    for w in widgets:
+        if w.get('id') in OWN_IDS:
+            w['own'] = True
+            w['conn'] = 2
     return {
         'schemaVersion': 2,
         'name': 'Apex',

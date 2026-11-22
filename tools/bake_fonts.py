@@ -79,7 +79,7 @@ CLUSTER_FONTS = [
     ('a_tach', 'Outfit[wght].ttf', 58, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the rev counter's numbers, as the speed
     ('a_head', 'Outfit[wght].ttf', 40, UPPER + LOWER + ' ', 0, 'Bold', None, '', 0.2),   # the panel headings, as the speed
     ('a_val', 'BarlowSemiCondensed-Medium.ttf', 56, DIGITS + '.-', 2),
-    ('a_tp', 'BarlowSemiCondensed-Medium.ttf', 48, DIGITS + '.-', 2),   # the tyre pressures, 15 % under a_val (Nov 21 2026)
+    ('a_tp', 'BarlowSemiCondensed-Medium.ttf', 48, DIGITS + '.-', 0),   # the readouts' numbers (tyres, boost, oil, hp, torque); no extra stroke since 0.21.5
     ('a_lim', 'BarlowSemiCondensed-SemiBold.ttf', 30, DIGITS + '.-', 0),   # the bars' end numbers, 25 % over r_label
     ('a_sm', 'Outfit[wght].ttf', 26, DIGITS + '.-', 0, 'SemiBold', None, '', 0.2),   # the hatched gauges' scale numbers, italic
     ('a_big', 'BarlowSemiCondensed-Medium.ttf', 100, DIGITS + '.-', 3),   # boost and oil temperature (Nov 21 2026: a_val too small)
