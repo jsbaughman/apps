@@ -16,10 +16,10 @@ import math
 import sys
 
 W, H = 1920, 660
-ARC = [960, 540, 560, 430]                 # centre x, y, horizontal and vertical radius (outer edge)
+ARC = [960, 545, 600, 400]                 # centre x, y, horizontal and vertical radius (outer edge)
 START, SWEEP, BLOCKS, THOUSANDS, BAND = 175, 190, 24, 8, 0.21
 RED = 7000                                 # red from (rpm)
-NUMS_R = 0.69                             # the numbers' place, as a fraction of the arc's radius
+NUMS_R = 0.71                             # the numbers' place, as a fraction of the arc's radius
 
 # the scale numbers follow the Units setting (one condition each)
 US, METRIC = 'units=us', 'units=metric'
@@ -52,10 +52,11 @@ def mini_block(n, mini, label, value, unit, nums, conn=None):
 def build():
     widgets = []
     minis = [
-        {'x': 120, 'y': 330, 'w': 220, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8},
-        {'x': 120, 'y': 490, 'w': 220, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
-        {'x': 1580, 'y': 330, 'w': 220, 'signal': 'fuel', 'min': 0, 'max': 1, 'red': 1},
-        {'x': 1580, 'y': 490, 'w': 220, 'signal': 'coolant', 'min': 40, 'max': 130, 'red': 0.85},
+        # staggered along the arc, as in the reference photo: the upper scales sit further in, the lower ones further out
+        {'x': 170, 'y': 330, 'w': 210, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8},
+        {'x': 90, 'y': 490, 'w': 210, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
+        {'x': 1540, 'y': 330, 'w': 210, 'signal': 'fuel', 'min': 0, 'max': 1, 'red': 1},
+        {'x': 1620, 'y': 490, 'w': 210, 'signal': 'coolant', 'min': 40, 'max': 130, 'red': 0.85},
     ]
     widgets.append({'id': 'dash', 'type': 'ldash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                     'arc': ARC + [START, SWEEP, BLOCKS, THOUSANDS, BAND], 'red': RED,
@@ -68,15 +69,15 @@ def build():
         widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_tach', 'hot' if k * 1000 >= RED else 'fg'))
     # the middle: the gear over the band, the drive mode beside it, the rpm in digits in the band
     widgets += [
-        text('gear', 830, 284, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),
+        text('gear', 830, 300, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),
         text('mode', 1060, 268, 220, 24, '{{mode}}', 'v_label', 'hot', 'left'),
         text('rpm_d', 680, 323, 190, 47, '{{rpm}}', 'a_tach', 'ink', 'right', dx=-6),
         text('rpm_u', 1130, 333, 160, 30, 'RPM', 'r_label', 'ink', 'left'),
     ]
     # the speed, bottom middle under the band
     widgets += [
-        text('speed', 790, 474, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24, conn=1),
-        text('speed_u', 1008, 511, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', conn=1),
+        text('speed', 790, 488, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24, conn=1),
+        text('speed_u', 1008, 525, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', conn=1),
     ]
     # the side scales
     widgets += mini_block(0, minis[0], 'Oil Temp', '{{oil}}', '{{u:temp}}',
