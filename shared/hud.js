@@ -2232,7 +2232,7 @@ class HudApp {
             const A = w.arc, B = w.band || [0, 0, 0, 0];
             c.uniform(ref, 'u_size', [w.w, w.h]);
             c.uniform(ref, 'u_arc', [A[0] - w.x, A[1] - w.y, A[2], A[3]]);
-            c.uniform(ref, 'u_red', [(w.red || 7000) / (A[7] * 1000), A[8] || 0.16]);
+            c.uniform(ref, 'u_red', [(w.red || 7000) / (A[7] * 1000), A[8] || 0.16, A[7]]);
             c.uniform(ref, 'u_band', [B[0] - w.x, B[1] - w.y, B[2], B[3]]);
             c.uniform(ref, 'u_miniZ', [0, 1, 2, 3].map((i) => { const m = (w.minis || [])[i]; return m && isNum(m.red) ? m.red : 1; }));
         } else if (w.type === 'cdash') {

@@ -1968,7 +1968,7 @@ varying vec2 v_uv;
 uniform vec2 u_size;
 uniform vec4 u_arc;        // centre x, y, horizontal radius, vertical radius (outer edge of the blocks)
 uniform vec4 u_arcA;       // start angle (deg, clockwise from 3 o'clock), sweep (deg), blocks, revs 0..1
-uniform vec2 u_red;        // red from (0..1 of the scale), band thickness as a fraction of the radius
+uniform vec3 u_red;        // red from (0..1 of the scale), band thickness as a fraction of the radius, thousands
 uniform vec4 u_band;       // the middle band: x, y, w, h (w 0 = none)
 uniform vec4 u_mini[4];    // small scales: left x, y (the scale line), width (0 = none), value 0..1
 uniform vec4 u_miniZ;      // each scale's red zone from (0..1; 1 = none)
@@ -2011,37 +2011,81 @@ void main() {
         }
     }
 
-    // the rev arc: blocks round an ellipse, bevelled, lit silver to the revs, red from the redline (glowing when lit)
+    // the rev arc: rounded "pillow" tiles round an ellipse in a dark trough, each with a light rim, a dark groove and a
+    // face that darkens toward its edges; lit pale silver to the revs, muted red from the redline (glowing when lit), a
+    // thin rail outside, a rail inside notched at each thousand, and a thin red needle across the tiles at the revs
     {
         float rn = length(an);
         float th = u_red.y;
         float ang = mod(degrees(atan(an.y, an.x)) - u_arcA.x + 720.0, 360.0);
         float f = ang / u_arcA.y;
+        float onArc = step(f, 1.0);
         float n = u_arcA.z;
         float k = floor(f * n), within = fract(f * n);
         float mid = (k + 0.5) / n;
         bool red = mid >= u_red.x;
         bool lit = mid <= u_arcA.w;
         float rad = length(u_arc.zw * an / max(rn, 0.001));           // the ellipse's radius in px this way
-        float gapPx = min(within, 1.0 - within) * radians(u_arcA.y) / n * rad;
-        float radPx = min(rn - (1.0 - th), 1.0 - rn) * rad;          // px inside the band
-        float inBlock = step(f, 1.0) * clamp(gapPx - 3.0, 0.0, 1.0) * clamp(radPx + 0.5, 0.0, 1.0);
-        if (inBlock > 0.0) {
-            float across = clamp((rn - (1.0 - th)) / th, 0.0, 1.0);  // 0 inner .. 1 outer edge
-            float bevel = smoothstep(0.0, 5.0, min(gapPx - 3.0, radPx));
-            vec3 base;
-            if (red) base = lit ? mix(vec3(0.75, 0.05, 0.05), vec3(1.0, 0.25, 0.2), across) : vec3(0.28, 0.04, 0.05);
-            else base = lit ? mix(vec3(0.62, 0.63, 0.66), vec3(0.93, 0.94, 0.96), across) : mix(vec3(0.12, 0.12, 0.13), vec3(0.2, 0.2, 0.22), across);
-            vec3 edge = base * (lit ? 1.15 : 1.6) + 0.04;
-            c = put(c, mix(edge, base, bevel), inBlock);
+        float pxA = radians(u_arcA.y) * rn * rad;                       // px along the arc for f 0..1 at this radius
+        float rIn = 1.0 - th;
+        // the trough: a dark bed under the tiles, 4 px wider each way
+        float tr = max(rn - 1.0, rIn - rn) * rad;
+        float ends = max(-f, f - 1.0) * pxA;
+        float trough = max(tr, ends) - 4.0;
+        c = put(c, vec3(0.018, 0.018, 0.022), cov(trough) * 0.92);
+        // the tile: a rounded box in local px (along the arc, across the band)
+        vec2 q = vec2((within - 0.5) * pxA / n, (rn - (1.0 - 0.5 * th)) * rad);
+        vec2 hb = vec2(0.5 * pxA / n - 2.5, 0.5 * th * rad);
+        float rr = 7.0;
+        vec2 dq = abs(q) - hb + rr;
+        float d = length(max(dq, 0.0)) + min(max(dq.x, dq.y), 0.0) - rr;   // < 0 inside
+        float across = clamp((rn - rIn) / th, 0.0, 1.0);                 // 0 inner .. 1 outer edge
+        float inTile = cov(d) * onArc * step(0.0, f);
+        if (inTile > 0.0) {
+            float depth = -d;                                            // px in from the tile's edge
+            vec3 face, faceE, rim;
+            if (red) {
+                face = lit ? vec3(0.8, 0.14, 0.12) : vec3(0.38, 0.06, 0.065);
+                faceE = lit ? vec3(0.5, 0.06, 0.06) : vec3(0.19, 0.03, 0.035);
+                rim = lit ? vec3(0.92, 0.38, 0.32) : vec3(0.5, 0.15, 0.15);
+                face *= 0.8 + 0.3 * across;
+            } else if (lit) {
+                face = mix(vec3(0.66, 0.66, 0.7), vec3(0.92, 0.92, 0.95), across);
+                faceE = mix(vec3(0.42, 0.42, 0.47), vec3(0.62, 0.62, 0.67), across);
+                rim = vec3(0.8, 0.8, 0.84);
+            } else {
+                face = mix(vec3(0.075, 0.075, 0.085), vec3(0.29, 0.29, 0.31), across * across);
+                faceE = mix(vec3(0.045, 0.045, 0.05), vec3(0.15, 0.15, 0.165), across);
+                rim = vec3(0.4, 0.4, 0.44);
+            }
+            vec2 ed = hb - abs(q) - 4.0;                                // px in from each pair of sides, past the groove
+            float pil = smoothstep(0.0, 14.0, ed.x) * smoothstep(0.0, 18.0, ed.y);   // a soft pillow, no mitre creases
+            vec3 tc = mix(faceE, face, sqrt(pil));
+            tc = mix(tc, faceE * 0.45, cov(abs(depth - 3.3) - 0.9));     // the groove
+            tc = mix(tc, rim, cov(depth - 1.8));                         // the rim
+            c = put(c, tc, inTile);
         } else if (red && lit && f <= 1.0) {
-            // a soft red glow round the lit redline blocks
-            float away = max(rn - 1.0, (1.0 - th) - rn) * rad;
-            c += RED * 0.35 * (1.0 - smoothstep(0.0, 18.0, away));
+            // a soft red glow round the lit redline tiles
+            float away = max(rn - 1.0, rIn - rn) * rad;
+            c += RED * 0.28 * (1.0 - smoothstep(0.0, 18.0, away));
         }
-        // a thin red line inside the arc from the redline on
-        float inner = abs(rn - (1.0 - th - 0.025)) * rad;
-        c = put(c, RED, cov(inner - 1.2) * step(u_red.x, f) * step(f, 1.0));
+        vec3 rail = vec3(0.42, 0.42, 0.46);
+        float inArc = onArc * step(0.0, f);
+        // the outer rail
+        c = put(c, rail, cov(abs((rn - 1.0) * rad - 9.0) - 0.8) * inArc);
+        // the inner rail, notched inward at each thousand (a short step with slanted sides)
+        float kk = f * u_red.z;
+        float dk = abs(fract(kk + 0.5) - 0.5) / u_red.z * pxA;          // px along the arc to the nearest thousand
+        float notch = 9.0 * (1.0 - smoothstep(10.0, 22.0, dk));
+        float ri = (rn - rIn) * rad + 9.0 + notch;
+        c = put(c, f >= u_red.x ? RED * 0.85 : rail, cov(abs(ri) - 0.8) * inArc);
+        // the needle: a thin red line across the tiles at the revs
+        if (u_arcA.w > 0.002) {
+            float nd = abs(f - u_arcA.w) * pxA;
+            float span = step(rIn - 12.0 / rad, rn) * step(rn, 1.0 + 12.0 / rad);
+            c = put(c, vec3(1.0, 0.16, 0.12), cov(nd - 1.4) * span);
+            c += RED * 0.25 * (1.0 - smoothstep(0.0, 8.0, nd)) * span;
+        }
     }
 
     // the small scales: a line with ticks, a red end zone, a red needle at the value

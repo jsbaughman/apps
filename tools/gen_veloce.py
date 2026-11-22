@@ -16,10 +16,10 @@ import math
 import sys
 
 W, H = 1920, 660
-ARC = [960, 520, 560, 400]                 # centre x, y, horizontal and vertical radius (outer edge)
-START, SWEEP, BLOCKS, THOUSANDS, BAND = 175, 190, 32, 8, 0.17
+ARC = [960, 540, 560, 430]                 # centre x, y, horizontal and vertical radius (outer edge)
+START, SWEEP, BLOCKS, THOUSANDS, BAND = 175, 190, 24, 8, 0.21
 RED = 7000                                 # red from (rpm)
-NUMS_R = 0.745                             # the numbers' place, as a fraction of the arc's radius
+NUMS_R = 0.69                             # the numbers' place, as a fraction of the arc's radius
 
 # the scale numbers follow the Units setting (one condition each)
 US, METRIC = 'units=us', 'units=metric'
@@ -70,7 +70,7 @@ def build():
     widgets += [
         text('gear', 830, 252, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),
         text('mode', 1060, 268, 220, 24, '{{mode}}', 'v_label', 'hot', 'left'),
-        text('rpm_d', 650, 323, 190, 47, '{{rpm}}', 'a_tach', 'ink', 'right'),
+        text('rpm_d', 680, 323, 190, 47, '{{rpm}}', 'a_tach', 'ink', 'right', dx=-6),
         text('rpm_u', 1130, 333, 160, 30, 'RPM', 'r_label', 'ink', 'left'),
         text('g_vals', 760, 528, 400, 30, '{{gSide}}    {{gFwd}}', 'r_label', 'dim', conn=1),
     ]
