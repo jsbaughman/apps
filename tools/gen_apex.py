@@ -132,15 +132,15 @@ def build():
         text('gear', CX - 130, CY - 82, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7, toggle='!gearStyle=solid&!mapUp', rate=FAST),   # ink centred on the dial (the slant leans it right)
         text('gear_s', CX - 130, CY - 76, 260, 151, '{{gearnum}}', 'a_gear_s', 'hot', dx=-12, toggle='gearStyle=solid&!mapUp', rate=FAST),   # the solid one
         # with the Waze map in the dial: the gear small under the speed in the open quarter (see the speed below)
-        text('gear_m', CX + 6, CY + 210, 180, 69, '{{gearnum}}', 'a_gear_m', 'hot', dx=-2, toggle='!gearStyle=solid&mapUp', rate=FAST),
-        text('gear_ms', CX + 6, CY + 214, 180, 61, '{{gearnum}}', 'a_gear_ms', 'hot', dx=-6, toggle='gearStyle=solid&mapUp', rate=FAST),
+        text('gear_m', CX + 6, CY + 222, 180, 69, '{{gearnum}}', 'a_gear_m', 'hot', dx=-2, toggle='!gearStyle=solid&mapUp', rate=FAST),
+        text('gear_ms', CX + 6, CY + 226, 180, 61, '{{gearnum}}', 'a_gear_ms', 'hot', dx=-6, toggle='gearStyle=solid&mapUp', rate=FAST),
         text('mode', CX - 120, CY + 92, 240, 24, '{{mode}}', 'v_label', 'accent', toggle='!mapUp'),
         text('rpm_u1', CX + 170, CY + 30, 120, 30, 'RPM', 'r_label', 'hot', 'left'),
         text('rpm_u2', CX + 170, CY + 58, 120, 30, 'x1000', 'r_label', 'dim', 'left'),
         text('speed', CX - 60, CY + 105, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24, rate=FAST, toggle='tachSpeed&!mapUp'),   # 16 px of room for the lean
         text('speed_u', CX + 178, CY + 142, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', toggle='tachSpeed&!mapUp'),
         # with the map: the speed smaller (the tach numbers' italic), just under RPM x1000, inside the outer ring
-        text('speed_m', CX + 128, CY + 116, 200, 47, '{{speed}}', 'a_tach', 'fg', 'right', dx=-20, rate=FAST, toggle='tachSpeed&mapUp'),   # map mode: lower right, past the dial's edge (0.22.1)
+        text('speed_m', CX + 128, CY + 107, 200, 56, '{{speed}}', 'a_speed_m', 'fg', 'right', dx=-22, rate=FAST, toggle='tachSpeed&mapUp'),   # map mode: lower right, past the dial's edge (0.22.1)
         text('speed_um', CX + 316, CY + 132, 70, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', toggle='tachSpeed&mapUp'),   # on the number's baseline
     ]
     # --- left: boost and oil temperature ------------------------------------------------------------------------

@@ -1854,6 +1854,7 @@ void main() {
     vec2 d = p - u_tach.xy;
     float r = length(d), R = u_tach.z, B = u_tach.w;
     // the dial: drop shadow, a black face, a thin bezel
+    if (u_mapHole.z <= 0.0)   // no drop shadow while the map shows
     c *= 1.0 - 0.85 * (1.0 - smoothstep(R + 6.0, R + (u_bgStyle > 0.5 ? 60.0 : 50.0), length(d - vec2(0.0, 14.0))));
     c = put(c, mix(vec3(0.0), vec3(0.035, 0.036, 0.04), smoothstep(R * 0.3, R, r)), cov(r - R - 8.0));
     {   // the thin bezel: all round, or while the map shows only along the band (0 to the top of the scale)
