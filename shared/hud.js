@@ -586,6 +586,10 @@ class HudApp {
             if (this.mapLayout && this.setting('mapUp') !== this.mapShown) { if (this.mapLive) this._mapLive(); else this._rebuild(); } else this._status();
         })) : null;
         this.mapShown = false;           // "mapUp" when the layout was built (or last opened / closed, mapLive)
+        this.mapWin = null;              // the layout's widget with the map window
+        this.mapHostKey = '';            // the host sent (connection and rect), '' for none
+        this.mapHostCi = -1;             // its connection
+        this.mapHosting = null;          // cluster-render's "hosting" word on it: { state, reason }
         this.mapLive = false;            // the active layout opens and closes its map window without a rebuild
         // the screen shared with the other app (screen.js): stepping aside while the driver gave it to the other one
         this.screen = new Screen(this.target === 'panel' ? 'cluster' : 'hud', ctx.dataDir, this.log,
@@ -910,6 +914,13 @@ class HudApp {
             if (!this.refused) this.refused = (w || op) + ': ' + reason;   // the first one, until the next rebuild
             this._statusSoon();
         });
+        c.on('ready', () => { if (ci === this.mapHostCi) this._mapNote(); });
+        c.on('hosting', (target, into, state, reason, by) => {
+            if (target !== 'map' || ci !== this.mapHostCi) return;
+            this.mapHosting = { state, reason: reason + (by ? ' (' + by + ')' : '') };
+            this.log.info('map: our host is ' + state + (reason ? ': ' + this.mapHosting.reason : ''));
+            this._mapNote();
+        });
         c.on('budget', (capKb, maxKb, reason) => this.log.info('budget' + tag + ' ' + capKb + '/' + maxKb + ' kb/s (' + reason + ')'));
         c.on('status', (text) => {
             this.log.info('cluster-render status: ' + text);
@@ -968,7 +979,52 @@ class HudApp {
 
     /** Waze's map on the panel only while the setting is on and the theme shown has a map window. */
     _wazeWant() {
-        if (this.waze) this.waze.want(this.started && this.setting('mapInTheme') === true && this.mapLayout);
+        const on = !!(this.waze && this.started && this.setting('mapInTheme') === true && this.mapLayout);
+        if (this.waze) this.waze.want(on);
+        this._mapHost(on);
+    }
+
+    /**
+     * Host the Waze map in the map window (waze-on-cluster 0.14.5+, cluster-render after 0.8.1: PROTOCOL.md "Hosting
+     * from layers"): sent on the connection of the widget with the window ("holeWhen" mapUp), the window's square as
+     * the rect and the middle of the 1088x480 map in its shape as the part, so the car's arrow (the map's centre)
+     * sits in the window's centre. Waze then draws the map there, just under that widget (our backdrop), so every
+     * layer over it stays on top; the window is cut see-through while "mapUp" is on. Ended when not wanted.
+     */
+    _mapHost(on) {
+        const w = on ? this.mapWin : null;
+        const ci = w ? (w.conn || 0) : -1;
+        let m = null;
+        if (w) {
+            const h = w.hole, a = h[2] / h[3];
+            const MW = 1088, MH = 480;
+            let sw = MH * a, sh = MH;
+            if (sw > MW) { sw = MW; sh = MW / a; }
+            m = { x: h[0], y: h[1], w: h[2], h: h[3], src_x: (MW - sw) / 2, src_y: (MH - sh) / 2, src_w: sw, src_h: sh };
+        }
+        const key = m ? ci + ' ' + JSON.stringify(m) : '';
+        if (key === this.mapHostKey) return;
+        if (this.mapHostCi >= 0 && this.clients[this.mapHostCi]) this.clients[this.mapHostCi].unhost(this.target, 'map');
+        this.mapHostKey = key;
+        this.mapHostCi = ci;
+        this.mapHosting = null;
+        if (this.waze) this.waze.note(null);
+        if (!m) return;
+        const c = this._clientAt(ci);
+        c.host(this.target, 'map', m);
+        this.log.info('map: hosting Waze\'s map at ' + [m.x, m.y, m.w, m.h].join(',') + ' on connection ' + (ci + 1)
+            + (c.ready && !c.hostLayers ? ' (this cluster-render can\'t host: it needs a release after 0.8.1)' : ''));
+        this._mapNote();
+    }
+
+    /** The page's word on the host: cluster-render too old, or its "hosting" reason while it waits. */
+    _mapNote() {
+        if (!this.waze) return;
+        const c = this.mapHostCi >= 0 ? this.clients[this.mapHostCi] : null;
+        let note = null;
+        if (c && c.ready && !c.hostLayers) note = 'cluster-render is too old to put the map in the theme (update it)';
+        else if (this.mapHosting && this.mapHosting.state === 'waiting') note = 'Map not in the theme: ' + this.mapHosting.reason;
+        this.waze.note(note);
     }
 
     /** Boost, intake, fuel % and hybrid battery from the car's units (config.dme), over the read-only link. */
@@ -1963,6 +2019,7 @@ class HudApp {
         this.activeName = name;
         this.holidayAt = this._holidayNow();     // the light string's holiday (garland.js); the minute timer rebuilds when it changes
         this.mapLayout = false;
+        this.mapWin = null;
         this.mapShown = this.setting('mapUp');
         if (name === 'off') {
             this._wazeWant();
@@ -1978,7 +2035,8 @@ class HudApp {
             return;
         }
         this.problem = null;
-        this.mapLayout = layout.widgets.some((w) => w.holeWhen === 'mapUp');
+        this.mapWin = layout.widgets.find((w) => w.holeWhen === 'mapUp' && Array.isArray(w.hole) && w.hole[2] >= 64 && w.hole[3] >= 32) || null;
+        this.mapLayout = !!this.mapWin;
         // "mapLive" holds only while nothing else changes with the map (a widget toggled on mapUp needs the rebuild)
         this.mapLive = layout.mapLive === true && !layout.widgets.some((w) => typeof w.toggle === 'string' && w.toggle.indexOf('mapUp') >= 0);
         this._wazeWant();

@@ -181,8 +181,7 @@
       ],
       "holeWhen": "mapUp",
       "holeInset": 0,
-      "holeFeather": 80,
-      "holeTop": 120
+      "holeFeather": 80
     },
     {
       "id": "gmeter",

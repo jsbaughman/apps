@@ -432,7 +432,7 @@ class Page {
             'On: Apex opens a round window in the tach and Waze on Cluster draws its map in it, above',
             'BMW\'s own map view, so nothing shows twice. When the map goes away the theme fills back in.',
             'While on, Waze\'s map on the HUD is off (the cluster and the HUD share one picture).',
-            'Needs robertnisipeanu\'s Waze on Cluster. Turning this off gives Waze its usual place back.',
+            'Needs robertnisipeanu\'s Waze on Cluster 0.14.5 or newer and cluster-render 0.8.2 or newer. Turning this off gives Waze its usual place back.',
         ]);
     }
 

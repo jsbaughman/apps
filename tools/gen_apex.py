@@ -30,7 +30,7 @@ FAST_IDS = ()   # Fast numbers withdrawn in 0.21.4: the GPU text (gtext) took th
 OWN_IDS = ('gear', 'gear_s', 'gear_m', 'gear_ms', 'speed', 'speed_m', 'r0_v', 'g0_v')   # each on its own small image layer (0.21.5): a change uploads only that
                                                         # small picture's changed rect, not a rect of a big shared sheet
 MAP_FEATHER = 80              # the window's edge fades into the dial over this many px (inward), under the numbers
-MAP_R = 262                   # the map window's radius, to the tick marks (Waze's picture on the panel is the centred 1088x480: y 120..600)
+MAP_R = 262                   # the map window's radius, to the tick marks (Waze draws its map in this square: hud.js _mapHost)
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
@@ -116,7 +116,7 @@ def build():
                     'panels': [640, 1280, 120, 660], 'bars': bars, 'lines': lines, 'glow': GLOW, 'car': CAR,
                     # the Waze map (Map tab, "Show Waze map inside the theme"): a round window in the dial, centred near the car's
                     # arrow (960, 360 in BMW's map window), inside the ring round the gear; the gear goes small at its foot
-                    'hole': [CX - MAP_R, CY - MAP_R, 2 * MAP_R, 2 * MAP_R], 'holeWhen': 'mapUp', 'holeInset': 0, 'holeFeather': MAP_FEATHER, 'holeTop': 120})
+                    'hole': [CX - MAP_R, CY - MAP_R, 2 * MAP_R, 2 * MAP_R], 'holeWhen': 'mapUp', 'holeInset': 0, 'holeFeather': MAP_FEATHER})
     # --- the G-meter --------------------------------------------------------------------------------------------
     widgets.append({'id': 'gmeter', 'type': 'gmeter', 'class': 'content', 'z': 2, 'x': 1435, 'y': 205, 'w': 330,
                     'h': 290, 'conn': 1, 'toggle': PERF})
