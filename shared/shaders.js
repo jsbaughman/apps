@@ -1795,6 +1795,9 @@ uniform float u_barS[8];   // each bar's style: 0 a line with a marker, 1 a slan
 uniform vec4 u_line[8];    // rule lines: from x, y, to x, y (all 0 = none)
 uniform float u_bgStyle;   // the backdrop: 0 the side panels' red glow on a faint weave, 1 carbon twill lit from the dial out
 uniform vec4 u_car;        // the tyre panel's car seen from above: centre x, y, half width, half length (0 = none)
+uniform vec4 u_mapHole;    // the Waze map's round window in the dial: centre x, y, radius (0 = none), how dark its foot gets 0..1
+uniform vec2 u_mapEdge;    // x: how wide its edge fades into the dial, px inward from the radius (0: a hard edge);
+                           // y: the top of Waze's picture (the panel's centred 1088x480: y 120), faded in below it (0: none)
 uniform vec4 u_glow;       // a soft glow fading outward from the gear's ring (0.5 of the radius): r, g, b, strength (0 = none)
 
 const vec3 WHITE = vec3(0.95, 0.96, 0.97);
@@ -1853,7 +1856,11 @@ void main() {
     // the dial: drop shadow, a black face, a thin bezel
     c *= 1.0 - 0.85 * (1.0 - smoothstep(R + 6.0, R + (u_bgStyle > 0.5 ? 60.0 : 50.0), length(d - vec2(0.0, 14.0))));
     c = put(c, mix(vec3(0.0), vec3(0.035, 0.036, 0.04), smoothstep(R * 0.3, R, r)), cov(r - R - 8.0));
-    c = put(c, vec3(0.45, 0.46, 0.5), cov(abs(r - R - 8.0) - 1.2));
+    {   // the thin bezel: all round, or while the map shows only along the band (0 to the top of the scale)
+        float bz = cov(abs(r - R - 8.0) - 1.2);
+        if (u_mapHole.z > 0.0) bz *= step(mod(degrees(atan(d.y, d.x)) - u_tachA.x + 720.0, 360.0), u_tachA.y);
+        c = put(c, vec3(0.45, 0.46, 0.5), bz);
+    }
     if (u_glow.w > 0.0 && r > R * 0.5 - 1.0) {
         float gl = 1.0 - smoothstep(R * 0.5, R * 0.86, r);
         c += u_glow.rgb * u_glow.w * gl * gl;
@@ -1951,7 +1958,17 @@ void main() {
         if (s.x == 0.0 && s.z == 0.0) continue;
         c = put(c, vec3(0.5, 0.5, 0.53), cov(segd(p, s.xy, s.zw) - 0.8));
     }
-    gl_FragColor = vec4(c, 1.0);
+    // the map window: see-through inside the circle, fading to black over its lower part (the gear sits there)
+    float alpha = 1.0;
+    if (u_mapHole.z > 0.0) {
+        vec2 mh = p - u_mapHole.xy;
+        float inside = u_mapEdge.x > 0.5 ? 1.0 - smoothstep(u_mapHole.z - u_mapEdge.x, u_mapHole.z, length(mh)) : clamp(u_mapHole.z - length(mh) + 0.5, 0.0, 1.0);
+        if (u_mapEdge.y > 0.0) inside *= smoothstep(u_mapEdge.y + 2.0, u_mapEdge.y + 50.0, p.y);   // nothing of the map above its picture
+        float foot = smoothstep(u_mapHole.z * 0.3, u_mapHole.z * 0.78, mh.y) * u_mapHole.w;   // w: how dark the foot gets (0: none)
+        alpha = 1.0 - inside * (1.0 - foot);
+        c = mix(c, vec3(0.0), inside);
+    }
+    gl_FragColor = vec4(c, alpha);
 }
 `;
 

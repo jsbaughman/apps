@@ -99,7 +99,8 @@
  *             zone starts, h: px thick (5), style: "hatch" for a slanted hatched gauge with a scale and needle, "gauge" striped or solid by the "gaugeFill" setting,
  *             mini: px thick as a small gauge without a scale while "leftStyle" is "gauges", toggle}), "lines" (at most 8 rule lines [x0, y0, x1, y1, toggle]), "glow" [r, g, b, strength]
  *             (0..1: a soft glow fading outward from the ring round the gear), "car" [cx, cy, half width, half length] (the
- *             tyre panel's car, drawn while the "rightPanel" setting is "tyres")
+ *             tyre panel's car, drawn while the "rightPanel" setting is "tyres"); the Waze map as a round window in the square "hole"
+ *             (with "holeWhen": "mapUp"), "holeFoot" 0..1 how dark its lower part gets (0), "holeFeather" px its edge fades over, inward (0: hard), "holeTop" y where the map picture starts (faded in below it)
  *   ldash     effect layer; the whole Veloce theme (shaders.js ldash, layout made by tools/gen_veloce.py): "arc" [cx, cy, rx,
  *             ry, start deg, sweep deg, blocks, thousands, band fraction] (a wide elliptical rev arc of bevelled blocks, lit to
  *             the revs), "red" rpm (red from), "band" [x, y, w, h] (a grey strip across the middle), "minis" (at most 4 small
@@ -2332,6 +2333,10 @@ class HudApp {
             const gk = this.setting('dialGlow'), gl = (GLOWS[gk] || w.glow || GLOWS.off).slice();
             if (this.nightOn) gl[3] *= 0.6;
             c.uniform(ref, 'u_glow', gl);
+            // the Waze map's round window ("hole" [x, y, w, h], "holeWhen" mapUp): a circle in that square, open while the map shows
+            const mh = this._hole(w);
+            c.uniform(ref, 'u_mapHole', mh[2] > 0 ? [mh[0] + mh[2] / 2, mh[1] + mh[3] / 2, mh[2] / 2, isNum(w.holeFoot) ? w.holeFoot : 0] : [0, 0, 0, 0]);
+            c.uniform(ref, 'u_mapEdge', [isNum(w.holeFeather) ? w.holeFeather : 0, isNum(w.holeTop) ? w.holeTop - w.y : 0]);
             c.uniform(ref, 'u_bgStyle', [this.setting('apexBackdrop') === 'carbon' ? 1 : 0]);   // the backdrop setting
             // the right panel: the G-meter, or the tyres with this car drawn in the middle ("car" [cx, cy, half w, half l])
             const car = this.setting('rightPanel') === 'tyres' && w.car;

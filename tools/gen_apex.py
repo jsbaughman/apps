@@ -27,8 +27,10 @@ LBARS, LGAUGE = '!leftStyle=gauges', 'leftStyle=gauges'   # the left side's two 
 LX0, LX1 = 110, 590            # the left panel's content
 FAST = 45                     # ms: the speed, gear and boost redraw on every 50 ms tick (other text every 200)
 FAST_IDS = ()   # Fast numbers withdrawn in 0.21.4: the GPU text (gtext) took the car's displays down (Nov 22 2026)
-OWN_IDS = ('gear', 'gear_s', 'speed', 'r0_v', 'g0_v')   # each on its own small image layer (0.21.5): a change uploads only that
+OWN_IDS = ('gear', 'gear_s', 'gear_m', 'gear_ms', 'speed', 'speed_m', 'r0_v', 'g0_v')   # each on its own small image layer (0.21.5): a change uploads only that
                                                         # small picture's changed rect, not a rect of a big shared sheet
+MAP_FEATHER = 80              # the window's edge fades into the dial over this many px (inward), under the numbers
+MAP_R = 262                   # the map window's radius, to the tick marks (Waze's picture on the panel is the centred 1088x480: y 120..600)
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
@@ -111,7 +113,10 @@ def build():
              [LX0, 560, LX1, 560], [RX0, 560, RX1, 560], [RX0, 402, RX1, 402, POWER]]
     widgets.append({'id': 'dash', 'type': 'cdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                     'tach': [CX, CY, R, BAND, START, SWEEP, THOUSANDS], 'zones': ZONES,
-                    'panels': [640, 1280, 120, 660], 'bars': bars, 'lines': lines, 'glow': GLOW, 'car': CAR})
+                    'panels': [640, 1280, 120, 660], 'bars': bars, 'lines': lines, 'glow': GLOW, 'car': CAR,
+                    # the Waze map (Map tab, "Show Waze map inside the theme"): a round window in the dial, centred near the car's
+                    # arrow (960, 360 in BMW's map window), inside the ring round the gear; the gear goes small at its foot
+                    'hole': [CX - MAP_R, CY - MAP_R, 2 * MAP_R, 2 * MAP_R], 'holeWhen': 'mapUp', 'holeInset': 0, 'holeFeather': MAP_FEATHER, 'holeTop': 120})
     # --- the G-meter --------------------------------------------------------------------------------------------
     widgets.append({'id': 'gmeter', 'type': 'gmeter', 'class': 'content', 'z': 2, 'x': 1435, 'y': 205, 'w': 330,
                     'h': 290, 'conn': 1, 'toggle': PERF})
@@ -124,13 +129,19 @@ def build():
         widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_tach', col))
     # --- the middle: gear, drive mode, speed in the open quarter, the scale's unit ------------------------------
     widgets += [
-        text('gear', CX - 130, CY - 82, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7, toggle='!gearStyle=solid', rate=FAST),   # ink centred on the dial (the slant leans it right)
-        text('gear_s', CX - 130, CY - 76, 260, 151, '{{gearnum}}', 'a_gear_s', 'hot', dx=-12, toggle='gearStyle=solid', rate=FAST),   # the solid one
-        text('mode', CX - 120, CY + 92, 240, 24, '{{mode}}', 'v_label', 'accent'),
+        text('gear', CX - 130, CY - 82, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7, toggle='!gearStyle=solid&!mapUp', rate=FAST),   # ink centred on the dial (the slant leans it right)
+        text('gear_s', CX - 130, CY - 76, 260, 151, '{{gearnum}}', 'a_gear_s', 'hot', dx=-12, toggle='gearStyle=solid&!mapUp', rate=FAST),   # the solid one
+        # with the Waze map in the dial: the gear small under the speed in the open quarter (see the speed below)
+        text('gear_m', CX + 6, CY + 210, 180, 69, '{{gearnum}}', 'a_gear_m', 'hot', dx=-2, toggle='!gearStyle=solid&mapUp', rate=FAST),
+        text('gear_ms', CX + 6, CY + 214, 180, 61, '{{gearnum}}', 'a_gear_ms', 'hot', dx=-6, toggle='gearStyle=solid&mapUp', rate=FAST),
+        text('mode', CX - 120, CY + 92, 240, 24, '{{mode}}', 'v_label', 'accent', toggle='!mapUp'),
         text('rpm_u1', CX + 170, CY + 30, 120, 30, 'RPM', 'r_label', 'hot', 'left'),
         text('rpm_u2', CX + 170, CY + 58, 120, 30, 'x1000', 'r_label', 'dim', 'left'),
-        text('speed', CX - 60, CY + 105, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24, rate=FAST, toggle='tachSpeed'),   # 16 px of room for the lean
-        text('speed_u', CX + 178, CY + 142, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', toggle='tachSpeed'),
+        text('speed', CX - 60, CY + 105, 240, 76, '{{speed}}', 'a_speed', 'fg', 'right', dx=-24, rate=FAST, toggle='tachSpeed&!mapUp'),   # 16 px of room for the lean
+        text('speed_u', CX + 178, CY + 142, 80, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', toggle='tachSpeed&!mapUp'),
+        # with the map: the speed smaller (the tach numbers' italic), just under RPM x1000, inside the outer ring
+        text('speed_m', CX + 128, CY + 116, 200, 47, '{{speed}}', 'a_tach', 'fg', 'right', dx=-20, rate=FAST, toggle='tachSpeed&mapUp'),   # map mode: lower right, past the dial's edge (0.22.1)
+        text('speed_um', CX + 316, CY + 132, 70, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', toggle='tachSpeed&mapUp'),   # on the number's baseline
     ]
     # --- left: boost and oil temperature ------------------------------------------------------------------------
     widgets += readout(0, LX0, LX1, 140, 'Boost', '{{boost}}', '{{u:boostLc}}', bars[0],

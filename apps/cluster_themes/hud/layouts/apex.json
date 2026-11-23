@@ -172,7 +172,17 @@
         360,
         50,
         112
-      ]
+      ],
+      "hole": [
+        698,
+        70,
+        524,
+        524
+      ],
+      "holeWhen": "mapUp",
+      "holeInset": 0,
+      "holeFeather": 80,
+      "holeTop": 120
     },
     {
       "id": "gmeter",
@@ -325,7 +335,7 @@
       "color": "hot",
       "align": "center",
       "dx": -7,
-      "toggle": "!gearStyle=solid",
+      "toggle": "!gearStyle=solid&!mapUp",
       "rate": 45,
       "own": true,
       "conn": 2
@@ -343,7 +353,43 @@
       "color": "hot",
       "align": "center",
       "dx": -12,
-      "toggle": "gearStyle=solid",
+      "toggle": "gearStyle=solid&!mapUp",
+      "rate": 45,
+      "own": true,
+      "conn": 2
+    },
+    {
+      "id": "gear_m",
+      "type": "text",
+      "z": 5,
+      "x": 966,
+      "y": 542,
+      "w": 180,
+      "h": 69,
+      "text": "{{gearnum}}",
+      "font": "a_gear_m",
+      "color": "hot",
+      "align": "center",
+      "dx": -2,
+      "toggle": "!gearStyle=solid&mapUp",
+      "rate": 45,
+      "own": true,
+      "conn": 2
+    },
+    {
+      "id": "gear_ms",
+      "type": "text",
+      "z": 5,
+      "x": 966,
+      "y": 546,
+      "w": 180,
+      "h": 61,
+      "text": "{{gearnum}}",
+      "font": "a_gear_ms",
+      "color": "hot",
+      "align": "center",
+      "dx": -6,
+      "toggle": "gearStyle=solid&mapUp",
       "rate": 45,
       "own": true,
       "conn": 2
@@ -359,7 +405,8 @@
       "text": "{{mode}}",
       "font": "v_label",
       "color": "accent",
-      "align": "center"
+      "align": "center",
+      "toggle": "!mapUp"
     },
     {
       "id": "rpm_u1",
@@ -403,7 +450,7 @@
       "align": "right",
       "dx": -24,
       "rate": 45,
-      "toggle": "tachSpeed",
+      "toggle": "tachSpeed&!mapUp",
       "own": true,
       "conn": 2
     },
@@ -419,7 +466,40 @@
       "font": "a_unit",
       "color": "fg",
       "align": "left",
-      "toggle": "tachSpeed",
+      "toggle": "tachSpeed&!mapUp",
+      "rate": 2000
+    },
+    {
+      "id": "speed_m",
+      "type": "text",
+      "z": 5,
+      "x": 1088,
+      "y": 448,
+      "w": 200,
+      "h": 47,
+      "text": "{{speed}}",
+      "font": "a_tach",
+      "color": "fg",
+      "align": "right",
+      "dx": -20,
+      "rate": 45,
+      "toggle": "tachSpeed&mapUp",
+      "own": true,
+      "conn": 2
+    },
+    {
+      "id": "speed_um",
+      "type": "text",
+      "z": 5,
+      "x": 1276,
+      "y": 464,
+      "w": 70,
+      "h": 37,
+      "text": "{{u:speedLc}}",
+      "font": "a_unit",
+      "color": "fg",
+      "align": "left",
+      "toggle": "tachSpeed&mapUp",
       "rate": 2000
     },
     {

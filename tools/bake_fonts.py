@@ -74,6 +74,8 @@ CLUSTER_FONTS = [
     # Apex: a light, upright condensed face for the needle dash
     ('a_gear', 'Outfit[wght].ttf', 200, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 6),   # hollow italic (Nov 21 2026)
     ('a_gear_s', 'Outfit[wght].ttf', 200, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2),   # the same, solid (the Gear setting)
+    ('a_gear_m', 'Outfit[wght].ttf', 77, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 4),   # the gear under the Waze map, hollow
+    ('a_gear_ms', 'Outfit[wght].ttf', 77, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2),   # the same, solid
     ('a_speed', 'Outfit[wght].ttf', 98, DIGITS + '-', 0, 'ExtraBold', None, '', 0.2),   # bold italic
     ('a_unit', 'Outfit[wght].ttf', 34, LOWER + '/', 0, 'Bold', None, '', 0.2),   # the speed's unit (mph, km/h)
     ('a_tach', 'Outfit[wght].ttf', 58, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the rev counter's numbers, as the speed
