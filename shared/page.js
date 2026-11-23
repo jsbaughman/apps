@@ -603,7 +603,24 @@ class Page {
     /* ---------- Settings ---------- */
     settingsTab(cv, bottom) {
         label(cv, CX, 70, 'Settings');
-        const keys = this.cfg.settings.filter((k) => this.item(k));
+        let keys = this.cfg.settings.filter((k) => this.item(k));
+        // more settings than fit (Cluster Themes' 27, Nov 23 2026: the last rows of each column fell off the screen):
+        // pages of compact rows, "Page 1 of 2" and arrows beside the heading
+        const rowsFit = Math.floor((bottom - 24 - 84 - 46) / 52) + 1;
+        const pages = keys.length > 2 * rowsFit ? Math.ceil(keys.length / (2 * rowsFit)) : 1;
+        if (pages > 1) {
+            this.setPage = Math.max(0, Math.min(pages - 1, this.setPage || 0));
+            keys = keys.slice(this.setPage * 2 * rowsFit, (this.setPage + 1) * 2 * rowsFit);
+            const pg = this.setPage, px = CX + 150, py = 46;
+            const arrow = (x, live, dir) => {
+                cv.roundRect(x, py, 48, 38, 10, live ? '#ffffff14' : '#ffffff07');
+                cv.text(dir < 0 ? '<' : '>', x + 24, py + 27, 22, live ? C.text : '#ffffff30', { align: 'center', font: 'bold', literal: true });
+                if (live) cv.target(x, py, 48, 38, () => { this.setPage = pg + dir; this.kick(); }, 'setpage:' + dir, 10);
+            };
+            arrow(px, pg > 0, -1);
+            cv.text('Page ' + (pg + 1) + ' of ' + pages, px + 120, py + 26, 17, C.dim, { align: 'center', literal: true });
+            arrow(px + 192, pg < pages - 1, 1);
+        }
         const colW = (CW - 24) / 2, per = Math.ceil(keys.length / 2);
         // issue #8: the drive mode check (raw signal values, only the signals this app listens to: cfg.modeCheck)
         // under the right column while "Change with the drive mode" is on
