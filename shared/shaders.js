@@ -1795,6 +1795,7 @@ uniform float u_barS[8];   // each bar's style: 0 a line with a marker, 1 a slan
 uniform vec4 u_line[8];    // rule lines: from x, y, to x, y (all 0 = none)
 uniform float u_bgStyle;   // the backdrop: 0 the side panels' red glow on a faint weave, 1 carbon twill lit from the dial out
 uniform vec4 u_car;        // the tyre panel's car seen from above: centre x, y, half width, half length (0 = none)
+uniform vec4 u_tyre;       // its tyres FL, FR, RL, RR: 0 no reading (grey), 1 fine (green), 2 low (red)
 uniform vec4 u_mapHole;    // the Waze map's round window in the dial: centre x, y, radius (0 = none), how dark its foot gets 0..1
 uniform vec2 u_mapEdge;    // x: how wide its edge fades into the dial, px inward from the radius (0: a hard edge);
                            // y: the top of Waze's picture (the panel's centred 1088x480: y 120), faded in below it (0: none)
@@ -1936,21 +1937,17 @@ void main() {
         c = put(c, WHITE, bar * step(t, b.w));
         c = put(c, WHITE, cov(abs(p.x - (b.x + b.z * b.w)) - 2.0) * cov(abs(p.y - b.y) - hh - 7.5));
     }
-    // the tyre panel's car: body outline, windscreen and rear window, four tyres
+    // the tyre panel's tyres, coloured by pressure; the car itself is an image over them (car_top.js), so only
+    // their outer part shows past its body
     if (u_car.z > 0.0) {
         vec2 cc = u_car.xy, hb = u_car.zw;
-        float bd = rboxd(p, cc, hb, hb.x * 0.6);
-        c = put(c, vec3(0.03, 0.03, 0.035), cov(bd));
-        c = put(c, vec3(0.55, 0.56, 0.6), cov(abs(bd) - 1.2));
-        float wsY = cc.y - hb.y * 0.38, rwY = cc.y + hb.y * 0.5;
-        c = put(c, vec3(0.4, 0.41, 0.45), cov(abs(p.y - wsY) - 1.0) * step(abs(p.x - cc.x), hb.x * 0.72));
-        c = put(c, vec3(0.4, 0.41, 0.45), cov(abs(p.y - rwY) - 1.0) * step(abs(p.x - cc.x), hb.x * 0.6));
         for (int k = 0; k < 4; k++) {
             float sx = (k == 0 || k == 2) ? -1.0 : 1.0, sy = k < 2 ? -1.0 : 1.0;
-            vec2 tc = cc + vec2(sx * (hb.x + 9.0), sy * hb.y * 0.6);
-            float td = rboxd(p, tc, vec2(9.0, 24.0), 6.0);
-            c = put(c, vec3(0.2, 0.2, 0.22), cov(td));
-            c = put(c, vec3(0.6, 0.61, 0.65), cov(abs(td) - 1.0));
+            float st = k == 0 ? u_tyre.x : k == 1 ? u_tyre.y : k == 2 ? u_tyre.z : u_tyre.w;
+            vec2 tc = cc + vec2(sx * (hb.x + 3.0), sy * hb.y * 0.6);
+            float td = rboxd(p, tc, vec2(8.0, 22.0), 6.0);
+            vec3 tcol = st > 1.5 ? vec3(0.86, 0.16, 0.16) : st > 0.5 ? vec3(0.22, 0.72, 0.36) : vec3(0.3, 0.3, 0.33);
+            c = put(c, tcol, cov(td));
         }
     }
     // rule lines

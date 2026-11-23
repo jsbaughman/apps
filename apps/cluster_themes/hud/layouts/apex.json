@@ -1072,7 +1072,7 @@
       "y": 139,
       "w": 480,
       "h": 43,
-      "text": "Tire Pressure",
+      "text": "Tires",
       "font": "a_head",
       "color": "fg",
       "align": "center",
@@ -1254,6 +1254,18 @@
       "toggle": "rightPanel=power",
       "conn": 1,
       "rate": 1000
+    },
+    {
+      "id": "tyre_car",
+      "type": "icon",
+      "icon": "carTop",
+      "z": 5,
+      "x": 1512,
+      "y": 248,
+      "w": 116,
+      "h": 224,
+      "conn": 1,
+      "toggle": "rightPanel=tyres"
     },
     {
       "id": "tp_FL",

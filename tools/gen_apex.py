@@ -163,7 +163,7 @@ def build():
     # --- right: the G-meter's header and readouts ---------------------------------------------------------------
     widgets += [
         text('perf', RX0, 140 + HEAD_DY, RX1 - RX0, HEAD_H, 'Performance', 'a_head', 'fg', conn=1, toggle=PERF),
-        text('tyre_head', RX0, 140 + HEAD_DY, RX1 - RX0, HEAD_H, 'Tire Pressure', 'a_head', 'fg', conn=1, toggle=TYRES),
+        text('tyre_head', RX0, 140 + HEAD_DY, RX1 - RX0, HEAD_H, 'Tires', 'a_head', 'fg', conn=1, toggle=TYRES),
         text('g_vals', 1370, 506, 460, 42, '{{gSide}}    {{gFwd}}', 'v_title', 'fg', conn=1, toggle=PERF),
     ]
     # --- right, the third choice: horsepower and torque, as the left side's blocks, over % of the engine's peak ---------
@@ -173,6 +173,9 @@ def build():
                        [([POWER], '0')], [([POWER], '{{torquePeak}}')], toggle=POWER, conn=1)
     # --- right, the other choice: the four tyres round a car seen from above (pressure, temperature under it) -----
     cx, cy, hw, hl = CAR
+    # the car: an image over the dash's tyres (car_top.js); its box is a little wider than the body for the mirrors
+    widgets.append({'id': 'tyre_car', 'type': 'icon', 'icon': 'carTop', 'z': 5, 'x': cx - round(hw * 1.16), 'y': cy - hl,
+                    'w': 2 * round(hw * 1.16), 'h': 2 * hl, 'conn': 1, 'toggle': TYRES})
     for pos, side, fy in (('FL', -1, -1), ('FR', 1, -1), ('RL', -1, 1), ('RR', 1, 1)):
         ty = cy + fy * hl * 0.6                       # the tyre's centre, as the shader draws it
         end = cx - hw - 96 if side < 0 else cx + hw + 122     # where the pressure's digits end

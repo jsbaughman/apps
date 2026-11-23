@@ -285,6 +285,7 @@ const visible = require('./visible');
 const sun = require('./sun');
 const textRaster = require('./hud_text');
 const { paintIcon } = require('./icons');
+const { paintCarTop } = require('./car_top');
 const shaders = require('./shaders');
 const calibration = require('./calibration');
 const Car = require('./kit/car');
@@ -2284,6 +2285,7 @@ class HudApp {
         } else if (w.type === 'gridlabels') this._paintGridLabels(x);
         else if (w.type === 'nav') this._navCreate(x);
         else if (w.type === 'garland') { x.tw = new Garland.Twinkle(w); this._blit(x, null, Garland.paint(w, x.tw.lvl, null)); }
+        else if (w.type === 'icon' && w.icon === 'carTop') this._blit(x, null, paintCarTop(w.w, w.h));   // the tyre panel's car (car_top.js)
         else if (w.type === 'icon') this._blit(x, null, paintIcon(w.icon, w.w, w.h, color(t, w.color || 'fg')));
         else if (w.type === 'sdash') {
             c.uniform(ref, 'u_size', [w.w, w.h]);
@@ -3012,9 +3014,16 @@ class HudApp {
             const bars = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = (w.bars || [])[i]; return b && (!b.toggle || this._toggleOn(b.toggle)) ? b : null; });
             const bv = bars.map((b) => { const v = b && b.signal ? this._raw(b.signal) : null; return isNum(v) ? q((v - b.min) / (b.max - b.min)) : 0; });
             const rv = isNum(rpm) ? q(rpm / (T[6] * 1000)) : 0;
-            const key = [rv].concat(bv).join('|');
+            // the tyre panel's tyres: 0 no reading, 1 fine, 2 low (under "tyreLow" psi, 33, as shown: rounded)
+            const low = isNum(w.tyreLow) ? w.tyreLow : 33;
+            const ts = this.setting('rightPanel') === 'tyres' && w.car ? ['FL', 'FR', 'RL', 'RR'].map((k) => {
+                const v = this._tyre('p', k);
+                return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0;
+            }) : [0, 0, 0, 0];
+            const key = [rv].concat(bv, ts).join('|');
             if (!force && key === x.last) return;
             x.last = key;
+            x.c.uniform(x.ref, 'u_tyre', ts);
             x.c.uniform(x.ref, 'u_tachA', [T[4], T[5], T[6], rv]);
             const bu = [];
             bars.forEach((b, i) => bu.push(b ? b.x - w.x : 0, b ? b.y - w.y : 0, b ? b.w : 0, bv[i]));
