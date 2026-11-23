@@ -27,11 +27,42 @@ LBARS, LGAUGE = '!leftStyle=gauges', 'leftStyle=gauges'   # the left side's two 
 LX0, LX1 = 110, 590            # the left panel's content
 FAST = 45                     # ms: the speed, gear and boost redraw on every 50 ms tick (other text every 200)
 FAST_IDS = ()   # Fast numbers withdrawn in 0.21.4: the GPU text (gtext) took the car's displays down (Nov 22 2026)
-OWN_IDS = ('gear', 'gear_s', 'gear_m', 'gear_ms', 'speed', 'speed_m', 'r0boost_v', 'g0boost_v', 'r1boost_v', 'g1boost_v')   # each on its own small image layer (0.21.5): a change uploads only that
+OWN_IDS = ('gear', 'gear_s', 'gear_m', 'gear_ms', 'speed', 'speed_m', 'gear_c', 'gear_s_c', 'gear_m_c', 'gear_ms_c', 'speed_c', 'speed_m_c',
+           'r0boost_v', 'g0boost_v', 'r1boost_v', 'g1boost_v')   # each on its own small image layer (0.21.5): a change uploads only that
                                                         # small picture's changed rect, not a rect of a big shared sheet
 MAP_FEATHER = 80              # the window's edge fades into the dial over this many px (inward), under the numbers
 MAP_R = 262                   # the map window's radius, to the tick marks (Waze draws its map in this square: hud.js _mapHost)
 ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
+# "Leave room for the driver camera" (cameraNotch; visible.CAMERA 760..1160 x 0..110): the tach smaller and lower, clear
+# of the camera at the top and above the bottom strip; everything in it moves with it (a second set, toggled)
+CAM = 'cameraNotch'
+CCX, CCY, CR = 960, 388, 258
+CS = CR / float(R)            # how much smaller (0.81)
+CAM_FONTS = {'a_gear': ('a_gear_c', 133), 'a_gear_s': ('a_gear_s_c', 123), 'a_speed': ('a_speed_c', 63),
+             'a_unit': ('a_unit_c', 31), 'a_tach': ('a_tach_c', 40)}   # font: (its 0.81 copy, cell height)
+
+
+def both(t, extra):
+    return extra if not t else extra + '&' + t
+
+
+def cam_copy(ws):
+    """The tach's own widgets twice: as they are while the camera setting is off, and scaled round the dial's centre to
+    the smaller dial (CCX, CCY, CR) while it is on. Each box keeps its size (the same fonts); its centre moves."""
+    out = []
+    for w in ws:
+        a = dict(w); a['toggle'] = both(w.get('toggle'), '!' + CAM)
+        b = dict(w); b['id'] = w['id'] + '_c'; b['toggle'] = both(w.get('toggle'), CAM)
+        if w.get('font') in CAM_FONTS:            # the dial's own big text: its 0.81 font, its box to match
+            b['font'], b['h'] = CAM_FONTS[w['font']]
+            b['w'] = int(round(w['w'] * CS))
+            if 'dx' in w:
+                b['dx'] = int(round(w['dx'] * CS))
+        mx, my = w['x'] + w['w'] / 2.0, w['y'] + w['h'] / 2.0
+        b['x'] = int(round(CCX + (mx - CX) * CS - b['w'] / 2.0))
+        b['y'] = int(round(CCY + (my - CY) * CS - b['h'] / 2.0))
+        out += [a, b]
+    return out
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
 # pressure unit setting is not followed by these labels, only by the values)
@@ -125,24 +156,28 @@ def build():
     ]
     lines = [[LX0, 192, LX1, 192], [LX0, 402, LX1, 402], [RX0, 192, RX1, 192],
              [LX0, 560, LX1, 560], [RX0, 560, RX1, 560], [RX0, 402, RX1, 402, POWER]]
-    widgets.append({'id': 'dash', 'type': 'cdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
-                    'tach': [CX, CY, R, BAND, START, SWEEP, THOUSANDS], 'zones': ZONES,
-                    'panels': [640, 1280, 120, 660], 'bars': bars, 'lines': lines, 'glow': GLOW, 'car': CAR,
-                    # the Waze map (Map tab, "Show Waze map inside the theme"): a round window in the dial, centred near the car's
-                    # arrow (960, 360 in BMW's map window), inside the ring round the gear; the gear goes small at its foot
-                    'hole': [CX - MAP_R, CY - MAP_R, 2 * MAP_R, 2 * MAP_R], 'holeWhen': 'mapUp', 'holeInset': 0, 'holeFeather': MAP_FEATHER})
+    for cam in (False, True):
+        cx, cy, r, sc = (CCX, CCY, CR, CS) if cam else (CX, CY, R, 1.0)
+        mr = int(round(MAP_R * sc))
+        widgets.append({'id': 'dash_c' if cam else 'dash', 'type': 'cdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
+                        'tach': [cx, cy, r, int(round(BAND * sc)), START, SWEEP, THOUSANDS], 'zones': ZONES,
+                        'panels': [640, 1280, 120, 660], 'bars': bars, 'lines': lines, 'glow': GLOW, 'car': CAR,
+                        # the Waze map (Map tab): a round window in the dial, hosted there (hud.js _mapHost)
+                        'hole': [cx - mr, cy - mr, 2 * mr, 2 * mr], 'holeWhen': 'mapUp', 'holeInset': 0,
+                        'holeFeather': int(round(MAP_FEATHER * sc)), 'toggle': CAM if cam else '!' + CAM})
     # --- the G-meter --------------------------------------------------------------------------------------------
     widgets.append({'id': 'gmeter', 'type': 'gmeter', 'class': 'content', 'z': 2, 'x': 1435, 'y': 205, 'w': 330,
                     'h': 290, 'conn': 1, 'toggle': PERF})
     # --- rev counter numbers, inside the marks ------------------------------------------------------------------
+    tach = []
     num_r = R - BAND - 64
     for k in range(THOUSANDS + 1):
         a = math.radians(START + SWEEP * k / float(THOUSANDS))
         x, y = CX + num_r * math.cos(a), CY + num_r * math.sin(a)
         col = 'hot' if k * 1000 >= ZONES[1] else 'fg'
-        widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_tach', col))
+        tach.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_tach', col))
     # --- the middle: gear, drive mode, speed in the open quarter, the scale's unit ------------------------------
-    widgets += [
+    tach += [
         text('gear', CX - 130, CY - 82, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7, toggle='!gearStyle=solid&!mapUp', rate=FAST),   # ink centred on the dial (the slant leans it right)
         text('gear_s', CX - 130, CY - 76, 260, 151, '{{gearnum}}', 'a_gear_s', 'hot', dx=-12, toggle='gearStyle=solid&!mapUp', rate=FAST),   # the solid one
         # with the Waze map in the dial: the gear small under the speed in the open quarter (see the speed below)
@@ -157,6 +192,7 @@ def build():
         text('speed_m', CX + 128, CY + 107, 200, 56, '{{speed}}', 'a_speed_m', 'fg', 'right', dx=-22, rate=FAST, toggle='tachSpeed&mapUp'),   # map mode: lower right, past the dial's edge (0.22.1)
         text('speed_um', CX + 316, CY + 132, 70, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', toggle='tachSpeed&mapUp'),   # on the number's baseline
     ]
+    widgets += cam_copy(tach)
     # --- left: boost and oil temperature ------------------------------------------------------------------------
     # each spot (top 0, bottom 1) has a block per choice, shown while hud.js "left0" / "left1" says that choice
     for k, (y, bb, gb) in enumerate(((140, bars[0], bars[6]), (350, bars[1], bars[7]))):

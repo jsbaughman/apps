@@ -2066,7 +2066,8 @@ class HudApp {
             return;
         }
         this.problem = null;
-        this.mapWin = layout.widgets.find((w) => w.holeWhen === 'mapUp' && Array.isArray(w.hole) && w.hole[2] >= 64 && w.hole[3] >= 32) || null;
+        this.mapWin = layout.widgets.find((w) => w.holeWhen === 'mapUp' && Array.isArray(w.hole) && w.hole[2] >= 64 && w.hole[3] >= 32
+            && !(w.toggle && !this._toggleOn(w.toggle))) || null;   // the one shown (Apex has a second dash for camera cars)
         this.mapLayout = !!this.mapWin;
         // "mapLive" holds only while nothing else changes with the map (a widget toggled on mapUp needs the rebuild)
         this.mapLive = layout.mapLive === true && !layout.widgets.some((w) => typeof w.toggle === 'string' && w.toggle.indexOf('mapUp') >= 0);

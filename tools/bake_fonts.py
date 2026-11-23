@@ -80,6 +80,12 @@ CLUSTER_FONTS = [
     ('a_unit', 'Outfit[wght].ttf', 34, LOWER + '/', 0, 'Bold', None, '', 0.2),   # the speed's unit (mph, km/h)
     ('a_tach', 'Outfit[wght].ttf', 58, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the rev counter's numbers, as the speed
     ('a_speed_m', 'Outfit[wght].ttf', 70, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the speed in map view, 20 % bigger
+    # the smaller tach for cars with the driver camera ("Leave room for the driver camera"), 0.81 of the above
+    ('a_gear_c', 'Outfit[wght].ttf', 162, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 5),
+    ('a_gear_s_c', 'Outfit[wght].ttf', 162, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2),
+    ('a_speed_c', 'Outfit[wght].ttf', 79, DIGITS + '-', 0, 'ExtraBold', None, '', 0.2),
+    ('a_unit_c', 'Outfit[wght].ttf', 28, LOWER + '/', 0, 'Bold', None, '', 0.2),
+    ('a_tach_c', 'Outfit[wght].ttf', 47, DIGITS, 0, 'ExtraBold', None, '', 0.2),
     ('a_head', 'Outfit[wght].ttf', 40, UPPER + LOWER + ' ', 0, 'Bold', None, '', 0.2),   # the panel headings, as the speed
     ('a_val', 'BarlowSemiCondensed-Medium.ttf', 56, DIGITS + '.-', 2),
     ('a_tp', 'BarlowSemiCondensed-Medium.ttf', 48, DIGITS + '.-', 0),   # the readouts' numbers (tyres, boost, oil, hp, torque); no extra stroke since 0.21.5
