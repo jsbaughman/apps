@@ -27,7 +27,7 @@ LBARS, LGAUGE = '!leftStyle=gauges', 'leftStyle=gauges'   # the left side's two 
 LX0, LX1 = 110, 590            # the left panel's content
 FAST = 45                     # ms: the speed, gear and boost redraw on every 50 ms tick (other text every 200)
 FAST_IDS = ()   # Fast numbers withdrawn in 0.21.4: the GPU text (gtext) took the car's displays down (Nov 22 2026)
-OWN_IDS = ('gear', 'gear_s', 'gear_m', 'gear_ms', 'speed', 'speed_m', 'r0_v', 'g0_v')   # each on its own small image layer (0.21.5): a change uploads only that
+OWN_IDS = ('gear', 'gear_s', 'gear_m', 'gear_ms', 'speed', 'speed_m', 'r0boost_v', 'g0boost_v', 'r1boost_v', 'g1boost_v')   # each on its own small image layer (0.21.5): a change uploads only that
                                                         # small picture's changed rect, not a rect of a big shared sheet
 MAP_FEATHER = 80              # the window's edge fades into the dial over this many px (inward), under the numbers
 MAP_R = 262                   # the map window's radius, to the tick marks (Waze draws its map in this square: hud.js _mapHost)
@@ -35,6 +35,20 @@ ZONES = [6500, 7000]          # amber from 6500 rpm, red from 7000
 
 # the min / max labels follow the Units setting (this engine's toggles take one setting; a separate temperature or
 # pressure unit setting is not followed by these labels, only by the values)
+# the left gauges' choices (settings leftTop / leftBottom; hud.js "left0" / "left1", boost off -> intake): heading, value,
+# unit, the bar (signal, min, max, where red starts 0..1) and the scale's numbers per unit system (min, middle, max)
+LEFT = [
+    ('boost', 'Boost', '{{boost}}', '{{u:boostLc}}', {'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
+     [(['units=us'], ('0', '20', '40')), (['units=metric'], ('0', '1.4', '2.8'))]),
+    ('oil', 'Oil Temp', '{{oil}}', '{{u:temp}}', {'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8},
+     [(['units=us'], ('122', '212', '302')), (['units=metric'], ('50', '100', '150'))]),
+    ('intake', 'Intake Temp', '{{intake}}', '{{u:temp}}', {'signal': 'intake', 'min': 0, 'max': 100, 'red': 0.6},
+     [(['units=us'], ('32', '122', '212')), (['units=metric'], ('0', '50', '100'))]),
+    ('oilP', 'Oil Pressure', '{{oilP}}', '{{u:boostLc}}', {'signal': 'oilP', 'min': 0, 'max': 6.205, 'red': 1},
+     [(['units=us'], ('0', '45', '90')), (['units=metric'], ('0', '3.1', '6.2'))]),
+]
+PICKS = {k: {c[0]: c[4] for c in LEFT} for k in ('left0', 'left1')}
+
 PSI = ['units=us']
 BAR = ['units=metric']
 DEGF = ['units=us']
@@ -60,11 +74,11 @@ def unit_labels(id_, x, y, w, align, lo_hi_by_unit):
 def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi, toggle=None, conn=None):
     """A left-panel block: label, a rule, the value and unit, the bar, min / max under it."""
     mid = (x0 + x1) / 2
-    out = [text('r%d_l' % n, mid - 220, y + HEAD_DY, 440, HEAD_H, label, 'a_head', 'accent'),
-           text('r%d_v' % n, mid - 190, y + 79, 220, 38, tok, 'a_tp', 'fg', 'right', rate=FAST if tok in ('{{boost}}', '{{power}}', '{{torque}}') else None),
-           text('r%d_u' % n, mid + 38, y + 84, 120, 36, unit_tok, 'm_unit', 'fg', 'left')]
-    out += unit_labels('r%d_lo' % n, bar['x'] - 2, bar['y'] + 16, 80, 'left', lo)
-    out += unit_labels('r%d_hi' % n, bar['x'] + bar['w'] - 78, bar['y'] + 16, 80, 'right', hi)
+    out = [text('r%s_l' % n, mid - 220, y + HEAD_DY, 440, HEAD_H, label, 'a_head', 'accent'),
+           text('r%s_v' % n, mid - 190, y + 79, 220, 38, tok, 'a_tp', 'fg', 'right', rate=FAST if tok in ('{{boost}}', '{{power}}', '{{torque}}') else None),
+           text('r%s_u' % n, mid + 38, y + 84, 120, 36, unit_tok, 'm_unit', 'fg', 'left')]
+    out += unit_labels('r%s_lo' % n, bar['x'] - 2, bar['y'] + 16, 80, 'left', lo)
+    out += unit_labels('r%s_hi' % n, bar['x'] + bar['w'] - 78, bar['y'] + 16, 80, 'right', hi)
     for w in out:                       # a panel shown by a setting (its min / max labels bring their own toggle)
         if toggle and 'toggle' not in w:
             w['toggle'] = toggle
@@ -75,21 +89,21 @@ def readout(n, x0, x1, y, label, tok, unit_tok, bar, lo, hi, toggle=None, conn=N
     return out
 
 
-def gauge(n, y, label, tok, unit_tok, bar, scale_by_unit):
+def gauge(n, y, label, tok, unit_tok, bar, scale_by_unit, toggle=None):
     """A hatched-gauge block: the heading left and the value right on one row (the rule under them is the shader's),
     the scale's numbers above the gauge (min, middle, max in red)."""
-    t = LGAUGE
-    out = [text('g%d_l' % n, LX0, y + HEAD_DY, 300, HEAD_H, label, 'a_head', 'accent', 'left', toggle=t),
-           text('g%d_v' % n, LX1 - 238, y + 3, 180, 38, tok, 'a_tp', 'fg', 'right', toggle=t, rate=FAST if tok == '{{boost}}' else None),
-           text('g%d_u' % n, LX1 - 52, y + 8, 60, 36, unit_tok, 'm_unit', 'fg', 'left', toggle=t)]
+    t = LGAUGE + ('&' + toggle if toggle else '')
+    out = [text('g%s_l' % n, LX0, y + HEAD_DY, 300, HEAD_H, label, 'a_head', 'accent', 'left', toggle=t),
+           text('g%s_v' % n, LX1 - 238, y + 3, 180, 38, tok, 'a_tp', 'fg', 'right', toggle=t, rate=FAST if tok == '{{boost}}' else None),
+           text('g%s_u' % n, LX1 - 52, y + 8, 60, 36, unit_tok, 'm_unit', 'fg', 'left', toggle=t)]
     x0 = bar['x'] + bar['h'] / 2 * 0.45                       # the scale starts over the gauge's top-left corner
     ly = bar['y'] - bar['h'] / 2 - 14 - 10 - 27               # above the ticks
     for j, (conds, (lo, mid, hi)) in enumerate(scale_by_unit):
         for i, cond in enumerate(conds):
             c = t + '&' + cond
-            out += [text('g%d_lo_%d%d' % (n, j, i), x0 - 4, ly, 90, 23, lo, 'a_sm', 'dim', 'left', toggle=c),
-                    text('g%d_mid_%d%d' % (n, j, i), x0 + bar['w'] / 2 - 45, ly, 90, 23, mid, 'a_sm', 'dim', 'center', toggle=c),
-                    text('g%d_hi_%d%d' % (n, j, i), x0 + bar['w'] - 86, ly, 90, 23, hi, 'a_sm', 'hot', 'right', toggle=c)]
+            out += [text('g%s_lo_%d%d' % (n, j, i), x0 - 4, ly, 90, 23, lo, 'a_sm', 'dim', 'left', toggle=c),
+                    text('g%s_mid_%d%d' % (n, j, i), x0 + bar['w'] / 2 - 45, ly, 90, 23, mid, 'a_sm', 'dim', 'center', toggle=c),
+                    text('g%s_hi_%d%d' % (n, j, i), x0 + bar['w'] - 86, ly, 90, 23, hi, 'a_sm', 'hot', 'right', toggle=c)]
     return out
 
 
@@ -99,15 +113,15 @@ def build():
     LX0, LX1 = 110, 590            # the left panel's content
     RX0, RX1 = 1330, 1810          # the right panel's content
     bars = [
-        {'x': 140, 'y': 296, 'w': 420, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75, 'h': 9, 'toggle': LBARS},
-        {'x': 140, 'y': 506, 'w': 420, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8, 'h': 9, 'toggle': LBARS},
+        {'x': 140, 'y': 296, 'w': 420, 'pick': 'left0', 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75, 'h': 9, 'toggle': LBARS},
+        {'x': 140, 'y': 506, 'w': 420, 'pick': 'left1', 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8, 'h': 9, 'toggle': LBARS},
         {'x': 300, 'y': 606, 'w': 200, 'signal': 'coolant', 'min': 40, 'max': 130, 'red': 0.85, 'mini': 18},
         {'x': 1420, 'y': 606, 'w': 200, 'signal': 'fuel', 'min': 0, 'max': 1, 'red': 1, 'mini': 18},
         {'x': 1360, 'y': 296, 'w': 420, 'signal': 'powerPct', 'min': 0, 'max': 100, 'red': 1, 'h': 9, 'toggle': POWER},
         {'x': 1360, 'y': 506, 'w': 420, 'signal': 'torquePct', 'min': 0, 'max': 100, 'red': 1, 'h': 9, 'toggle': POWER},
         # the left side's other style: slanted gauges
-        {'x': 120, 'y': 284, 'w': 440, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75, 'h': 30, 'style': 'gauge', 'toggle': LGAUGE},
-        {'x': 120, 'y': 494, 'w': 440, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8, 'h': 30, 'style': 'gauge', 'toggle': LGAUGE},
+        {'x': 120, 'y': 284, 'w': 440, 'pick': 'left0', 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75, 'h': 30, 'style': 'gauge', 'toggle': LGAUGE},
+        {'x': 120, 'y': 494, 'w': 440, 'pick': 'left1', 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8, 'h': 30, 'style': 'gauge', 'toggle': LGAUGE},
     ]
     lines = [[LX0, 192, LX1, 192], [LX0, 402, LX1, 402], [RX0, 192, RX1, 192],
              [LX0, 560, LX1, 560], [RX0, 560, RX1, 560], [RX0, 402, RX1, 402, POWER]]
@@ -144,13 +158,14 @@ def build():
         text('speed_um', CX + 316, CY + 132, 70, 37, '{{u:speedLc}}', 'a_unit', 'fg', 'left', toggle='tachSpeed&mapUp'),   # on the number's baseline
     ]
     # --- left: boost and oil temperature ------------------------------------------------------------------------
-    widgets += readout(0, LX0, LX1, 140, 'Boost', '{{boost}}', '{{u:boostLc}}', bars[0],
-                       [(PSI, '0'), (BAR, '0')], [(PSI, '40'), (BAR, '2.8')], toggle=LBARS)
-    widgets += readout(1, LX0, LX1, 350, 'Oil Temp', '{{oil}}', '{{u:temp}}', bars[1],
-                       [(DEGF, '122'), (DEGC, '50')], [(DEGF, '302'), (DEGC, '150')], toggle=LBARS)
-    # --- left, the other style: heading and value on one row, a hatched gauge under a tick scale ------------------
-    widgets += gauge(0, 140, 'Boost', '{{boost}}', '{{u:boostLc}}', bars[6], [(PSI, ('0', '20', '40')), (BAR, ('0', '1.4', '2.8'))])
-    widgets += gauge(1, 350, 'Oil Temp', '{{oil}}', '{{u:temp}}', bars[7], [(DEGF, ('122', '212', '302')), (DEGC, ('50', '100', '150'))])
+    # each spot (top 0, bottom 1) has a block per choice, shown while hud.js "left0" / "left1" says that choice
+    for k, (y, bb, gb) in enumerate(((140, bars[0], bars[6]), (350, bars[1], bars[7]))):
+        for key, label, tok, unit, _bar, scale in LEFT:
+            pick = 'left%d=%s' % (k, key)
+            widgets += readout('%d%s' % (k, key), LX0, LX1, y, label, tok, unit, bb,
+                               [(c, v[0]) for c, v in scale], [(c, v[2]) for c, v in scale], toggle=LBARS + '&' + pick)
+            # --- the other style: heading and value on one row, a hatched gauge under a tick scale -----------------
+            widgets += gauge('%d%s' % (k, key), y, label, tok, unit, gb, scale, toggle=pick)
     # --- the bottom row: coolant left, fuel right ---------------------------------------------------------------
     widgets += [
         text('cool_v', 100, 584, 140, 42, '{{coolant}}', 'v_title', 'fg', 'right'),
@@ -235,6 +250,7 @@ def build():
                   'middle, speed in the open quarter, boost and oil temperature left, a G-meter right, coolant and fuel '
                   'along the bottom. No map window. Full screen: the theme\'s own clock, range and outside temperature in '
                   'the strip, BMW\'s gear letter left uncovered.',
+        'picks': PICKS,
         'widgets': widgets,
     }
 

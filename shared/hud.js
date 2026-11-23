@@ -540,6 +540,9 @@ class HudApp {
         this.needsBoost = false;         // a shown widget uses boost (the engine unit is only asked then)
         this.intakeDme = null; this.intakeDmeAt = 0;  // C, intake air from the engine unit (config.dme.intake)
         this.needsIntake = false;        // a shown widget uses the intake temperature
+        this.oilPDme = null; this.oilPDmeAt = 0;  // bar above the outside air, oil pressure from the engine unit (config.dme.oilP)
+        this.needsOilP = false;          // a shown widget uses the oil pressure
+        this.layoutPicks = {};           // the layout's "picks": what a bar with "pick" shows per setting value
         this.hvSoc = null; this.hvSocAt = 0;  // %, a plug-in hybrid's battery charge (HV_SOC)
         this.needsHv = false;            // a shown widget uses it
         this.fuelObd = null; this.fuelObdAt = 0;  // %, the fuel level from the engine unit (FUEL_OBD)
@@ -652,9 +655,11 @@ class HudApp {
             const sn = b && b.slot ? this.slotSensor(this.activeName, b.slot, this.layoutSlots) : null;
             if (sn) ids.push(sn.id);
         }));
-        const j = JSON.stringify(shown) + ' ' + ids.join(' ');
+        shown.forEach((w) => { if (w.type === 'cdash') this._barsOf(w).forEach((b) => { if (b && b.pick && (!b.toggle || this._toggleOn(b.toggle))) ids.push(b.signal); }); });
+        const j = JSON.stringify(shown.map((w) => (w.type === 'cdash' ? Object.assign({}, w, { bars: (w.bars || []).filter((b) => b && !b.pick) }) : w))) + ' ' + ids.join(' ');
         this.needsBoost = /boost/.test(j);
         this.needsIntake = /intake/.test(j);
+        this.needsOilP = /oilP/.test(j);
         this.needsHv = /hvSoc/.test(j);
         this.needsFuel = /fuel/i.test(j);
     }
@@ -735,6 +740,12 @@ class HudApp {
     setting(key) {
         // "mapUp": not saved, the Waze map is showing inside the theme now (the setting on, waze.js says so)
         if (key === 'mapUp') return !!(this.waze && this.waze.up && this.ctx.settings.get('mapInTheme') === true);
+        // "left0" / "left1": not saved, what Apex's two left gauges show ("leftTop" / "leftBottom"); boost turned off
+        // ("Show boost") puts the intake temperature in its place, for cars without a turbo
+        if (key === 'left0' || key === 'left1') {
+            const v = this.setting(key === 'left0' ? 'leftTop' : 'leftBottom');
+            return v === 'boost' && this.setting('showBoost') === false ? 'intake' : v;
+        }
         // "ribScale": not saved, the Ribbon's scale numbers to show: thousands on the bar, "c" while the camera dip is on
         if (key === 'ribScale') return String(this._barMax() / 1000) + (this._cameraOn() ? 'c' : '');
         const s = this.ctx.settings.item(key);
@@ -1033,7 +1044,8 @@ class HudApp {
         const dme = this.config.dme;
         const hasBoost = !!(dme && Array.isArray(dme.boost) && dme.boost.length);
         const hasIntake = !!(dme && Array.isArray(dme.intake) && dme.intake.length);
-        let rd = null, busy = false, baro = 101.3, baroAt = 0, intakeAsk = 0, hvAsk = 0, hvMiss = 0, fuelAsk = 0, fuelMiss = 0;
+        const hasOilP = !!(dme && Array.isArray(dme.oilP) && dme.oilP.length);
+        let rd = null, busy = false, baro = 101.3, baroAt = 0, intakeAsk = 0, oilAsk = 0, oilMiss = 0, hvAsk = 0, hvMiss = 0, fuelAsk = 0, fuelMiss = 0;
         try {
             // the kit's read-only link: anything but a read (22 / OBD 01) is refused before it leaves the head unit.
             // silentAfter Infinity: never skip a unit that stopped answering; the retry timers below pace that.
@@ -1047,9 +1059,11 @@ class HudApp {
             const now = Date.now();
             const wantBoost = hasBoost && this.needsBoost && now - this.boostFesAt >= FRESH_MS;
             const wantIntake = hasIntake && this.needsIntake && now - intakeAsk >= 2000;   // a temperature: every 2 s is plenty
+            // oil pressure: twice a second; after 3 misses (an engine unit without these identifiers) once every 30 s
+            const wantOilP = hasOilP && this.needsOilP && now - oilAsk >= (oilMiss >= 3 ? 30000 : 500);
             const wantHv = this.needsHv && now - hvAsk >= (hvMiss >= 3 ? HV_RETRY_MS : HV_EVERY_MS);
             const wantFuel = this.needsFuel && now - fuelAsk >= (fuelMiss >= 3 ? FUEL_RETRY_MS : FUEL_EVERY_MS);
-            if (busy || this.car.data().demo || (!wantBoost && !wantIntake && !wantHv && !wantFuel)) return;
+            if (busy || this.car.data().demo || (!wantBoost && !wantIntake && !wantOilP && !wantHv && !wantFuel)) return;
             busy = true;
             (async () => {
                 if (wantFuel) {
@@ -1077,12 +1091,23 @@ class HudApp {
                     const t = await rd.value('intake', dme.intake);
                     if (isNum(t)) { this.intakeDme = t; this.intakeDmeAt = Date.now(); }
                 }
-                if (!wantBoost) return;
+                if (!wantBoost && !wantOilP) return;
                 if (now - baroAt > 60000 && Array.isArray(dme.baro)) {
                     baroAt = now;
                     const b = await rd.value('baro', dme.baro);
                     if (isNum(b)) baro = b;
                 }
+                if (wantOilP) {
+                    oilAsk = now;
+                    const o = await rd.value('oilP', dme.oilP);       // absolute kPa
+                    if (isNum(o)) {
+                        if (oilMiss >= 3 || !isNum(this.oilPDme)) this.log.info('oil pressure: ' + ((o - baro) / 100).toFixed(2) + ' bar from the engine unit (' + rd.constructor.label(dme.oilP[rd.pick.oilP || 0]) + ')');
+                        this.oilPDme = Math.max(0, (o - baro) / 100); this.oilPDmeAt = Date.now(); oilMiss = 0;
+                    } else if (++oilMiss === 3) {
+                        this.log.info('oil pressure: the engine unit answers none of ' + dme.oilP.map((c) => rd.constructor.label(c)).join(', ') + ' (' + dme.oilP.map((c) => (rd.raws[rd.key(c)] || {}).why || '?').join('; ') + '); asked again every 30 s');
+                    }
+                }
+                if (!wantBoost) return;
                 const m = await rd.value('boost', dme.boost);
                 if (isNum(m)) { this.boostDme = (m - baro) / 100; this.boostDmeAt = Date.now(); this.boostCount.dme = (this.boostCount.dme || 0) + 1; }
             })().catch((e) => this.log.info('engine unit boost: ' + (e && e.message || e))).then(() => { busy = false; });
@@ -1751,6 +1776,10 @@ class HudApp {
             const g = this.car.data()[name];
             return isNum(g) && Math.abs(g) <= G_BAD ? g : null;
         }
+        if (name === 'oilP') {
+            if (isNum(this.oilPDme) && Date.now() - this.oilPDmeAt < 10000) return this.oilPDme;
+            return this.car.data().demo ? 3.4 : null;
+        }
         if (name === 'intake') {
             if (isNum(this.intakeDme) && Date.now() - this.intakeDmeAt < 10000) return this.intakeDme;
             return this.car.data().demo ? 31 : null;
@@ -1846,6 +1875,7 @@ class HudApp {
             case 'u:speed2': return us ? 'KM/H' : 'MPH';
             case 'oil': case 'coolant': { const v = this._raw(tok); return fix(isNum(v) ? (usT ? v * 9 / 5 + 32 : v) : v, 0); }
             case 'boost': { const v = this._raw('boost'); return usP ? fix(isNum(v) ? v * 14.5038 : v, 1) : fix(v, 2); }
+            case 'oilP': { const v = this._raw('oilP'); return usP ? fix(isNum(v) ? v * 14.5038 : v, 0) : fix(v, 1); }
             case 'u:boost': return usP ? 'PSI' : 'BAR';
             case 'u:boostLc': return usP ? 'psi' : 'bar';
             case 'holiday': return this.theme.greeting || '';
@@ -2042,6 +2072,7 @@ class HudApp {
         this.mapLive = layout.mapLive === true && !layout.widgets.some((w) => typeof w.toggle === 'string' && w.toggle.indexOf('mapUp') >= 0);
         this._wazeWant();
         this.layoutSlots = layout.slots || [];
+        this.layoutPicks = layout.picks || {};
         this.layoutTheme = layout.theme && THEMES[layout.theme] ? layout.theme : null;
         this.themeName = this._themeName();
         this.theme = THEMES[this.themeName] || THEMES.classic;
@@ -2382,12 +2413,12 @@ class HudApp {
             c.uniform(ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], T[3]]);
             c.uniform(ref, 'u_zone', [Z[0] / (T[6] * 1000), Z[1] / (T[6] * 1000)]);
             c.uniform(ref, 'u_panels', [P[0] - w.x, P[1] - w.x, P[2] - w.y, P[3] - w.y]);
-            const bz = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = (w.bars || [])[i]; return b && isNum(b.red) ? b.red : 1; });
+            const bz = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = this._barsOf(w)[i]; return b && isNum(b.red) ? b.red : 1; });
             c.uniform(ref, 'u_barZ', bz, { type: 'float' });
             // a bar with "mini": a line normally, a small gauge (no scale, "mini" px thick) while the left side shows gauges
             const gaugesOn = this.setting('leftStyle') === 'gauges', solidOn = this.setting('gaugeFill') === 'solid';
-            c.uniform(ref, 'u_barH', [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = (w.bars || [])[i]; return !b ? 2.5 : b.mini && gaugesOn ? b.mini / 2 : isNum(b.h) ? b.h / 2 : 2.5; }), { type: 'float' });
-            c.uniform(ref, 'u_barS', [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = (w.bars || [])[i]; return !b ? 0 : b.style === 'hatch' ? 1 : b.style === 'gauge' ? (solidOn ? 2 : 1) : b.mini && gaugesOn ? (solidOn ? 4 : 3) : 0; }), { type: 'float' });
+            c.uniform(ref, 'u_barH', [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = this._barsOf(w)[i]; return !b ? 2.5 : b.mini && gaugesOn ? b.mini / 2 : isNum(b.h) ? b.h / 2 : 2.5; }), { type: 'float' });
+            c.uniform(ref, 'u_barS', [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = this._barsOf(w)[i]; return !b ? 0 : b.style === 'hatch' ? 1 : b.style === 'gauge' ? (solidOn ? 2 : 1) : b.mini && gaugesOn ? (solidOn ? 4 : 3) : 0; }), { type: 'float' });
             // the glow round the gear's ring: the "dialGlow" setting (off / red / white), else the layout's own "glow"
             const GLOWS = { red: [0.95, 0.1, 0.12, 0.22], white: [0.85, 0.87, 0.92, 0.13], off: [0, 0, 0, 0] };
             const gk = this.setting('dialGlow'), gl = (GLOWS[gk] || w.glow || GLOWS.off).slice();
@@ -2660,6 +2691,18 @@ class HudApp {
         if (!h) return [0, 0, 0, 0];
         const inset = isNum(w.holeInset) ? w.holeInset : 6;
         return [h[0] + inset - w.x, h[1] + inset - w.y, Math.max(0, h[2] - 2 * inset), Math.max(0, h[3] - 2 * inset)];
+    }
+
+    /**
+     * A dash widget's bars with their "pick" filled in: a bar with "pick": "left0" takes signal, min, max and red from
+     * the layout's "picks" table for what that (virtual) setting says now (Apex's left gauges: boost, oil, intake, oilP).
+     */
+    _barsOf(w) {
+        return (w.bars || []).map((b) => {
+            if (!b || !b.pick) return b;
+            const p = ((this.layoutPicks || {})[b.pick] || {})[this.setting(b.pick)];
+            return p ? Object.assign({}, b, p) : b;
+        });
     }
 
     _holeRadius(w) { return isNum(w.holeRadius) ? w.holeRadius : 28; }
@@ -3011,7 +3054,7 @@ class HudApp {
         } else if (w.type === 'cdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
             const rpm = this._raw('rpm');
-            const bars = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = (w.bars || [])[i]; return b && (!b.toggle || this._toggleOn(b.toggle)) ? b : null; });
+            const bars = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const b = this._barsOf(w)[i]; return b && (!b.toggle || this._toggleOn(b.toggle)) ? b : null; });
             const bv = bars.map((b) => { const v = b && b.signal ? this._raw(b.signal) : null; return isNum(v) ? q((v - b.min) / (b.max - b.min)) : 0; });
             const rv = isNum(rpm) ? q(rpm / (T[6] * 1000)) : 0;
             // the tyre panel's tyres: 0 no reading, 1 fine, 2 low (under "tyreLow" psi, 33, as shown: rounded)
