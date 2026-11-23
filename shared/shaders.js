@@ -1800,6 +1800,7 @@ uniform vec4 u_mapHole;    // the Waze map's round window in the dial: centre x,
 uniform vec2 u_mapEdge;    // x: how wide its edge fades into the dial, px inward from the radius (0: a hard edge);
                            // y: the top of Waze's picture (the panel's centred 1088x480: y 120), faded in below it (0: none)
 uniform vec4 u_glow;       // a soft glow fading outward from the gear's ring (0.5 of the radius): r, g, b, strength (0 = none)
+uniform float u_plain;     // 1: no backdrop (carbon, weave, side glow), plain black (the "Backgrounds" setting off)
 
 const vec3 WHITE = vec3(0.95, 0.96, 0.97);
 const vec3 TRACK = vec3(0.16, 0.16, 0.18);
@@ -1851,6 +1852,7 @@ void main() {
     float glowS = max(sideL, sideR);
     float foot = 1.0 - smoothstep(u_panels.w - 80.0, u_panels.w, p.y);
     c += vec3(0.13, 0.014, 0.02) * glowS * glowS * foot * (1.0 - u_bgStyle);
+    c *= 1.0 - u_plain;
 
     vec2 d = p - u_tach.xy;
     float r = length(d), R = u_tach.z, B = u_tach.w;
@@ -1987,6 +1989,7 @@ uniform vec3 u_red;        // red from (0..1 of the scale), band thickness as a 
 uniform vec4 u_band;       // the middle band: x, y, w, h (w 0 = none)
 uniform vec4 u_mini[4];    // small scales: left x, y (the scale line), width (0 = none), value 0..1
 uniform vec4 u_miniZ;      // each scale's red zone from (0..1; 1 = none)
+uniform float u_plain;     // 1: no hex backdrop, plain black (the "Backgrounds" setting off)
 
 const vec3 RED = vec3(0.95, 0.1, 0.1);
 
@@ -2016,6 +2019,7 @@ void main() {
     c = put(c, vec3(0.085 + 0.07 * near) * vec3(0.95, 0.97, 1.0), cov(e - 1.1) * (0.3 + 0.6 * near));
     c *= 1.0 - 0.6 * smoothstep(0.6, 1.0, abs(v_uv.x - 0.5) * 2.0);
     c *= 1.0 - smoothstep(0.6, 0.95, v_uv.y);    // fading to black well above the bottom strip
+    c *= 1.0 - u_plain;
 
     // the middle band: a grey strip, lighter in its middle, fading out at both ends
     if (u_band.z > 0.0) {
@@ -2183,6 +2187,7 @@ uniform vec4 u_arc1;       // its bottom scale: value 0..1, red from 0..1
 uniform vec4 u_gbox;       // the gear's box: centre x, y, half width, half height
 uniform vec4 u_car;        // the right dial's car: centre x, y, half width, half length
 uniform vec4 u_tyre;       // its tyres FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
+uniform float u_plain;     // 1: no backdrop, plain black (the "Backgrounds" setting off)
 
 const vec3 REDB = vec3(0.80, 0.07, 0.09);
 const vec3 CREAM = vec3(0.96, 0.91, 0.75);
@@ -2264,8 +2269,10 @@ void main() {
     float wv = across ? fq.y : fq.x;
     float lc = across ? 0.62 + 0.38 * sin(3.14159 * fq.y) : 0.3 + 0.22 * sin(3.14159 * fq.x);
     lc *= smoothstep(0.0, 0.12, wv) * smoothstep(1.0, 0.88, wv) * 0.55 + 0.45;
-    float side = 1.0 - smoothstep(u_tach.z * 0.95, u_size.x * 0.52, abs(p.x - u_tach.x));
-    vec3 c = vec3(0.086, 0.088, 0.094) * 1.35 * lc * pow(side, 1.4) * mix(1.0, 0.72, v_uv.y);
+    // lit along the dials' row, fading to black at the top and the bottom, a little at the sides
+    float vert = 1.0 - smoothstep(40.0, u_size.y * 0.5 + 8.0, abs(p.y - u_tach.y));
+    float side = 1.0 - 0.45 * smoothstep(u_size.x * 0.3, u_size.x * 0.5, abs(p.x - u_tach.x));
+    vec3 c = vec3(0.086, 0.088, 0.094) * 1.35 * lc * pow(vert, 1.3) * side * (1.0 - u_plain);
 
     // --- the rev counter ---
     vec2 d = p - u_tach.xy;

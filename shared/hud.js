@@ -2409,6 +2409,7 @@ class HudApp {
             c.uniform(ref, 'u_red', [(w.red || 7000) / (A[7] * 1000), A[8] || 0.16, A[7]]);
             c.uniform(ref, 'u_band', [B[0] - w.x, B[1] - w.y, B[2], B[3]]);
             c.uniform(ref, 'u_miniZ', [0, 1, 2, 3].map((i) => { const m = (w.minis || [])[i]; return m && isNum(m.red) ? m.red : 1; }));
+            c.uniform(ref, 'u_plain', [this.setting('backdrops') === false ? 1 : 0]);   // "Backgrounds" off: black
         } else if (w.type === 'gdash') {
             // Circuit (tools/gen_circuit.py): "tach" [cx, cy, r, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "left" / "right" [cx, cy, r] (the side dials), "gbox" [cx, cy, half w, half h] (the gear's box), "car"
@@ -2422,6 +2423,7 @@ class HudApp {
             c.uniform(ref, 'u_right', [Rd[0] - w.x, Rd[1] - w.y, Rd[2], 0]);
             c.uniform(ref, 'u_gbox', [G[0] - w.x, G[1] - w.y, G[2], G[3]]);
             c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
+            c.uniform(ref, 'u_plain', [this.setting('backdrops') === false ? 1 : 0]);   // "Backgrounds" off: black
         } else if (w.type === 'cdash') {
             // Apex (tools/gen_apex.py): "tach" [cx, cy, outer r, band, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "panels" [left inner x, right inner x, glow top y, bottom y], "bars" (up to 4: {x, y, w, signal, min, max, red}),
@@ -2447,6 +2449,7 @@ class HudApp {
             c.uniform(ref, 'u_mapHole', mh[2] > 0 ? [mh[0] + mh[2] / 2, mh[1] + mh[3] / 2, mh[2] / 2, isNum(w.holeFoot) ? w.holeFoot : 0] : [0, 0, 0, 0]);
             c.uniform(ref, 'u_mapEdge', [isNum(w.holeFeather) ? w.holeFeather : 0, isNum(w.holeTop) ? w.holeTop - w.y : 0]);
             c.uniform(ref, 'u_bgStyle', [this.setting('apexBackdrop') === 'carbon' ? 1 : 0]);   // the backdrop setting
+            c.uniform(ref, 'u_plain', [this.setting('backdrops') === false ? 1 : 0]);   // "Backgrounds" off: black
             // the right panel: the G-meter, or the tyres with this car drawn in the middle ("car" [cx, cy, half w, half l])
             const car = this.setting('rightPanel') === 'tyres' && w.car;
             c.uniform(ref, 'u_car', car ? [car[0] - w.x, car[1] - w.y, car[2], car[3]] : [0, 0, 0, 0]);
