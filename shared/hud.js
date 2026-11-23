@@ -101,6 +101,8 @@
  *             (0..1: a soft glow fading outward from the ring round the gear), "car" [cx, cy, half width, half length] (the
  *             tyre panel's car, drawn while the "rightPanel" setting is "tyres"); the Waze map as a round window in the square "hole"
  *             (with "holeWhen": "mapUp"), "holeFoot" 0..1 how dark its lower part gets (0), "holeFeather" px its edge fades over, inward (0: hard), "holeTop" y where the map picture starts (faded in below it)
+ *   gdash     effect layer; the whole Circuit theme (shaders.js gdash, layout made by tools/gen_circuit.py): three round dials
+ *             ("tach", "left", "right"), the left one's two scales ("arcs", picked like Apex's left gauges), the tyres ("car")
  *   ldash     effect layer; the whole Veloce theme (shaders.js ldash, layout made by tools/gen_veloce.py): "arc" [cx, cy, rx,
  *             ry, start deg, sweep deg, blocks, thousands, band fraction] (a wide elliptical rev arc of bevelled blocks, lit to
  *             the revs), "red" rpm (red from), "band" [x, y, w, h] (a grey strip across the middle), "minis" (at most 4 small
@@ -656,7 +658,9 @@ class HudApp {
             if (sn) ids.push(sn.id);
         }));
         shown.forEach((w) => { if (w.type === 'cdash') this._barsOf(w).forEach((b) => { if (b && b.pick && (!b.toggle || this._toggleOn(b.toggle))) ids.push(b.signal); }); });
-        const j = JSON.stringify(shown.map((w) => (w.type === 'cdash' ? Object.assign({}, w, { bars: (w.bars || []).filter((b) => b && !b.pick) }) : w))) + ' ' + ids.join(' ');
+        shown.forEach((w) => { if (w.type === 'gdash') (w.arcs || []).forEach((b) => { const r = this._pickOf(b); if (r && r.signal) ids.push(r.signal); }); });
+        const j = JSON.stringify(shown.map((w) => (w.type === 'cdash' ? Object.assign({}, w, { bars: (w.bars || []).filter((b) => b && !b.pick) })
+            : w.type === 'gdash' ? Object.assign({}, w, { arcs: [] }) : w))) + ' ' + ids.join(' ');
         this.needsBoost = /boost/.test(j);
         this.needsIntake = /intake/.test(j);
         this.needsOilP = /oilP/.test(j);
@@ -2405,6 +2409,19 @@ class HudApp {
             c.uniform(ref, 'u_red', [(w.red || 7000) / (A[7] * 1000), A[8] || 0.16, A[7]]);
             c.uniform(ref, 'u_band', [B[0] - w.x, B[1] - w.y, B[2], B[3]]);
             c.uniform(ref, 'u_miniZ', [0, 1, 2, 3].map((i) => { const m = (w.minis || [])[i]; return m && isNum(m.red) ? m.red : 1; }));
+        } else if (w.type === 'gdash') {
+            // Circuit (tools/gen_circuit.py): "tach" [cx, cy, r, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
+            // "left" / "right" [cx, cy, r] (the side dials), "gbox" [cx, cy, half w, half h] (the gear's box), "car"
+            // [cx, cy, half w, half l] (the right dial's car, its tyres drawn here); "arcs" the left dial's two scales
+            // ({ pick, signal, min, max, red }: per frame); target px
+            const T = w.tach, Z = w.zones || [6500, 7000], L = w.left, Rd = w.right, G = w.gbox, C = w.car;
+            c.uniform(ref, 'u_size', [w.w, w.h]);
+            c.uniform(ref, 'u_tachA', [T[3], T[4], T[5], Z[1] / (T[5] * 1000)]);
+            c.uniform(ref, 'u_amber', [Z[0] / (T[5] * 1000)]);
+            c.uniform(ref, 'u_left', [L[0] - w.x, L[1] - w.y, L[2], 0]);
+            c.uniform(ref, 'u_right', [Rd[0] - w.x, Rd[1] - w.y, Rd[2], 0]);
+            c.uniform(ref, 'u_gbox', [G[0] - w.x, G[1] - w.y, G[2], G[3]]);
+            c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
         } else if (w.type === 'cdash') {
             // Apex (tools/gen_apex.py): "tach" [cx, cy, outer r, band, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "panels" [left inner x, right inner x, glow top y, bottom y], "bars" (up to 4: {x, y, w, signal, min, max, red}),
@@ -2698,12 +2715,13 @@ class HudApp {
      * A dash widget's bars with their "pick" filled in: a bar with "pick": "left0" takes signal, min, max and red from
      * the layout's "picks" table for what that (virtual) setting says now (Apex's left gauges: boost, oil, intake, oilP).
      */
-    _barsOf(w) {
-        return (w.bars || []).map((b) => {
-            if (!b || !b.pick) return b;
-            const p = ((this.layoutPicks || {})[b.pick] || {})[this.setting(b.pick)];
-            return p ? Object.assign({}, b, p) : b;
-        });
+    _barsOf(w) { return (w.bars || []).map((b) => this._pickOf(b)); }
+
+    /** One bar or scale with its "pick" filled in from the layout's "picks" (else as it is). */
+    _pickOf(b) {
+        if (!b || !b.pick) return b;
+        const p = ((this.layoutPicks || {})[b.pick] || {})[this.setting(b.pick)];
+        return p ? Object.assign({}, b, p) : b;
     }
 
     _holeRadius(w) { return isNum(w.holeRadius) ? w.holeRadius : 28; }
@@ -3052,6 +3070,21 @@ class HudApp {
             const mu = [];
             ms.forEach((m, i) => mu.push(m ? m.x - w.x : 0, m ? m.y - w.y : 0, m ? m.w : 0, mv[i]));
             x.c.uniform(x.ref, 'u_mini', mu, { type: 'vec4' });
+        } else if (w.type === 'gdash') {
+            const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
+            const rpm = this._raw('rpm');
+            const rv = isNum(rpm) ? q(rpm / (T[5] * 1000)) : 0;
+            const arcs = [0, 1].map((i) => this._pickOf((w.arcs || [])[i]));
+            const av = arcs.map((b) => { const v = b && b.signal ? this._raw(b.signal) : null; return isNum(v) ? q((v - b.min) / (b.max - b.min)) : 0; });
+            const low = isNum(w.tyreLow) ? w.tyreLow : 33;
+            const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
+            const key = [rv].concat(av, ts, arcs.map((b) => (b ? b.red : 1))).join('|');
+            if (!force && key === x.last) return;
+            x.last = key;
+            x.c.uniform(x.ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], rv]);
+            x.c.uniform(x.ref, 'u_arc0', [av[0], arcs[0] && isNum(arcs[0].red) ? arcs[0].red : 1, 0, 0]);
+            x.c.uniform(x.ref, 'u_arc1', [av[1], arcs[1] && isNum(arcs[1].red) ? arcs[1].red : 1, 0, 0]);
+            x.c.uniform(x.ref, 'u_tyre', ts);
         } else if (w.type === 'cdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
             const rpm = this._raw('rpm');

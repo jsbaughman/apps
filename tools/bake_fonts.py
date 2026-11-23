@@ -80,6 +80,19 @@ CLUSTER_FONTS = [
     ('a_unit', 'Outfit[wght].ttf', 34, LOWER + '/', 0, 'Bold', None, '', 0.2),   # the speed's unit (mph, km/h)
     ('a_tach', 'Outfit[wght].ttf', 58, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the rev counter's numbers, as the speed
     ('a_speed_m', 'Outfit[wght].ttf', 70, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the speed in map view, 20 % bigger
+    # Circuit (tools/gen_circuit.py): Barlow, upright
+    ('ci_num', 'BarlowCondensed-Bold.ttf', 59, DIGITS),
+    ('ci_anum', 'BarlowCondensed-Bold.ttf', 36, DIGITS + '.'),
+    ('ci_speed', 'BarlowSemiCondensed-SemiBold.ttf', 88, DIGITS + '-'),
+    ('ci_gear', 'BarlowSemiCondensed-SemiBold.ttf', 44, DIGITS + 'PRNDSM-'),
+    ('ci_val', 'BarlowSemiCondensed-SemiBold.ttf', 55, DIGITS + '.-'),
+    ('ci_tp', 'BarlowSemiCondensed-SemiBold.ttf', 51, DIGITS + '.-'),
+    ('ci_unit', 'Barlow-Medium.ttf', 23, LOWER + '/°FC'),
+    ('ci_lab', 'Barlow-Medium.ttf', 21, UPPER + LOWER + ' '),
+    ('ci_head', 'Barlow-Medium.ttf', 30, UPPER + LOWER + ' '),
+    ('ci_tt', 'Barlow-Medium.ttf', 25, DIGITS + '°FC-'),
+    ('ci_mode', 'Barlow-Medium.ttf', 18, UPPER + ' '),
+    ('ci_rpm', 'Barlow-Medium.ttf', 17, 'RPMx 0123456789'),
     # the smaller tach for cars with the driver camera ("Leave room for the driver camera"), 0.81 of the above
     ('a_gear_c', 'Outfit[wght].ttf', 162, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 5),
     ('a_gear_s_c', 'Outfit[wght].ttf', 162, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2),

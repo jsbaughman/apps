@@ -2161,4 +2161,199 @@ void main() {
 }
 `;
 
-module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gtext: GTEXT };
+const GDASH = `// The Circuit theme in one cluster-render "effect" layer (GLSL ES 1.00), layout made by tools/gen_circuit.py: three round
+// dials standing off a carbon backdrop (a cast shadow, a bevelled metal bezel): the rev counter in the middle (a tick track
+// coloured blue to warm to red, a grooved red number band, a cream needle, the gear's red box), a two-scale gauge on the left
+// (u_arc0 over the top, u_arc1 under the bottom, each a red band, ticks, a cream fill and pointer) and the tyres on the right
+// (u_car, u_tyre: the car itself is an image over them). v_uv (0,0) is the top-left; angles are clockwise from 12 o'clock.
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 v_uv;
+uniform vec2 u_size;
+uniform vec4 u_tach;       // centre x, y, outer radius, revs 0..1
+uniform vec4 u_tachA;      // start angle, sweep (deg), thousands on the scale, red from (0..1)
+uniform float u_amber;     // amber from (0..1)
+uniform vec4 u_left;       // the left dial: centre x, y, outer radius
+uniform vec4 u_right;      // the right dial: centre x, y, outer radius
+uniform vec4 u_arc0;       // the left dial's top scale: value 0..1, red from 0..1
+uniform vec4 u_arc1;       // its bottom scale: value 0..1, red from 0..1
+uniform vec4 u_gbox;       // the gear's box: centre x, y, half width, half height
+uniform vec4 u_car;        // the right dial's car: centre x, y, half width, half length
+uniform vec4 u_tyre;       // its tyres FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
+
+const vec3 REDB = vec3(0.80, 0.07, 0.09);
+const vec3 CREAM = vec3(0.96, 0.91, 0.75);
+const vec3 TICK = vec3(0.92, 0.92, 0.95);
+const vec3 HOT = vec3(0.95, 0.12, 0.12);
+
+float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
+vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
+float ring(float r, float a, float b) { return cov(a - r) * cov(r - b); }
+float rboxd(vec2 p, vec2 c, vec2 h, float rad) {
+    vec2 q = abs(p - c) - h + rad;
+    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - rad;
+}
+// a dial's body: what it does to the backdrop (shadow, rim light) and its bezel; returns the colour
+vec3 body(vec3 c, vec2 d, float R) {
+    float r = length(d), lit = 0.5 - 0.5 * d.y / max(r, 1.0), k = R / 322.0;
+    float rs = length(d - vec2(0.0, 22.0 * k));
+    if (r > R - 1.0) c *= 1.0 - 0.92 * exp(-max(rs - R + 10.0 * k, 0.0) / (55.0 * k));
+    c += 0.22 * exp(-abs(r - R - 1.0) / 2.5) * clamp(-d.y / max(r, 1.0), 0.0, 1.0);
+    float bz = 22.0 * k, inb = ring(r, R - bz, R);
+    float cr = clamp((r - R + bz) / bz, 0.0, 1.0), crown = exp(-pow((cr - 0.45) / 0.22, 2.0));
+    vec3 b = vec3(0.06 + 0.5 * pow(lit, 2.5) * crown + 0.08 * lit) * vec3(1.0, 1.0, 1.05);
+    b *= 1.0 - 0.5 * (1.0 - lit) * (1.0 - crown * 0.5);
+    c = put(c, vec3(0.0), cov(r - R));
+    c = put(c, b, inb);
+    c = put(c, vec3(0.32, 0.33, 0.36), ring(r, R - 1.2, R + 0.4) * 0.9);
+    return c;
+}
+// the red band with fine machined grooves, lit from the top
+vec3 redBand(float r, float lit) {
+    float g = 0.86 + 0.14 * (0.5 + 0.5 * cos(r / 3.2 * 6.28318));
+    return REDB * g * (0.82 + 0.18 * lit);
+}
+// a tick across radius rr at angle a (rad) of length L and width w; p relative to the centre
+float tick(vec2 d, float a, float ro, float L, float w) {
+    vec2 u = vec2(sin(a), -cos(a));
+    float t = clamp(dot(d, u), ro - L, ro);
+    return cov(length(d - u * t) - w * 0.5);
+}
+// one scale of the left dial: a band from a0 sweeping sw (deg, sign = direction), 20 small steps, a big one every 5
+vec3 arcScale(vec3 c, vec2 d, float R, float a0, float sw, vec4 v) {
+    float r = length(d), lit = 0.5 - 0.5 * d.y / max(r, 1.0);
+    float ang = degrees(atan(d.x, -d.y));
+    float rel = sw > 0.0 ? mod(ang - a0 + 720.0, 360.0) : mod(a0 - ang + 720.0, 360.0);
+    float f = rel / abs(sw);
+    if (f > 1.03) return c;
+    float on = step(f, 1.0);
+    float inner = R - 22.0 * R / 322.0, tr1 = inner - 4.0, tr0 = inner - 40.0, rb1 = inner - 44.0, rb0 = inner - 98.0;
+    c += vec3(0.3, 0.32, 0.36) * 0.07 * ring(r, tr0, tr1) * on;
+    float mb = ring(r, rb0, rb1) * on;
+    c = put(c, redBand(r, lit), mb);
+    c = put(c, vec3(0.95, 0.55, 0.55), ring(r, rb1 - 1.5, rb1) * on * 0.35);
+    if (r > rb1 && r < tr1) c *= 1.0 - on * 0.6 * exp(-(r - rb1) / 8.0);
+    if (r < rb0) c *= 1.0 - on * 0.6 * exp(-(rb0 - r) / 10.0);
+    // ticks: the nearest of 21
+    float i = floor(f * 20.0 + 0.5);
+    float big = step(abs(mod(i, 5.0)), 0.5);
+    float ta = radians(a0 + sw * i / 20.0);
+    float m = i >= 0.0 && i <= 20.0 ? tick(d, ta, tr1 - 2.0, mix(12.0, 26.0, big), mix(1.6, 5.0, big)) : 0.0;
+    c = put(c, i / 20.0 >= v.y - 0.001 && v.y < 0.999 ? HOT : TICK, m);   // red 1: no red zone
+    c = put(c, vec3(0.85, 0.08, 0.1), ring(r, tr1 - 3.0, tr1 + 2.0) * on * step(v.y, f) * step(v.y, 0.999));
+    c = put(c, CREAM, ring(r, tr0 - 1.0, tr0 + 4.0) * on * step(f, v.x));
+    // the pointer: a cream wedge at the value
+    float pa = radians(a0 + sw * v.x);
+    vec2 u = vec2(sin(pa), -cos(pa)), n = vec2(-u.y, u.x);
+    float t = dot(d, u), s = abs(dot(d, n));
+    float tt = clamp((t - (rb1 - 4.0)) / (tr1 - rb1 + 2.0), 0.0, 1.0);
+    float wdg = cov(s - mix(7.0, 2.0, tt)) * step(rb1 - 4.0, t) * step(t, tr1 - 2.0);
+    c = put(c, CREAM, wdg);
+    return c;
+}
+
+void main() {
+    vec2 p = v_uv * u_size;
+    // carbon fibre: a 2 x 2 twill of 7 px strands, lit brightest round the rev counter, darker at the sides and the foot
+    vec2 q = p / 7.0;
+    vec2 cell = floor(q), fq = fract(q);
+    bool across = mod(cell.x + cell.y, 4.0) < 2.0;
+    float wv = across ? fq.y : fq.x;
+    float lc = across ? 0.62 + 0.38 * sin(3.14159 * fq.y) : 0.3 + 0.22 * sin(3.14159 * fq.x);
+    lc *= smoothstep(0.0, 0.12, wv) * smoothstep(1.0, 0.88, wv) * 0.55 + 0.45;
+    float side = 1.0 - smoothstep(u_tach.z * 0.95, u_size.x * 0.52, abs(p.x - u_tach.x));
+    vec3 c = vec3(0.086, 0.088, 0.094) * 1.35 * lc * pow(side, 1.4) * mix(1.0, 0.72, v_uv.y);
+
+    // --- the rev counter ---
+    vec2 d = p - u_tach.xy;
+    float R = u_tach.z, r = length(d), lit = 0.5 - 0.5 * d.y / max(r, 1.0);
+    c = body(c, d, R);
+    // the left and right dials' bodies
+    c = body(c, p - u_left.xy, u_left.z);
+    c = body(c, p - u_right.xy, u_right.z);
+    if (r < R - 21.0) {
+        float k = R / 322.0, inner = R - 22.0 * k;
+        float ang = degrees(atan(d.x, -d.y));
+        float rel = mod(ang - u_tachA.x + 720.0, 360.0), f = rel / u_tachA.y, on = step(f, 1.0);
+        float tr0 = R - 62.0 * k, tr1 = inner - 1.0, rb1 = R - 64.0 * k, rb0 = R - 150.0 * k;
+        // the tick track's glow: blue low, warm high
+        vec3 gc = mix(mix(vec3(0.05, 0.18, 0.6), vec3(0.25, 0.28, 0.35), smoothstep(0.0, 0.35, f)),
+                      mix(vec3(0.45, 0.5, 0.2), vec3(0.6, 0.1, 0.05), smoothstep(0.8, 1.0, f)), smoothstep(0.35, 0.6, f));
+        c += gc * ring(r, tr0, tr1) * on * (0.10 + 0.10 * clamp((r - tr0) / (tr1 - tr0), 0.0, 1.0));
+        // ticks every 100 rpm, longer every 500, bold every 1000
+        float n = u_tachA.z * 10.0;
+        float i = floor(f * n + 0.5);
+        float big = step(mod(i, 10.0), 0.5), mid = step(abs(mod(i, 5.0)), 0.5);
+        float L = big > 0.5 ? 34.0 * k : mid > 0.5 ? 16.0 * k : 9.0 * k;
+        float w = big > 0.5 ? 5.5 * k : mid > 0.5 ? 1.8 * k : 1.2 * k;
+        float fi = i / n;
+        vec3 tc = fi >= u_tachA.w - 0.001 ? HOT : fi >= u_amber - 0.001 ? vec3(0.98, 0.82, 0.2) :
+            mix(mix(vec3(0.45, 0.65, 1.0), vec3(0.9, 0.92, 0.95), smoothstep(0.0, 0.45, fi / u_amber)),
+                vec3(0.8, 0.9, 0.35), smoothstep(0.75, 1.0, fi / u_amber));
+        float tm = i >= 0.0 && i <= n ? tick(d, radians(u_tachA.x + u_tachA.y * fi), inner - 3.0 * k, L, w) : 0.0;
+        c = put(c, tc, tm);
+        c = put(c, vec3(0.85, 0.08, 0.1), ring(r, inner - 6.0 * k, inner - 1.0 * k) * on * step(u_tachA.w, f));
+        // the bezel's lip shades the track's top
+        if (r > rb1) c *= 1.0 - 0.6 * exp(-(inner - r) / 14.0) * lit;
+        // the red number band, standing proud: its shadow on the track; the face sits down inside it
+        c = put(c, redBand(r, lit), ring(r, rb0, rb1));
+        c = put(c, vec3(0.95, 0.55, 0.55), ring(r, rb1 - 1.5, rb1) * 0.35);
+        if (r > rb1) c *= 1.0 - 0.75 * exp(-(r - rb1) / 10.0) * (0.6 + 0.4 * (1.0 - lit));
+        if (r < rb0) {
+            c = vec3(0.02, 0.02, 0.024) * clamp(1.0 - r / rb0, 0.0, 1.0);
+            c = put(c, vec3(0.75, 0.76, 0.8), ring(r, rb0 - 2.6, rb0 - 0.6));
+            if (r < rb0 - 2.6) c *= 1.0 - 0.75 * exp(-(rb0 - 2.6 - r) / 18.0) * (0.5 + 0.5 * lit);
+            // the gear's red box
+            float gb = rboxd(p, u_gbox.xy, u_gbox.zw, 5.0);
+            c = put(c, vec3(0.86, 0.12, 0.14), cov(abs(gb) - 1.5));
+        }
+        // the needle: a soft shadow, the cream taper from a short tail to the track, the silver hub
+        float na = radians(u_tachA.x + u_tachA.y * u_tach.w);
+        vec2 u = vec2(sin(na), -cos(na)), nn = vec2(-u.y, u.x);
+        float tip = R - 30.0 * k, tail = 42.0 * k;
+        vec2 ds = d - vec2(4.0, 6.0);
+        float ts = dot(ds, u), ss = abs(dot(ds, nn));
+        float hw = mix(5.0, 1.6, clamp((ts + tail) / (tip + tail), 0.0, 1.0));
+        c *= 1.0 - 0.55 * smoothstep(hw + 6.0, hw - 1.0, ss) * step(-tail, ts) * step(ts, tip);
+        float t = dot(d, u), s = abs(dot(d, nn));
+        hw = mix(5.0, 1.6, clamp((t + tail) / (tip + tail), 0.0, 1.0));
+        c = put(c, vec3(0.957, 0.91, 0.745), cov(s - hw) * step(-tail, t) * step(t, tip));
+        float hr = 26.0 * k;
+        vec2 hd = d + vec2(3.0, 4.0) * (1.0 - r / hr);
+        float hv = 70.0 + 150.0 * pow(clamp(1.0 - length(d + vec2(4.0, 5.0)) / hr, 0.0, 1.0), 0.7);
+        c = put(c, vec3(hv, hv, hv + 6.0) / 255.0, cov(r - hr));
+        c = put(c, vec3(0.16), cov(abs(r - hr) - 1.0));
+    }
+
+    // --- the left dial: two scales ---
+    vec2 dl = p - u_left.xy;
+    float rl = length(dl), inl = u_left.z - 22.0 * u_left.z / 322.0;
+    if (rl < inl) {
+        c *= 1.0 - 0.6 * exp(-(inl - rl) / 16.0) * (0.5 - 0.5 * dl.y / max(rl, 1.0));
+        c = arcScale(c, dl, u_left.z, -68.0, 136.0, u_arc0);
+        c = arcScale(c, dl, u_left.z, 248.0, -136.0, u_arc1);
+        c = put(c, vec3(0.35, 0.36, 0.38), cov(abs(dl.y - 16.0) - 0.5) * step(abs(dl.x), 70.0));
+    }
+    // --- the right dial: the tyres, coloured by pressure (the car is an image over them) ---
+    vec2 dr = p - u_right.xy;
+    float rr = length(dr), inr = u_right.z - 22.0 * u_right.z / 322.0;
+    if (rr < inr) {
+        c = put(c, vec3(0.018 + 0.03 * clamp(1.0 - rr / inr, 0.0, 1.0)), 1.0);
+        c *= 1.0 - 0.6 * exp(-(inr - rr) / 16.0) * (0.5 - 0.5 * dr.y / max(rr, 1.0));
+        c = put(c, vec3(0.6, 0.61, 0.65), ring(rr, inr - 1.6, inr - 0.2) * 0.7);
+        for (int k = 0; k < 4; k++) {
+            float sx = (k == 0 || k == 2) ? -1.0 : 1.0, sy = k < 2 ? -1.0 : 1.0;
+            float st = k == 0 ? u_tyre.x : k == 1 ? u_tyre.y : k == 2 ? u_tyre.z : u_tyre.w;
+            vec2 tc2 = u_car.xy + vec2(sx * (u_car.z + 3.6), sy * u_car.w * 0.6);
+            vec3 col = st > 1.5 ? vec3(0.86, 0.16, 0.16) : st > 0.5 ? vec3(0.24, 0.75, 0.36) : vec3(0.3, 0.3, 0.33);
+            c = put(c, col, cov(rboxd(p, tc2, vec2(9.6, 26.4), 7.0)));
+        }
+    }
+    gl_FragColor = vec4(c, 1.0);
+}
+`;
+
+module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gdash: GDASH, gtext: GTEXT };

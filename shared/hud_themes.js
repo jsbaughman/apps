@@ -107,6 +107,18 @@ const THEMES = {
         ink: [12, 12, 14, 255], accent: [255, 92, 58, 255], well: [0, 0, 0, 255], faint: [96, 100, 110, 255],
         hot: [238, 24, 26, 255],
     },
+    // Circuit (layout circuit.json, tools/gen_circuit.py): a German track-car style, round dials with red number bands
+    // on carbon, white type, blue tyre temperatures.
+    circuit: {
+        name: 'Circuit',
+        fg: [242, 243, 246, 255], dim: [170, 172, 180, 255], track: [44, 44, 50, 255], arc: [242, 243, 246, 255],
+        glow: 0, stripe: false,
+        bar: { low: [242, 243, 246], mid: [242, 243, 246], high: [238, 24, 26], midAt: 'shift' },
+        rev: { from: [238, 24, 26], to: [238, 24, 26] },
+        bg: [0, 0, 0, 255], panel: [0, 0, 0, 255], line: [128, 130, 138, 255], head: [226, 228, 232, 255],
+        ink: [12, 12, 14, 255], accent: [255, 92, 58, 255], well: [0, 0, 0, 255], faint: [96, 100, 110, 255],
+        hot: [235, 40, 45, 255], cool: [70, 170, 245, 255],
+    },
     // Veloce (layout veloce.json, tools/gen_veloce.py): an Italian supercar style, silver arc blocks on hex cells, red accents.
     veloce: {
         name: 'Veloce',

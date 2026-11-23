@@ -33,6 +33,7 @@ const TYPES = {
     vdash: ['tach', 'segs'],
     cdash: ['tach'],
     ldash: ['arc'],
+    gdash: ['tach', 'left', 'right', 'gbox', 'car'],
     mtach: ['side', 'y0', 'y8', 'ym', 'xm', 'kTop', 'kBot', 'wBot', 'wTop'],
     icon: ['icon'],
     swatch: [],
