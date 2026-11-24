@@ -377,7 +377,7 @@ function mediaText(v) {
 /** Seconds as m:ss. */
 function clockOf(sec) { const t = Math.max(0, Math.floor(sec)); return Math.floor(t / 60) + ':' + ('0' + (t % 60)).slice(-2); }   // its speed scale: 0..200 mph by 20, 0..330 km/h by 30 (linear)
 const ROAD_DASH_M = 12;            // the Sport road: metres per dash and gap (shaders.js sdash u_road)
-const CUE_TYPES = { lights: true, shiftbar: true, revbar: true, revarc: true, ribbon: true, mtach: true };
+const CUE_TYPES = { lights: true, shiftbar: true, revbar: true, revarc: true, ribbon: true, mtach: true, cdash: true, ldash: true, gdash: true };
 // the shift-light test (page.js Alerts): rpm climbs from TEST_FROM to just past the shift point, then holds
 const TEST_FROM = 1500, TEST_CLIMB_MS = 2500, TEST_HOLD_MS = 1200;
 // night colours (Cluster Themes "nightDim"): after sunset the theme's whites and greys go to this brightness
@@ -1640,6 +1640,24 @@ class HudApp {
         sp.now = this._countIn() ? this.cue.now.shift : isNum(rpm) && rpm >= sp.rpm;
         sp.oilCold = isNum(d.oil) && d.oil < 80;
         return sp;
+    }
+
+    /**
+     * The whole-theme dashes' shift light (Apex, Veloce, Circuit; setting "shiftLight"): [count 0..1, flash 0 / 1]. The
+     * count-in (shift_cue.js) fills over the last second and its latched flash blinks at 5 Hz; the fixed band fills over
+     * the 1500 rpm under the shift point and flashes from it. Off: [0, 0].
+     */
+    _shiftNow(now) {
+        if (this.setting('shiftLight') === false) return [0, 0];
+        const rpm = isNum(this.rpmF) ? this.rpmF : this.car.data().rpm;
+        if (this._countIn()) {
+            const on = this.cue.now.shift ? (this.cue.blink(now) ? 1 : 0) : 0;
+            return [this.cue.now.shift ? 1 : Math.round(this.cue.fraction(rpm) * 20) / 20, on];
+        }
+        const sp = this._shiftPointRaw();
+        if (!isNum(rpm) || !isNum(sp)) return [0, 0];
+        const at = rpm >= sp;
+        return [at ? 1 : Math.round(Math.max(0, Math.min(1, (rpm - sp + 1500) / 1500)) * 20) / 20, at && Math.floor(now / 100) % 2 === 0 ? 1 : 0];
     }
 
     /** The shift lights count in (setting "shiftCue" on "countin", the default), else the fixed rpm band. */
@@ -3085,9 +3103,11 @@ class HudApp {
             const ms = [0, 1, 2, 3].map((i) => (w.minis || [])[i]);
             const mv = ms.map((m) => { const v = m && m.signal ? this._raw(m.signal) : null; return isNum(v) ? q((v - m.min) / (m.max - m.min)) : 0; });
             const rv = isNum(rpm) ? q(rpm / (A[7] * 1000)) : 0;
-            const key = [rv].concat(mv).join('|');
+            const sh = this._shiftNow(now);
+            const key = [rv].concat(mv, sh).join('|');
             if (!force && key === x.last) return;
             x.last = key;
+            x.c.uniform(x.ref, 'u_shift', sh);
             x.c.uniform(x.ref, 'u_arcA', [A[4], A[5], A[6], rv]);
             const mu = [];
             ms.forEach((m, i) => mu.push(m ? m.x - w.x : 0, m ? m.y - w.y : 0, m ? m.w : 0, mv[i]));
@@ -3100,9 +3120,11 @@ class HudApp {
             const av = arcs.map((b) => { const v = b && b.signal ? this._raw(b.signal) : null; return isNum(v) ? q((v - b.min) / (b.max - b.min)) : 0; });
             const low = isNum(w.tyreLow) ? w.tyreLow : 33;
             const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
-            const key = [rv].concat(av, ts, arcs.map((b) => (b ? b.red : 1))).join('|');
+            const sh = this._shiftNow(now);
+            const key = [rv].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), sh).join('|');
             if (!force && key === x.last) return;
             x.last = key;
+            x.c.uniform(x.ref, 'u_shift', sh);
             x.c.uniform(x.ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], rv]);
             x.c.uniform(x.ref, 'u_arc0', [av[0], arcs[0] && isNum(arcs[0].red) ? arcs[0].red : 1, 0, 0]);
             x.c.uniform(x.ref, 'u_arc1', [av[1], arcs[1] && isNum(arcs[1].red) ? arcs[1].red : 1, 0, 0]);
@@ -3119,9 +3141,11 @@ class HudApp {
                 const v = this._tyre('p', k);
                 return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0;
             }) : [0, 0, 0, 0];
-            const key = [rv].concat(bv, ts).join('|');
+            const sh = this._shiftNow(now);
+            const key = [rv].concat(bv, ts, sh).join('|');
             if (!force && key === x.last) return;
             x.last = key;
+            x.c.uniform(x.ref, 'u_shift', sh);
             x.c.uniform(x.ref, 'u_tyre', ts);
             x.c.uniform(x.ref, 'u_tachA', [T[4], T[5], T[6], rv]);
             const bu = [];

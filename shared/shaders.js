@@ -1801,6 +1801,7 @@ uniform vec2 u_mapEdge;    // x: how wide its edge fades into the dial, px inwar
                            // y: the top of Waze's picture (the panel's centred 1088x480: y 120), faded in below it (0: none)
 uniform vec4 u_glow;       // a soft glow fading outward from the gear's ring (0.5 of the radius): r, g, b, strength (0 = none)
 uniform float u_plain;     // 1: no backdrop (carbon, weave, side glow), plain black (the "Backgrounds" setting off)
+uniform vec2 u_shift;      // the shift light: x the count towards the shift point 0..1, y 1 while it flashes on (hud.js _shiftNow)
 
 const vec3 WHITE = vec3(0.95, 0.96, 0.97);
 const vec3 TRACK = vec3(0.16, 0.16, 0.18);
@@ -1859,6 +1860,8 @@ void main() {
     vec2 d = p - u_tach.xy;
     float r = length(d), R = u_tach.z, B = u_tach.w;
     // the dial: drop shadow, a black face, a thin bezel
+    // the shift light's red halo round the dial while it flashes
+    if (r > R) c += vec3(0.9, 0.06, 0.05) * 0.5 * u_shift.y * exp(-(r - R) / 22.0);
     if (u_mapHole.z <= 0.0)   // no drop shadow while the map shows
     c *= 1.0 - 0.85 * (1.0 - smoothstep(R + 6.0, R + (u_bgStyle > 0.5 ? 60.0 : 50.0), length(d - vec2(0.0, 14.0))));
     c = put(c, mix(vec3(0.0), vec3(0.035, 0.036, 0.04), smoothstep(R * 0.3, R, r)), cov(r - R - 8.0));
@@ -1882,7 +1885,11 @@ void main() {
         bool inZone = f >= u_zone.x;
         vec3 off = inZone ? z * 0.35 : TRACK;
         vec3 lit = inZone ? z : mix(vec3(0.46, 0.47, 0.5), vec3(0.62, 0.63, 0.66), f);
-        c = put(c, f <= u_tachA.w ? lit : off, band);
+        vec3 bc = f <= u_tachA.w ? lit : off;
+        // the shift light: the band reddens over the count-in, then the whole band flashes bright red
+        bc = mix(bc, vec3(0.75, 0.08, 0.07), u_shift.x * 0.45 * step(u_shift.y, 0.5));
+        bc = mix(bc, vec3(1.0, 0.13, 0.1), u_shift.y);
+        c = put(c, bc, band);
         // marks: a long one every 1000, a short one every 500, red / amber in the zone
         float per = u_tachA.y / u_tachA.z;
         float m1 = abs(radians(mod(rel + per * 0.5, per) - per * 0.5)) * r;
@@ -1992,6 +1999,7 @@ uniform vec4 u_band;       // the middle band: x, y, w, h (w 0 = none)
 uniform vec4 u_mini[4];    // small scales: left x, y (the scale line), width (0 = none), value 0..1
 uniform vec4 u_miniZ;      // each scale's red zone from (0..1; 1 = none)
 uniform float u_plain;     // 1: no hex backdrop, plain black (the "Backgrounds" setting off)
+uniform vec2 u_shift;      // the shift light: x the count towards the shift point 0..1, y 1 while it flashes on (hud.js _shiftNow)
 
 const vec3 RED = vec3(0.95, 0.1, 0.1);
 
@@ -2080,6 +2088,11 @@ void main() {
                 faceE = mix(vec3(0.045, 0.045, 0.05), vec3(0.15, 0.15, 0.165), across);
                 rim = vec3(0.4, 0.4, 0.44);
             }
+            // the shift light: every tile reddens over the count-in, then all of them flash bright red
+            face = mix(face, vec3(0.75, 0.1, 0.08), u_shift.x * 0.4 * (1.0 - u_shift.y));
+            face = mix(face, vec3(1.0, 0.16, 0.12), u_shift.y);
+            faceE = mix(faceE, vec3(0.62, 0.06, 0.05), u_shift.y);
+            rim = mix(rim, vec3(1.0, 0.5, 0.45), u_shift.y);
             vec2 ed = hb - abs(q) - 4.0;                                // px in from each pair of sides, past the groove
             float pil = smoothstep(0.0, 14.0, ed.x) * smoothstep(0.0, 18.0, ed.y);   // a soft pillow, no mitre creases
             vec3 tc = mix(faceE, face, sqrt(pil));
@@ -2190,6 +2203,7 @@ uniform vec4 u_gbox;       // the gear's box: centre x, y, half width, half heig
 uniform vec4 u_car;        // the right dial's car: centre x, y, half width, half length
 uniform vec4 u_tyre;       // its tyres FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
 uniform float u_plain;     // 1: no backdrop, plain black (the "Backgrounds" setting off)
+uniform vec2 u_shift;      // the shift light: x the count towards the shift point 0..1, y 1 while it flashes on (hud.js _shiftNow)
 
 const vec3 REDB = vec3(0.80, 0.07, 0.09);
 const vec3 CREAM = vec3(0.96, 0.91, 0.75);
@@ -2280,6 +2294,12 @@ void main() {
     vec2 d = p - u_tach.xy;
     float R = u_tach.z, r = length(d), lit = 0.5 - 0.5 * d.y / max(r, 1.0);
     c = body(c, d, R);
+    // the shift light: the bezel glows red and a red halo spreads round it while it flashes; the track reddens below
+    {
+        float bz = 22.0 * R / 322.0;
+        c = mix(c, c * vec3(1.6, 0.35, 0.3) + vec3(0.55, 0.03, 0.02), ring(r, R - bz, R) * u_shift.y);
+        if (r > R) c += vec3(0.9, 0.06, 0.05) * 0.55 * u_shift.y * exp(-(r - R) / 22.0);
+    }
     // the left and right dials' bodies
     c = body(c, p - u_left.xy, u_left.z);
     c = body(c, p - u_right.xy, u_right.z);
@@ -2292,6 +2312,8 @@ void main() {
         vec3 gc = mix(mix(vec3(0.05, 0.18, 0.6), vec3(0.25, 0.28, 0.35), smoothstep(0.0, 0.35, f)),
                       mix(vec3(0.45, 0.5, 0.2), vec3(0.6, 0.1, 0.05), smoothstep(0.8, 1.0, f)), smoothstep(0.35, 0.6, f));
         c += gc * ring(r, tr0, tr1) * on * (0.10 + 0.10 * clamp((r - tr0) / (tr1 - tr0), 0.0, 1.0));
+        // the shift light on the track: a red wash growing over the count-in, bright red while it flashes
+        c += vec3(0.85, 0.05, 0.04) * ring(r, tr0, tr1) * (u_shift.x * 0.22 * (1.0 - u_shift.y) + 0.75 * u_shift.y);
         // ticks every 100 rpm, longer every 500, bold every 1000
         float n = u_tachA.z * 10.0;
         float i = floor(f * n + 0.5);

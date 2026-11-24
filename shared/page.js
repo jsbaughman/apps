@@ -514,7 +514,7 @@ class Page {
             note(cv, x, y + 22, this.get('shiftCue') === 'rpm' ? ['From a fixed rpm up to the shift point.'] : ['Fill over the last second, flash early', 'by your reaction time.']);
             y += 84;
         }
-        if (this.item('smartTemps')) {
+        if (this.item('smartTemps') && this.cfg.smartTemps !== false) {
             label(cv, x, y, 'Temperatures');
             y = this.toggleRow(cv, x, y + 14, w, 'Only when they matter', 'smartTemps');
             note(cv, x, y + 22, ['Oil and coolant show only while cold,', 'warming up or hot. Outside: blue at ' + (sensors.imperial((x) => this.get(x), 'temp') ? '37 °F.' : '3 °C.')]);
