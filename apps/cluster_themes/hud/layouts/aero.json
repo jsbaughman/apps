@@ -888,6 +888,7 @@
       "color": "fg",
       "align": "right",
       "toggle": "left0=oil",
+      "own": true,
       "conn": 2
     },
     {
@@ -1095,6 +1096,7 @@
       "color": "fg",
       "align": "right",
       "toggle": "left0=intake",
+      "own": true,
       "conn": 2
     },
     {
@@ -1302,6 +1304,7 @@
       "color": "fg",
       "align": "right",
       "toggle": "left0=oilP",
+      "own": true,
       "conn": 2
     },
     {
@@ -1509,6 +1512,7 @@
       "color": "fg",
       "align": "right",
       "toggle": "left0=coolant",
+      "own": true,
       "conn": 2
     },
     {
@@ -1925,6 +1929,7 @@
       "color": "fg",
       "align": "right",
       "toggle": "left1=oil",
+      "own": true,
       "conn": 2
     },
     {
@@ -2132,6 +2137,7 @@
       "color": "fg",
       "align": "right",
       "toggle": "left1=intake",
+      "own": true,
       "conn": 2
     },
     {
@@ -2339,6 +2345,7 @@
       "color": "fg",
       "align": "right",
       "toggle": "left1=oilP",
+      "own": true,
       "conn": 2
     },
     {
@@ -2546,6 +2553,7 @@
       "color": "fg",
       "align": "right",
       "toggle": "left1=coolant",
+      "own": true,
       "conn": 2
     },
     {

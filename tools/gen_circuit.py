@@ -138,7 +138,7 @@ def build(cells):
     ]
     # the fast numbers on their own small layers; slow texts checked less often (as Apex)
     for w in widgets:
-        if w.get('id') in ('gear', 'speed', 'gear_c', 'speed_c', 'l0boost_v', 'l1boost_v'):
+        if w.get('id') in ('gear', 'speed', 'gear_c', 'speed_c') or (w['id'][:1] == 'l' and w['id'].endswith('_v')):
             w['own'] = True
         elif w['type'] == 'text' and 'rate' not in w:
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]

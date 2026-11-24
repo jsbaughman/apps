@@ -1355,7 +1355,9 @@
       "font": "a_tp",
       "color": "fg",
       "align": "right",
-      "toggle": "!leftStyle=gauges&left0=oil"
+      "toggle": "!leftStyle=gauges&left0=oil",
+      "own": true,
+      "conn": 2
     },
     {
       "id": "r0oil_u",
@@ -1459,7 +1461,9 @@
       "font": "a_tp",
       "color": "fg",
       "align": "right",
-      "toggle": "leftStyle=gauges&left0=oil"
+      "toggle": "leftStyle=gauges&left0=oil",
+      "own": true,
+      "conn": 2
     },
     {
       "id": "g0oil_u",
@@ -1594,6 +1598,8 @@
       "color": "fg",
       "align": "right",
       "toggle": "!leftStyle=gauges&left0=intake",
+      "own": true,
+      "conn": 2,
       "rate": 1000
     },
     {
@@ -1699,6 +1705,8 @@
       "color": "fg",
       "align": "right",
       "toggle": "leftStyle=gauges&left0=intake",
+      "own": true,
+      "conn": 2,
       "rate": 1000
     },
     {
@@ -1834,6 +1842,8 @@
       "color": "fg",
       "align": "right",
       "toggle": "!leftStyle=gauges&left0=oilP",
+      "own": true,
+      "conn": 2,
       "rate": 1000
     },
     {
@@ -1939,6 +1949,8 @@
       "color": "fg",
       "align": "right",
       "toggle": "leftStyle=gauges&left0=oilP",
+      "own": true,
+      "conn": 2,
       "rate": 1000
     },
     {
@@ -2073,7 +2085,9 @@
       "font": "a_tp",
       "color": "fg",
       "align": "right",
-      "toggle": "!leftStyle=gauges&left0=coolant"
+      "toggle": "!leftStyle=gauges&left0=coolant",
+      "own": true,
+      "conn": 2
     },
     {
       "id": "r0coolant_u",
@@ -2177,7 +2191,9 @@
       "font": "a_tp",
       "color": "fg",
       "align": "right",
-      "toggle": "leftStyle=gauges&left0=coolant"
+      "toggle": "leftStyle=gauges&left0=coolant",
+      "own": true,
+      "conn": 2
     },
     {
       "id": "g0coolant_u",
@@ -2555,7 +2571,9 @@
       "font": "a_tp",
       "color": "fg",
       "align": "right",
-      "toggle": "!leftStyle=gauges&left1=oil"
+      "toggle": "!leftStyle=gauges&left1=oil",
+      "own": true,
+      "conn": 2
     },
     {
       "id": "r1oil_u",
@@ -2659,7 +2677,9 @@
       "font": "a_tp",
       "color": "fg",
       "align": "right",
-      "toggle": "leftStyle=gauges&left1=oil"
+      "toggle": "leftStyle=gauges&left1=oil",
+      "own": true,
+      "conn": 2
     },
     {
       "id": "g1oil_u",
@@ -2794,6 +2814,8 @@
       "color": "fg",
       "align": "right",
       "toggle": "!leftStyle=gauges&left1=intake",
+      "own": true,
+      "conn": 2,
       "rate": 1000
     },
     {
@@ -2899,6 +2921,8 @@
       "color": "fg",
       "align": "right",
       "toggle": "leftStyle=gauges&left1=intake",
+      "own": true,
+      "conn": 2,
       "rate": 1000
     },
     {
@@ -3034,6 +3058,8 @@
       "color": "fg",
       "align": "right",
       "toggle": "!leftStyle=gauges&left1=oilP",
+      "own": true,
+      "conn": 2,
       "rate": 1000
     },
     {
@@ -3139,6 +3165,8 @@
       "color": "fg",
       "align": "right",
       "toggle": "leftStyle=gauges&left1=oilP",
+      "own": true,
+      "conn": 2,
       "rate": 1000
     },
     {
@@ -3273,7 +3301,9 @@
       "font": "a_tp",
       "color": "fg",
       "align": "right",
-      "toggle": "!leftStyle=gauges&left1=coolant"
+      "toggle": "!leftStyle=gauges&left1=coolant",
+      "own": true,
+      "conn": 2
     },
     {
       "id": "r1coolant_u",
@@ -3377,7 +3407,9 @@
       "font": "a_tp",
       "color": "fg",
       "align": "right",
-      "toggle": "leftStyle=gauges&left1=coolant"
+      "toggle": "leftStyle=gauges&left1=coolant",
+      "own": true,
+      "conn": 2
     },
     {
       "id": "g1coolant_u",

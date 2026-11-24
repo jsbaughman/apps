@@ -2512,7 +2512,8 @@ void main() {
         vec2 dp = p - Pk;
         bool redk = k / u_scale.z >= u_zone.x - 0.001;
         c = tab(c, dot(dp, tk), dot(dp, nk), -7.0, T + 12.0, 6.5, 3.5, redk ? vec3(0.8, 0.12, 0.12) : vec3(0.78, 0.8, 0.83));
-        // the needle: a flat blade with a rounded head, a soft grey down its right side and to the point; its shadow
+        // the needle: a flat blade with a rounded head, centred on the revs from head to point, a soft grey down its right
+        // side and to the point; its shadow
         float xn = u_scale.x + span * u_scale.w, dn = xn - u_rail.y;
         vec2 Pn = vec2(xn, u_rail.x + dn * dn / (2.0 * R));
         vec2 tn = normalize(vec2(1.0, dn / R)), nn = vec2(-tn.y, tn.x);
@@ -2521,8 +2522,8 @@ void main() {
             vec2 q = p - Pn - (i == 0 ? vec2(7.0, 6.0) : vec2(0.0));
             float a = dot(q, tn), b = dot(q, nn);
             float t = clamp((b + 6.0) / (tip + 6.0), 0.0, 1.0);
-            float ctr = mix(-5.5, 1.5, t), hw = mix(11.5, 1.2, t);
-            float d = b < -6.0 ? length(vec2(a + 5.5, (b + 6.0) / 0.9)) - 11.5 : max(abs(a - ctr) - hw, b - tip);
+            float ctr = 0.0, hw = mix(11.5, 1.2, t);
+            float d = b < -6.0 ? length(vec2(a, (b + 6.0) / 0.9)) - 11.5 : max(abs(a - ctr) - hw, b - tip);
             if (i == 0) c *= 1.0 - 0.55 * smoothstep(7.0, -3.0, d);
             else {
                 vec3 nc = vec3(0.886, 0.898, 0.922);
@@ -2549,9 +2550,9 @@ void main() {
         for (int j = 0; j < 2; j++) {
             vec2 q = vec2(bx - B.z * val, bs) - (j == 0 ? vec2(4.0, 4.0) : vec2(0.0));
             float t = clamp((q.y + 9.0) / (B.w + 24.0), 0.0, 1.0);
-            float d = q.y < -9.0 ? length(q - vec2(-0.5, -9.0)) - 5.5 : max(abs(q.x - mix(-0.5, 0.8, t)) - mix(5.5, 0.6, t), q.y - B.w - 15.0);
+            float d = q.y < -9.0 ? length(q - vec2(0.0, -9.0)) - 5.5 : max(abs(q.x) - mix(5.5, 0.6, t), q.y - B.w - 15.0);
             if (j == 0) c *= 1.0 - 0.5 * smoothstep(5.0, -2.0, d);
-            else c = put(c, mix(vec3(0.886, 0.898, 0.922), vec3(0.5, 0.51, 0.55), 0.5 * smoothstep(-2.0, 4.0, q.x - mix(-0.5, 0.8, t))), cov(d));
+            else c = put(c, mix(vec3(0.886, 0.898, 0.922), vec3(0.5, 0.51, 0.55), 0.5 * smoothstep(-2.0, 4.0, q.x)), cov(d));
         }
     }
 

@@ -27,8 +27,8 @@ LBARS, LGAUGE = '!leftStyle=gauges', 'leftStyle=gauges'   # the left side's two 
 LX0, LX1 = 110, 590            # the left panel's content
 FAST = 45                     # ms: the speed, gear and boost redraw on every 50 ms tick (other text every 200)
 FAST_IDS = ()   # Fast numbers withdrawn in 0.21.4: the GPU text (gtext) took the car's displays down (Nov 22 2026)
-OWN_IDS = ('gear', 'gear_s', 'gear_m', 'gear_ms', 'speed', 'speed_m', 'gear_c', 'gear_s_c', 'gear_m_c', 'gear_ms_c', 'speed_c', 'speed_m_c',
-           'r0boost_v', 'g0boost_v', 'r1boost_v', 'g1boost_v')   # each on its own small image layer (0.21.5): a change uploads only that
+OWN_IDS = ('gear', 'gear_s', 'gear_m', 'gear_ms', 'speed', 'speed_m', 'gear_c', 'gear_s_c', 'gear_m_c', 'gear_ms_c', 'speed_c', 'speed_m_c') + \
+    tuple('%s%d%s_v' % (st, sp, k) for st in 'rg' for sp in (0, 1) for k in ('boost', 'oil', 'intake', 'oilP', 'coolant'))   # every pick's value alike (in-place switch)   # each on its own small image layer (0.21.5): a change uploads only that
                                                         # small picture's changed rect, not a rect of a big shared sheet
 MAP_FEATHER = 80              # the window's edge fades into the dial over this many px (inward), under the numbers
 MAP_R = 262                   # the map window's radius, to the tick marks (Waze draws its map in this square: hud.js _mapHost)

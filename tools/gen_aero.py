@@ -119,7 +119,7 @@ def build(cells):
             widgets += [
                 text('b%d%s_l' % (spot, key), bx, by - 42 - 24, 260, cells['ae_lab'], label, 'ae_lab', 'dim', 'left', toggle=pick),
                 text('b%d%s_v' % (spot, key), bx + bw - 44 - 200, by - 38 - 34, 200, cells['ae_val'], tok, 'ae_val', 'fg', 'right',
-                     toggle=pick, rate=FAST if key == 'boost' else None, own=True if key == 'boost' else None),
+                     toggle=pick, rate=FAST if key == 'boost' else None, own=True),
                 text('b%d%s_u' % (spot, key), bx + bw - 38, by - 40 - 20, 60, cells['ae_unit'], unit, 'ae_unit', 'sub', 'left', toggle=pick),
             ]
             for j in range(5):

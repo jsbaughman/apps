@@ -47,30 +47,15 @@ HUD_FONTS = [
 CLUSTER_FONTS = [
     ('gear', 'BarlowCondensed-Bold.ttf', 330, DIGITS + 'PRND-'),
     ('big', 'BarlowCondensed-Bold.ttf', 124, DIGITS + '.:-'),   # 124: "20.3 PSI" fits a 280 px box beside the hood; ':' for a clock in a readout slot
-    ('value', 'BarlowCondensed-Bold.ttf', 92, DIGITS + '.:- PRND°', 0, None, None, '°'),   # °: a readout slot showing a temperature (tucked: the cell keeps its height)
     ('small', 'BarlowCondensed-Bold.ttf', 50, DIGITS + '.:-° '),
     ('unit', 'BarlowCondensed-SemiBold.ttf', 34, UPPER + DIGITS + '/°%>·.: -'),
     ('head', 'BarlowCondensed-SemiBold.ttf', 24, UPPER + DIGITS + '/°%>·.: -'),
     ('scale', 'BarlowCondensed-SemiBold.ttf', 30, DIGITS),
     ('badge', 'BarlowCondensed-SemiBold.ttf', 30, UPPER + LOWER + DIGITS + ' -'),   # the model badge (shared/badges.js)
     # M: the wide squared numbers (Michroma, SIL OFL) and Barlow for the small print
-    ('m_num', 'Orbitron[wght].ttf', 36, DIGITS, 0, 'Black', {'0': 'O'}),
-    ('m_gear', 'Orbitron[wght].ttf', 125, 'PRNDSM-' + DIGITS, 3, 'Black', {'0': 'O'}),
-    ('m_speed', 'Orbitron[wght].ttf', 78, DIGITS + '-', 3, 'Black', {'0': 'O'}),
-    ('m_gl', 'Orbitron[wght].ttf', 25, DIGITS + '/.-', 0, 'Black', {'0': 'O'}),
-    ('m_val', 'Barlow-Medium.ttf', 54, DIGITS + ':+-.'),
-    ('m_mid', 'Orbitron[wght].ttf', 34, DIGITS + ':+-.', 0, 'Bold', {'0': 'O'}),
-    ('m_tyre', 'Orbitron[wght].ttf', 25, DIGITS + '.-:', 0, 'Bold', {'0': 'O'}),   # ':' for M's map-view clock (fit)
     ('m_unit', 'Barlow-Medium.ttf', 30, LOWER + UPPER + '°/-.'),
-    ('m_label', 'Orbitron[wght].ttf', 20, UPPER + DIGITS + ' -/%°', 0, 'Bold'),   # digits, / % °: the M readout slots' names and units
     ('m_tiny', 'Barlow-Medium.ttf', 26, LOWER + DIGITS + 'CF./ -°'),
-    ('m_badge', 'Barlow-Medium.ttf', 26, UPPER + LOWER + DIGITS + ' -'),
     # Sport: BMW Live Cockpit style, the wide numbers in Michroma like BMW's own
-    ('s_scale', 'Michroma-Regular.ttf', 27, DIGITS, 1),
-    ('s_speed', 'Michroma-Regular.ttf', 74, DIGITS + '-', 3),
-    ('s_hero', 'Michroma-Regular.ttf', 132, DIGITS + '-', 3),   # the big speed in the middle while no map shows (Nov 13 2026)
-    ('s_gear', 'Michroma-Regular.ttf', 70, DIGITS + 'PRNDSM-', 3),
-    ('sc_num', 'Michroma-Regular.ttf', 44, DIGITS, 2),   # Supercar: the rev counter's numbers (Nov 21 2026: s_gear was too big on the car)
     # Apex: a light, upright condensed face for the needle dash
     ('a_gear', 'Outfit[wght].ttf', 200, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 6),   # hollow italic (Nov 21 2026)
     ('a_gear_s', 'Outfit[wght].ttf', 200, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2),   # the same, solid (the Gear setting)
@@ -124,51 +109,24 @@ CLUSTER_FONTS = [
     ('a_unit_c', 'Outfit[wght].ttf', 28, LOWER + '/', 0, 'Bold', None, '', 0.2),
     ('a_tach_c', 'Outfit[wght].ttf', 47, DIGITS, 0, 'ExtraBold', None, '', 0.2),
     ('a_head', 'Outfit[wght].ttf', 40, UPPER + LOWER + ' ', 0, 'Bold', None, '', 0.2),   # the panel headings, as the speed
-    ('a_val', 'BarlowSemiCondensed-Medium.ttf', 56, DIGITS + '.-', 2),
     ('a_tp', 'BarlowSemiCondensed-Medium.ttf', 48, DIGITS + '.-', 0),   # the readouts' numbers (tyres, boost, oil, hp, torque); no extra stroke since 0.21.5
     ('a_lim', 'BarlowSemiCondensed-SemiBold.ttf', 30, DIGITS + '.-', 0),   # the bars' end numbers, 25 % over r_label
     ('a_sm', 'Outfit[wght].ttf', 26, DIGITS + '.-', 0, 'SemiBold', None, '', 0.2),   # the hatched gauges' scale numbers, italic
     ('vl_sm', 'Outfit[wght].ttf', 31, DIGITS + '.-', 0, 'SemiBold', None, '', 0.2),   # Veloce's side scale numbers, a_sm + 20 %
     ('vl_lab', 'BarlowSemiCondensed-SemiBold.ttf', 29, UPPER + LOWER + DIGITS + '/°%.: -'),   # Veloce's side labels and values, r_label + 20 %
-    ('a_big', 'BarlowSemiCondensed-Medium.ttf', 100, DIGITS + '.-', 3),   # boost and oil temperature (Nov 21 2026: a_val too small)
-    ('a_num', 'BarlowSemiCondensed-Medium.ttf', 46, DIGITS, 2),
-    ('s_val', 'Michroma-Regular.ttf', 26, DIGITS + ':+-.', 1),
-    ('s_unit', 'Barlow-Medium.ttf', 24, LOWER + UPPER + DIGITS + '°/-. '),
-    ('s_label', 'BarlowSemiCondensed-SemiBold.ttf', 30, UPPER + DIGITS + ' .'),
-    ('s_gl', 'Michroma-Regular.ttf', 21, DIGITS + '/', 1),
     # Vector: the music panel's song title and artist (any printable ASCII: a song's text is folded to it, hud.js
     # mediaText), the ring gauges' numbers and labels, the track time
     ('v_title', 'BarlowSemiCondensed-SemiBold.ttf', 38, ''.join(chr(i) for i in range(32, 127))),
-    ('v_artist', 'Barlow-Medium.ttf', 26, ''.join(chr(i) for i in range(32, 127))),
-    ('v_val', 'Michroma-Regular.ttf', 22, DIGITS + '.-+', 1),
     ('v_label', 'BarlowSemiCondensed-SemiBold.ttf', 19, UPPER + LOWER + DIGITS + ' °%/.-'),
-    ('v_time', 'Michroma-Regular.ttf', 16, DIGITS + ':-', 1),
     # Minimal: one huge speed, the gear, small print
-    ('n_speed', 'BarlowSemiCondensed-Medium.ttf', 260, DIGITS + '-'),
-    ('n_gear', 'BarlowSemiCondensed-SemiBold.ttf', 110, DIGITS + 'PRNDSM-'),
-    ('n_unit', 'Barlow-Medium.ttf', 34, LOWER + UPPER + '/'),
     # Cruise and Minimal labels (r_label: the Roadster theme's, kept when Roadster was removed in 0.17.8)
     ('r_label', 'BarlowSemiCondensed-SemiBold.ttf', 24, UPPER + LOWER + DIGITS + '/°%.: -'),
     # Drag: the 0-60 clock
-    ('timer', 'BarlowCondensed-Bold.ttf', 220, DIGITS + '.-'),
     # Rally: the huge gear and the readouts in the arc
-    ('y_gear', 'BarlowCondensed-Bold.ttf', 300, DIGITS + 'PRNDSM-'),
-    ('y_val', 'BarlowCondensed-Bold.ttf', 76, DIGITS + '.:-+°', 0, None, None, '°'),
     # Retro 80s: seven-segment digits (DSEG7 Classic, SIL OFL; the unlit 8s behind are the same font in "track")
-    ('d7_big', 'DSEG7Classic-Bold.ttf', 170, DIGITS + '-'),
-    ('d7_val', 'DSEG7Classic-Bold.ttf', 60, DIGITS + '-.:'),
-    ('d7_sm', 'DSEG7Classic-Bold.ttf', 42, DIGITS + '-.:'),
-    ('d7_gear', 'DSEG7Classic-Bold.ttf', 190, DIGITS + 'PRN-', 0, None, {'R': 'r', 'N': 'n'}),   # r and n: seven segments can't draw R or N
     # Cruise: calm, light numbers
-    ('c_speed', 'BarlowSemiCondensed-Medium.ttf', 150, DIGITS + '-'),
-    ('c_val', 'BarlowSemiCondensed-Medium.ttf', 62, DIGITS + '.:-+°'),
     # Ribbon: Outfit (SIL OFL), thin and calm: the huge speed, the side readouts, small spaced labels
-    ('b_speed', 'Outfit[wght].ttf', 250, DIGITS + '-', 0, 'ExtraLight'),
-    ('b_val', 'Outfit[wght].ttf', 44, DIGITS + '.:-+°% ' + LOWER + UPPER, 0, 'Light'),
-    ('b_label', 'Outfit[wght].ttf', 20, UPPER + DIGITS + "' .-", 0, 'SemiBold'),
     ('b_unit', 'Outfit[wght].ttf', 26, UPPER + LOWER + '/', 0, 'Medium'),
-    ('b_gear', 'Outfit[wght].ttf', 32, DIGITS + 'PRNDSM-', 0, 'SemiBold'),
-    ('b_scale', 'Outfit[wght].ttf', 20, DIGITS, 0, 'Medium'),
 ]
 FONTS = {'idrive_hud_widgets': HUD_FONTS, 'cluster_themes': CLUSTER_FONTS}
 PAD = 2

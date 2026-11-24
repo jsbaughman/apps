@@ -333,6 +333,30 @@ const MODE_KEY = { comfort: 'inComfort', sport: 'inSport', eco: 'inEco' };
 const TYRE_CORNERS = ['FL', 'FR', 'RL', 'RR'];
 // the HUD's place (the page's Position tab): settings that move / scale the layers already there, no rebuild
 const PLACE_KEYS = ['hudX', 'hudY', 'hudScale'];
+/**
+ * Painted texts kept by what they show (box size, text, font, colours ...), the last used kept longest, up to
+ * TEXT_CACHE_BYTES: a rebuild, a switch back to a theme or a pick, and a value seen before (a gear, the revs'
+ * hundreds) take the pixels from here instead of drawing the glyphs again. The buffers are only read after.
+ */
+const TEXT_CACHE_BYTES = 6 * 1024 * 1024;
+const textCache = new Map();
+let textCacheBytes = 0;
+function cachedText(w, h, s, o) {
+    const k = [w, h, s, o.font, o.offsetY, o.color, o.align, o.spacing, o.x, o.color2, o.glow].join('|');
+    let buf = textCache.get(k);
+    if (buf) { textCache.delete(k); textCache.set(k, buf); return buf; }
+    buf = textRaster.drawText(w, h, s, o);
+    if (buf.length > TEXT_CACHE_BYTES / 8) return buf;      // a big one (a song title row) is not kept
+    textCache.set(k, buf); textCacheBytes += buf.length;
+    while (textCacheBytes > TEXT_CACHE_BYTES) {
+        const first = textCache.keys().next().value;
+        textCacheBytes -= textCache.get(first).length; textCache.delete(first);
+    }
+    return buf;
+}
+// settings that always rebuild (they pick another layout, change the theme's colours or what is placed where); every
+// other setting first tries _softSwitch, which swaps text in the layers already on the cluster
+const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
@@ -630,7 +654,11 @@ class HudApp {
             if (PLACE_KEYS.indexOf(key) >= 0) this._guard('place', () => this._place());
             else if (LIVE_KEYS.indexOf(key) >= 0) this.widgets.forEach((x) => { x.last = null; });
             else if (LOOK_KEYS.indexOf(key) >= 0) this.widgets.forEach((x) => { if (!x.sheet && /^[clga]dash$/.test(x.w.type)) this._dashLook(x); });
-            else if (key !== 'demo') this._rebuild(); else this._status();
+            else if (key !== 'demo') {
+                let soft = false;
+                try { soft = this._softSwitch(key); } catch (e) { this.log.error('hud soft switch: ' + (e && e.stack || e)); }
+                if (!soft) this._rebuild();
+            } else this._status();
         });
     }
 
@@ -2073,6 +2101,62 @@ class HudApp {
 
     /* ---------------- layers ---------------- */
 
+    /**
+     * A setting that only changes which texts show (a left gauge pick, units, the speed on or off ...): when every
+     * layer stays (the same effects and image widgets) and every text newly shown has a twin just hidden in the same
+     * box, layer and connection (the picks' blocks are laid out so), the twin's slot takes the new text and repaints;
+     * a text hidden with no twin is painted empty; the effects get their uniforms again. Nothing is made or dropped,
+     * nothing sent whole: seconds on the car down to the changed pixels. Returns false (the caller rebuilds) if not.
+     */
+    _softSwitch(key) {
+        if (HARD_KEYS.indexOf(key) >= 0 || this.rebuilding || !this.client.ready || !this.shownW) return false;
+        const name = this._layoutName();
+        if (!name || name === 'off' || name !== this.activeName) return false;
+        let layout;
+        try { layout = this.layouts.load(name); } catch (e) { return false; }
+        const keepStrip = this.setting('keepStrip') === true;
+        const next = layout.widgets.filter((w) => !(w.toggle && !this._toggleOn(w.toggle)) && !(w.themes && w.themes.indexOf(this.themeName) < 0)
+            && !(keepStrip && w.stripRow));
+        const inLayout = new Set(layout.widgets.map((w) => w.id));
+        const oldIds = new Set(this.shownW.map((w) => w.id)), newIds = new Set(next.map((w) => w.id));
+        // every layer but text stays as it is
+        if (next.some((w) => w.type !== 'text' && !oldIds.has(w.id))) return false;
+        if (this.shownW.some((w) => inLayout.has(w.id) && w.type !== 'text' && !newIds.has(w.id))) return false;
+        const gone = this.shownW.filter((w) => inLayout.has(w.id) && w.type === 'text' && !newIds.has(w.id)).map((w) => this.widgets.get(w.id)).filter(Boolean);
+        const added = next.filter((w) => w.type === 'text' && !oldIds.has(w.id));
+        if (!gone.length && !added.length && !next.some((w) => w.type !== 'text')) return false;
+        const slot = (w, x) => [w.conn || 0, w.x, w.y, w.w, w.h, w.class || 'content', w.z || 0, x ? !x.sheet : w.own === true].join('|');
+        const pairs = [], free = gone.concat(Array.from(this.widgets.values()).filter((x) => x.blank && gone.indexOf(x) < 0));
+        for (const w of added) {
+            const k = slot(w), i = free.findIndex((x) => slot(x.w, x) === k);
+            if (i < 0) return false;                   // no slot for it: a rebuild places it
+            pairs.push([free[i], w]); free.splice(i, 1);
+        }
+        pairs.forEach(([x, w]) => {
+            this.widgets.delete(x.w.id);
+            x.w = w; x.last = null; x.lastCheck = 0; x.lastPaint = 0; x.blank = false;
+            this.widgets.set(w.id, x);
+        });
+        free.forEach((x) => { if (!x.blank) { x.w = Object.assign({}, x.w, { text: '', toggle: undefined, rate: 2000 }); x.blank = true; x.last = null; x.lastCheck = 0; } });
+        // the effects again (their uniforms may follow the setting), every text repainted on the next tick
+        this.widgets.forEach((x) => {
+            if (!x.sheet && !IMAGE_TYPES[x.w.type]) {
+                const nw = next.find((w) => w.id === x.w.id) || x.w;
+                this._create(nw, { ref: x.ref, c: x.c, ci: x.ci });
+                const nx = this.widgets.get(nw.id);
+                nx.sheet = null;
+            } else x.last = null;
+        });
+        const extras = this.shownW.filter((w) => !inLayout.has(w.id));           // the demo tag, the holiday lights
+        this.shownW = next.concat(extras);
+        this.shown = this.shownW;
+        this._setNeeds(this.shownW);
+        this.log.info('setting "' + key + '": switched in place (' + pairs.length + ' text' + (pairs.length === 1 ? '' : 's') + ' swapped' +
+            (gone.length - (gone.length - free.filter((x) => gone.indexOf(x) >= 0).length) ? ', ' + free.filter((x) => gone.indexOf(x) >= 0).length + ' emptied' : '') + '), no rebuild');
+        this._status();
+        return true;
+    }
+
     _rebuild() {
         // never inside itself: a rebuild asked for while one runs (the Waze map coming as _wazeWant runs mid-rebuild,
         // Nov 24 2026: the nested one dropped nothing yet made, the outer then made its layers too, 32 layers for 16)
@@ -3007,11 +3091,12 @@ class HudApp {
                 offsetY = textRaster.loadFont(w.font).metrics.baseline - textRaster.loadFont(f).metrics.baseline;
                 font = f;
             }
-            const buf = textRaster.drawText(w.w, w.h, s, {
+            const opts = {
                 font, offsetY, color: color(this.theme, role), align: w.align, spacing: w.spacing, x: w.dx || 0,
                 color2: w.color2 && role !== 'hot' ? color(this.theme, w.color2) : null,
                 glow: w.glow ? this.theme.glow : 0,
-            });
+            };
+            const buf = cachedText(w.w, w.h, s, opts);
             this._blitDiff(x, buf);
         } else if (w.type === 'badge') {
             if (!force && now - x.lastPaint < TEXT_MS) return;

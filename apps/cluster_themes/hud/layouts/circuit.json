@@ -987,7 +987,8 @@
       "font": "ci_val",
       "color": "fg",
       "align": "right",
-      "toggle": "left0=oil"
+      "toggle": "left0=oil",
+      "own": true
     },
     {
       "id": "l0oil_u",
@@ -1181,7 +1182,8 @@
       "font": "ci_val",
       "color": "fg",
       "align": "right",
-      "toggle": "left0=intake"
+      "toggle": "left0=intake",
+      "own": true
     },
     {
       "id": "l0intake_u",
@@ -1375,7 +1377,8 @@
       "font": "ci_val",
       "color": "fg",
       "align": "right",
-      "toggle": "left0=oilP"
+      "toggle": "left0=oilP",
+      "own": true
     },
     {
       "id": "l0oilP_u",
@@ -1569,7 +1572,8 @@
       "font": "ci_val",
       "color": "fg",
       "align": "right",
-      "toggle": "left0=coolant"
+      "toggle": "left0=coolant",
+      "own": true
     },
     {
       "id": "l0coolant_u",
@@ -1959,7 +1963,8 @@
       "font": "ci_val",
       "color": "fg",
       "align": "right",
-      "toggle": "left1=oil"
+      "toggle": "left1=oil",
+      "own": true
     },
     {
       "id": "l1oil_u",
@@ -2153,7 +2158,8 @@
       "font": "ci_val",
       "color": "fg",
       "align": "right",
-      "toggle": "left1=intake"
+      "toggle": "left1=intake",
+      "own": true
     },
     {
       "id": "l1intake_u",
@@ -2347,7 +2353,8 @@
       "font": "ci_val",
       "color": "fg",
       "align": "right",
-      "toggle": "left1=oilP"
+      "toggle": "left1=oilP",
+      "own": true
     },
     {
       "id": "l1oilP_u",
@@ -2541,7 +2548,8 @@
       "font": "ci_val",
       "color": "fg",
       "align": "right",
-      "toggle": "left1=coolant"
+      "toggle": "left1=coolant",
+      "own": true
     },
     {
       "id": "l1coolant_u",
