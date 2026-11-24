@@ -67,8 +67,24 @@ function edgeDist(pts, px, py, closed) {
 const BODY_FILL = [20, 20, 23], OUTLINE = [205, 207, 214], GLASS = [6, 7, 9], GLASS_EDGE = [120, 122, 130],
     ROOF_FILL = [30, 30, 34], DETAIL = [92, 94, 102], HEAD = [176, 180, 190], TAIL = [190, 28, 34];
 
-/** The car, w x h RGBA (transparent round it). */
+// painted once per size and kept: drawing it costs about a second of the head unit's CPU (car log, Nov 23 2026: every
+// rebuild painted it again, a large part of a setting change's wait)
+const CACHE = new Map();
+
+/** The car, w x h RGBA (transparent round it); the same Buffer for the same size (callers must not change it). */
 function paintCarTop(w, h) {
+    const key = w + 'x' + h;
+    if (!CACHE.has(key)) CACHE.set(key, paint(w, h));
+    return CACHE.get(key);
+}
+
+function bboxOf(pts, pad) {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    pts.forEach((p) => { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); });
+    return [x0 - pad, y0 - pad, x1 + pad, y1 + pad];
+}
+
+function paint(w, h) {
     const out = Buffer.alloc(w * h * 4, 0);
     // car units to px: the body's half width spans 0.5 * w / (the mirrors' reach), its half length h / 2
     const reach = 1.16, sx = (w / 2) / reach, sy = (h / 2) / 1.0;
@@ -87,7 +103,9 @@ function paintCarTop(w, h) {
         { pts: WINDSCREEN, closed: true, col: GLASS_EDGE, wpx: 1.0 }, { pts: REARGLASS, closed: true, col: GLASS_EDGE, wpx: 1.0 },
         { pts: SIDEGLASS_R, closed: true, col: GLASS_EDGE, wpx: 0.9 }, { pts: flipX(SIDEGLASS_R), closed: true, col: GLASS_EDGE, wpx: 0.9 },
     ].concat(LINES.map((l) => ({ pts: l, closed: false, col: DETAIL, wpx: 0.9 })));
-    const SS = 3;
+    shapes.forEach((s) => { s.bb = bboxOf(s.pts, 0); });
+    strokes.forEach((s) => { s.bb = bboxOf(s.pts, s.wpx * px1 + px1); });
+    const SS = 2;
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
             let r = 0, g = 0, b = 0, a = 0;
@@ -95,9 +113,13 @@ function paintCarTop(w, h) {
                 for (let i = 0; i < SS; i++) {
                     const cx = (x + (i + 0.5) / SS - w / 2) / sx, cy = (y + (j + 0.5) / SS - h / 2) / sy;
                     let col = null;
-                    for (let k = 0; k < shapes.length; k++) if (inside(shapes[k].pts, cx, cy)) col = shapes[k].fill;
+                    for (let k = 0; k < shapes.length; k++) {
+                        const b = shapes[k].bb;
+                        if (cx >= b[0] && cx <= b[2] && cy >= b[1] && cy <= b[3] && inside(shapes[k].pts, cx, cy)) col = shapes[k].fill;
+                    }
                     for (let k = 0; k < strokes.length; k++) {
-                        const s = strokes[k];
+                        const s = strokes[k], b = s.bb;
+                        if (cx < b[0] || cx > b[2] || cy < b[1] || cy > b[3]) continue;
                         if (edgeDist(s.pts, cx, cy, s.closed) < s.wpx * px1 * 0.5 + px1 * 0.25) col = s.col;
                     }
                     if (col) { r += col[0]; g += col[1]; b += col[2]; a++; }

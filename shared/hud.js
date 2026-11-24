@@ -333,6 +333,7 @@ const PLACE_KEYS = ['hudX', 'hudY', 'hudScale'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
+const LOOK_KEYS = ['backdrops', 'apexBackdrop'];   // only a dash's uniforms change (_dashLook): no rebuild
 const LIVE_KEYS = ['tachResponse', 'warnOil', 'warnCoolant', 'warnBoost', 'badge', 'badgeBMW', 'gFlipLat', 'gFlipLong', 'gRange', 'gTrail'];
 // g (after cauliflowermossgrape's G-Force, MIT, idea only): a sample over G_BAD is a bad reading, not a corner;
 // the rest are averaged over G_AVG_MS so kerbs and potholes don't throw the dot about
@@ -618,6 +619,7 @@ class HudApp {
             if (['hudLayout', 'inComfort', 'inSport', 'inEco', 'byMode'].indexOf(key) >= 0 && this.screen.yielded) this.screen.release();
             if (PLACE_KEYS.indexOf(key) >= 0) this._guard('place', () => this._place());
             else if (LIVE_KEYS.indexOf(key) >= 0) this.widgets.forEach((x) => { x.last = null; });
+            else if (LOOK_KEYS.indexOf(key) >= 0) this.widgets.forEach((x) => { if (!x.sheet && /^[clg]dash$/.test(x.w.type)) this._dashLook(x); });
             else if (key !== 'demo') this._rebuild(); else this._status();
         });
     }
@@ -2323,7 +2325,8 @@ class HudApp {
         else if (w.type === 'garland') { x.tw = new Garland.Twinkle(w); this._blit(x, null, Garland.paint(w, x.tw.lvl, null)); }
         else if (w.type === 'icon' && w.icon === 'carTop') this._blit(x, null, paintCarTop(w.w, w.h));   // the tyre panel's car (car_top.js)
         else if (w.type === 'icon') this._blit(x, null, paintIcon(w.icon, w.w, w.h, color(t, w.color || 'fg')));
-        else if (w.type === 'sdash') {
+        if (w.type === 'cdash' || w.type === 'ldash' || w.type === 'gdash') this._dashLook(x);
+        if (w.type === 'sdash') {
             c.uniform(ref, 'u_size', [w.w, w.h]);
             c.uniform(ref, 'u_geo', w.geo);
             c.uniform(ref, 'u_k', w.k);
@@ -2409,7 +2412,6 @@ class HudApp {
             c.uniform(ref, 'u_red', [(w.red || 7000) / (A[7] * 1000), A[8] || 0.16, A[7]]);
             c.uniform(ref, 'u_band', [B[0] - w.x, B[1] - w.y, B[2], B[3]]);
             c.uniform(ref, 'u_miniZ', [0, 1, 2, 3].map((i) => { const m = (w.minis || [])[i]; return m && isNum(m.red) ? m.red : 1; }));
-            c.uniform(ref, 'u_plain', [this.setting('backdrops') === false ? 1 : 0]);   // "Backgrounds" off: black
         } else if (w.type === 'gdash') {
             // Circuit (tools/gen_circuit.py): "tach" [cx, cy, r, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "left" / "right" [cx, cy, r] (the side dials), "gbox" [cx, cy, half w, half h] (the gear's box), "car"
@@ -2423,7 +2425,6 @@ class HudApp {
             c.uniform(ref, 'u_right', [Rd[0] - w.x, Rd[1] - w.y, Rd[2], 0]);
             c.uniform(ref, 'u_gbox', [G[0] - w.x, G[1] - w.y, G[2], G[3]]);
             c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
-            c.uniform(ref, 'u_plain', [this.setting('backdrops') === false ? 1 : 0]);   // "Backgrounds" off: black
         } else if (w.type === 'cdash') {
             // Apex (tools/gen_apex.py): "tach" [cx, cy, outer r, band, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "panels" [left inner x, right inner x, glow top y, bottom y], "bars" (up to 4: {x, y, w, signal, min, max, red}),
@@ -2448,8 +2449,6 @@ class HudApp {
             const mh = this._hole(w);
             c.uniform(ref, 'u_mapHole', mh[2] > 0 ? [mh[0] + mh[2] / 2, mh[1] + mh[3] / 2, mh[2] / 2, isNum(w.holeFoot) ? w.holeFoot : 0] : [0, 0, 0, 0]);
             c.uniform(ref, 'u_mapEdge', [isNum(w.holeFeather) ? w.holeFeather : 0, isNum(w.holeTop) ? w.holeTop - w.y : 0]);
-            c.uniform(ref, 'u_bgStyle', [this.setting('apexBackdrop') === 'carbon' ? 1 : 0]);   // the backdrop setting
-            c.uniform(ref, 'u_plain', [this.setting('backdrops') === false ? 1 : 0]);   // "Backgrounds" off: black
             // the right panel: the G-meter, or the tyres with this car drawn in the middle ("car" [cx, cy, half w, half l])
             const car = this.setting('rightPanel') === 'tyres' && w.car;
             c.uniform(ref, 'u_car', car ? [car[0] - w.x, car[1] - w.y, car[2], car[3]] : [0, 0, 0, 0]);
@@ -2718,6 +2717,16 @@ class HudApp {
      * A dash widget's bars with their "pick" filled in: a bar with "pick": "left0" takes signal, min, max and red from
      * the layout's "picks" table for what that (virtual) setting says now (Apex's left gauges: boost, oil, intake, oilP).
      */
+    /**
+     * The backdrop uniforms of a whole-theme dash (Apex cdash, Veloce ldash, Circuit gdash): "Backgrounds" off draws
+     * black; Apex's "apexBackdrop" picks carbon or the red glow. Sent at creation and again when those settings change
+     * (LOOK_KEYS): no rebuild for them (a rebuild re-sends every layer, seconds on the car).
+     */
+    _dashLook(x) {
+        x.c.uniform(x.ref, 'u_plain', [this.setting('backdrops') === false ? 1 : 0]);
+        if (x.w.type === 'cdash') x.c.uniform(x.ref, 'u_bgStyle', [this.setting('apexBackdrop') === 'carbon' ? 1 : 0]);
+    }
+
     _barsOf(w) { return (w.bars || []).map((b) => this._pickOf(b)); }
 
     /** One bar or scale with its "pick" filled in from the layout's "picks" (else as it is). */
