@@ -57,32 +57,42 @@ def centred(id_, cx, cy, w, h, t, font, color='fg', align='center', **kw):
     return text(id_, cx - w / 2.0, cy - h / 2.0, w, h, t, font, color, align, **kw)
 
 
+CAM_TACH = [960, 382, 270]                 # "Leave room for the driver camera": the rev counter lower and smaller, its top
+                                           # (y 112) clear of the camera (visible.CAMERA y 0..110), its foot above the strip
+CAM_FONTS = {'ci_num': 'ci_num_c', 'ci_speed': 'ci_speed_c', 'ci_gear': 'ci_gear_c'}
+
+
 def build(cells):
-    cx, cy, R = TACH
-    inner = R - 22 * K
-    rb1, rb0 = R - 64 * K, R - 150 * K
     widgets = []
-    SP_R = cx + 58                                    # the speed's digits end here (right-aligned, so they grow leftward)
-    gbox = [SP_R + 14 + 20 * K, cy + 82 * K, 20 * K, 30 * K]   # the gear's box a fixed gap after the speed
     car = [RIGHT[0], int(round(RIGHT[1] + 5 * KS)), 57, 129]
-    widgets.append({'id': 'dash', 'type': 'gdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
-                    'tach': [cx, cy, R, START, SWEEP, THOUSANDS], 'zones': ZONES, 'left': LEFT, 'right': RIGHT,
-                    'gbox': [round(v, 1) for v in gbox], 'car': car,
-                    'arcs': [{'pick': 'left0', 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
-                             {'pick': 'left1', 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8}]})
-    # --- the rev counter's numbers on the red band; its labels, the speed, the gear ------------------------------------
-    nr = (rb0 + rb1) / 2
-    for k in range(THOUSANDS + 1):
-        a = math.radians(START + SWEEP * k / float(THOUSANDS))
-        widgets.append(centred('rpm%d' % k, cx + nr * math.sin(a), cy - nr * math.cos(a), 80, cells['ci_num'], str(k),
-                               'ci_num', 'bandInk'))
-    widgets += [
-        centred('mode', cx, cy - 70 * K, 300, cells['ci_mode'], '{{mode}}', 'ci_mode', 'dim'),
-        centred('rpm_u', cx, cy + R - 36 * K, 200, cells['ci_rpm'], 'RPM x 1000', 'ci_rpm', 'dim'),
-        text('speed', SP_R - 260, cy + 80 * K - cells['ci_speed'] / 2.0, 260, cells['ci_speed'], '{{speed}}', 'ci_speed', 'fg', 'right', rate=FAST),
-        centred('speed_u', SP_R - 44, cy + 134 * K, 120, cells['ci_unit'], '{{u:speedLc}}', 'ci_unit', 'fg'),
-        centred('gear', gbox[0], gbox[1], 2 * gbox[2], cells['ci_gear'], '{{gearnum}}', 'ci_gear', 'hot', rate=FAST),
-    ]
+    for cam in (False, True):
+        cx, cy, R = CAM_TACH if cam else TACH
+        k = R / 322.0
+        tg = 'cameraNotch' if cam else '!cameraNotch'
+        sfx = '_c' if cam else ''
+        fn = (lambda f: CAM_FONTS.get(f, f)) if cam else (lambda f: f)
+        rb1, rb0 = R - 64 * k, R - 150 * k
+        SP_R = cx + 58 * k / K                            # the speed's digits end here (right-aligned, growing leftward)
+        gbox = [SP_R + 14 + 20 * k, cy + 82 * k, 20 * k, 30 * k]   # the gear's box a fixed gap after the speed
+        widgets.append({'id': 'dash' + sfx, 'type': 'gdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
+                        'tach': [cx, cy, R, START, SWEEP, THOUSANDS], 'zones': ZONES, 'left': LEFT, 'right': RIGHT,
+                        'gbox': [round(v, 1) for v in gbox], 'car': car, 'toggle': tg,
+                        'arcs': [{'pick': 'left0', 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
+                                 {'pick': 'left1', 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8}]})
+        # --- the rev counter's numbers on the red band; its labels, the speed, the gear --------------------------------
+        nr = (rb0 + rb1) / 2
+        for kk in range(THOUSANDS + 1):
+            a = math.radians(START + SWEEP * kk / float(THOUSANDS))
+            widgets.append(centred('rpm%d%s' % (kk, sfx), cx + nr * math.sin(a), cy - nr * math.cos(a), 80, cells[fn('ci_num')],
+                                   str(kk), fn('ci_num'), 'bandInk', toggle=tg))
+        widgets += [
+            centred('mode' + sfx, cx, cy - 70 * k, 300, cells['ci_mode'], '{{mode}}', 'ci_mode', 'dim', toggle=tg),
+            centred('rpm_u' + sfx, cx, cy + R - 36 * k, 200, cells['ci_rpm'], 'RPM x 1000', 'ci_rpm', 'dim', toggle=tg),
+            text('speed' + sfx, SP_R - 260, cy + 80 * k - cells[fn('ci_speed')] / 2.0, 260, cells[fn('ci_speed')], '{{speed}}',
+                 fn('ci_speed'), 'fg', 'right', rate=FAST, toggle=tg),
+            centred('speed_u' + sfx, SP_R - 44 * k / K, cy + 134 * k, 120, cells['ci_unit'], '{{u:speedLc}}', 'ci_unit', 'fg', toggle=tg),
+            centred('gear' + sfx, gbox[0], gbox[1], 2 * gbox[2], cells[fn('ci_gear')], '{{gearnum}}', fn('ci_gear'), 'hot', rate=FAST, toggle=tg),
+        ]
     # --- the left dial: per spot and choice, the scale's five numbers and the value in the middle ----------------------
     lx, ly, lr = LEFT
     linner = lr - 22 * lr / 322.0
@@ -128,7 +138,7 @@ def build(cells):
     ]
     # the fast numbers on their own small layers; slow texts checked less often (as Apex)
     for w in widgets:
-        if w.get('id') in ('gear', 'speed', 'l0boost_v', 'l1boost_v'):
+        if w.get('id') in ('gear', 'speed', 'gear_c', 'speed_c', 'l0boost_v', 'l1boost_v'):
             w['own'] = True
         elif w['type'] == 'text' and 'rate' not in w:
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
@@ -152,7 +162,7 @@ if __name__ == '__main__':
     root = sys.argv[1] if len(sys.argv) > 1 else '.'
     fonts = root + '/apps/cluster_themes/hud/fonts/'
     cells = {}
-    for f in ('ci_num', 'ci_anum', 'ci_speed', 'ci_gear', 'ci_val', 'ci_tp', 'ci_unit', 'ci_lab', 'ci_head', 'ci_tt',
+    for f in ('ci_num_c', 'ci_speed_c', 'ci_gear_c', 'ci_num', 'ci_anum', 'ci_speed', 'ci_gear', 'ci_val', 'ci_tp', 'ci_unit', 'ci_lab', 'ci_head', 'ci_tt',
               'ci_mode', 'ci_rpm'):
         cells[f] = json.load(open(fonts + f + '.json'))['cellHeight']
     path = root + '/apps/cluster_themes/hud/layouts/circuit.json'

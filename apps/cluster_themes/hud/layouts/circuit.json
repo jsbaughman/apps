@@ -113,6 +113,7 @@
         57,
         129
       ],
+      "toggle": "!cameraNotch",
       "arcs": [
         {
           "pick": "left0",
@@ -142,6 +143,7 @@
       "font": "ci_num",
       "color": "bandInk",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -156,6 +158,7 @@
       "font": "ci_num",
       "color": "bandInk",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -170,6 +173,7 @@
       "font": "ci_num",
       "color": "bandInk",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -184,6 +188,7 @@
       "font": "ci_num",
       "color": "bandInk",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -198,6 +203,7 @@
       "font": "ci_num",
       "color": "bandInk",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -212,6 +218,7 @@
       "font": "ci_num",
       "color": "bandInk",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -226,6 +233,7 @@
       "font": "ci_num",
       "color": "bandInk",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -240,6 +248,7 @@
       "font": "ci_num",
       "color": "bandInk",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -254,6 +263,7 @@
       "font": "ci_num",
       "color": "bandInk",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -267,7 +277,8 @@
       "text": "{{mode}}",
       "font": "ci_mode",
       "color": "dim",
-      "align": "center"
+      "align": "center",
+      "toggle": "!cameraNotch"
     },
     {
       "id": "rpm_u",
@@ -281,6 +292,7 @@
       "font": "ci_rpm",
       "color": "dim",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -296,6 +308,7 @@
       "color": "fg",
       "align": "right",
       "rate": 45,
+      "toggle": "!cameraNotch",
       "own": true
     },
     {
@@ -310,6 +323,7 @@
       "font": "ci_unit",
       "color": "fg",
       "align": "center",
+      "toggle": "!cameraNotch",
       "rate": 2000
     },
     {
@@ -325,6 +339,279 @@
       "color": "hot",
       "align": "center",
       "rate": 45,
+      "toggle": "!cameraNotch",
+      "own": true
+    },
+    {
+      "id": "dash_c",
+      "type": "gdash",
+      "class": "content",
+      "z": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 660,
+      "tach": [
+        960,
+        382,
+        270,
+        -122,
+        244,
+        8
+      ],
+      "zones": [
+        6500,
+        7000
+      ],
+      "left": [
+        338,
+        362,
+        266
+      ],
+      "right": [
+        1582,
+        362,
+        266
+      ],
+      "gbox": [
+        1041.6,
+        450.8,
+        16.8,
+        25.2
+      ],
+      "car": [
+        1582,
+        367,
+        57,
+        129
+      ],
+      "toggle": "cameraNotch",
+      "arcs": [
+        {
+          "pick": "left0",
+          "signal": "boost",
+          "min": 0,
+          "max": 2.758,
+          "red": 0.75
+        },
+        {
+          "pick": "left1",
+          "signal": "oil",
+          "min": 50,
+          "max": 150,
+          "red": 0.8
+        }
+      ]
+    },
+    {
+      "id": "rpm0_c",
+      "type": "text",
+      "z": 5,
+      "x": 767,
+      "y": 458,
+      "w": 80,
+      "h": 40,
+      "text": "0",
+      "font": "ci_num_c",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "rpm1_c",
+      "type": "text",
+      "z": 5,
+      "x": 740,
+      "y": 367,
+      "w": 80,
+      "h": 40,
+      "text": "1",
+      "font": "ci_num_c",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "rpm2_c",
+      "type": "text",
+      "z": 5,
+      "x": 762,
+      "y": 275,
+      "w": 80,
+      "h": 40,
+      "text": "2",
+      "font": "ci_num_c",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "rpm3_c",
+      "type": "text",
+      "z": 5,
+      "x": 829,
+      "y": 207,
+      "w": 80,
+      "h": 40,
+      "text": "3",
+      "font": "ci_num_c",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "rpm4_c",
+      "type": "text",
+      "z": 5,
+      "x": 920,
+      "y": 182,
+      "w": 80,
+      "h": 40,
+      "text": "4",
+      "font": "ci_num_c",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "rpm5_c",
+      "type": "text",
+      "z": 5,
+      "x": 1011,
+      "y": 207,
+      "w": 80,
+      "h": 40,
+      "text": "5",
+      "font": "ci_num_c",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "rpm6_c",
+      "type": "text",
+      "z": 5,
+      "x": 1078,
+      "y": 275,
+      "w": 80,
+      "h": 40,
+      "text": "6",
+      "font": "ci_num_c",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "rpm7_c",
+      "type": "text",
+      "z": 5,
+      "x": 1100,
+      "y": 367,
+      "w": 80,
+      "h": 40,
+      "text": "7",
+      "font": "ci_num_c",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "rpm8_c",
+      "type": "text",
+      "z": 5,
+      "x": 1073,
+      "y": 458,
+      "w": 80,
+      "h": 40,
+      "text": "8",
+      "font": "ci_num_c",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "mode_c",
+      "type": "text",
+      "z": 5,
+      "x": 810,
+      "y": 314,
+      "w": 300,
+      "h": 18,
+      "text": "{{mode}}",
+      "font": "ci_mode",
+      "color": "dim",
+      "align": "center",
+      "toggle": "cameraNotch"
+    },
+    {
+      "id": "rpm_u_c",
+      "type": "text",
+      "z": 5,
+      "x": 860,
+      "y": 614,
+      "w": 200,
+      "h": 16,
+      "text": "RPM x 1000",
+      "font": "ci_rpm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "speed_c",
+      "type": "text",
+      "z": 5,
+      "x": 751,
+      "y": 419,
+      "w": 260,
+      "h": 60,
+      "text": "{{speed}}",
+      "font": "ci_speed_c",
+      "color": "fg",
+      "align": "right",
+      "rate": 45,
+      "toggle": "cameraNotch",
+      "own": true
+    },
+    {
+      "id": "speed_u_c",
+      "type": "text",
+      "z": 5,
+      "x": 912,
+      "y": 481,
+      "w": 120,
+      "h": 27,
+      "text": "{{u:speedLc}}",
+      "font": "ci_unit",
+      "color": "fg",
+      "align": "center",
+      "toggle": "cameraNotch",
+      "rate": 2000
+    },
+    {
+      "id": "gear_c",
+      "type": "text",
+      "z": 5,
+      "x": 1025,
+      "y": 435,
+      "w": 33,
+      "h": 31,
+      "text": "{{gearnum}}",
+      "font": "ci_gear_c",
+      "color": "hot",
+      "align": "center",
+      "rate": 45,
+      "toggle": "cameraNotch",
       "own": true
     },
     {

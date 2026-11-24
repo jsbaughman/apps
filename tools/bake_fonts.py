@@ -104,6 +104,10 @@ CLUSTER_FONTS = [
     ('ci_num', 'BarlowCondensed-Bold.ttf', 59, DIGITS),
     ('ci_anum', 'BarlowCondensed-Bold.ttf', 36, DIGITS + '.'),
     ('ci_speed', 'BarlowSemiCondensed-SemiBold.ttf', 88, DIGITS + '-'),
+    # Circuit's smaller rev counter for cars with the driver camera (0.877 of the above)
+    ('ci_num_c', 'BarlowCondensed-Bold.ttf', 52, DIGITS),
+    ('ci_speed_c', 'BarlowSemiCondensed-SemiBold.ttf', 77, DIGITS + '-'),
+    ('ci_gear_c', 'BarlowSemiCondensed-SemiBold.ttf', 39, DIGITS + 'PRNDSM-'),
     ('ci_gear', 'BarlowSemiCondensed-SemiBold.ttf', 44, DIGITS + 'PRNDSM-'),
     ('ci_val', 'BarlowSemiCondensed-SemiBold.ttf', 55, DIGITS + '.-'),
     ('ci_tp', 'BarlowSemiCondensed-SemiBold.ttf', 51, DIGITS + '.-'),
