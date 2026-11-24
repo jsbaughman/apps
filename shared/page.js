@@ -611,8 +611,14 @@ class Page {
 
     /* ---------- Settings ---------- */
     settingsTab(cv, bottom) {
-        label(cv, CX, 70, 'Settings');
-        let keys = this.cfg.settings.filter((k) => this.item(k));
+        // only the settings of the theme on the cluster now (cfg.settingThemes: key -> the layouts it does something in;
+        // a key not listed applies to all); with nothing on the cluster, or a theme none are listed for, all of them
+        const on = this.hud.activeName, st = this.cfg.settingThemes || {};
+        const own = !!(on && on !== 'off' && Object.keys(st).length && this.item('hudLayout')
+            && (this.item('hudLayout').options || []).some((o) => o[0] === on));
+        let keys = this.cfg.settings.filter((k) => this.item(k) && (!own || !st[k] || st[k].indexOf(on) >= 0));
+        const themeName = own ? ((this.item('hudLayout') && (this.item('hudLayout').options || []).find((o) => o[0] === on)) || [on, on])[1] : null;
+        label(cv, CX, 70, themeName ? 'Settings · ' + themeName : 'Settings');
         // more settings than fit (Cluster Themes' 27, Nov 23 2026: the last rows of each column fell off the screen):
         // pages of compact rows, "Page 1 of 2" and arrows beside the heading
         const rowsFit = Math.floor((bottom - 24 - 84 - 46) / 52) + 1;
@@ -644,9 +650,10 @@ class Page {
             const x = CX + (i < per ? 0 : colW + 24), y = 84 + (i % per) * pitch;
             if (y + h > bottom) return;
             const s = this.item(k);
-            if (s.type === 'bool') this.toggleRow(cv, x, y, colW, s.label, k, h);
-            else if (s.type === 'number') this.stepRow(cv, x, y, colW, s.label, k, null, h);
-            else this.pickRow(cv, x, y, colW, s.label, k, null, h);
+            const name = own ? s.label.replace(/ \((Apex|Circuit|Veloce)\b[^)]*\)$/, '') : s.label;   // the theme is in the heading
+            if (s.type === 'bool') this.toggleRow(cv, x, y, colW, name, k, h);
+            else if (s.type === 'number') this.stepRow(cv, x, y, colW, name, k, null, h);
+            else this.pickRow(cv, x, y, colW, name, k, null, h);
         });
         // what the engine says it is doing (layers, pixel memory, why nothing shows): for checking on the car
         cv.text(this.hud.lastStatus || '', CX, bottom - 6, 15, C.label, { literal: true });

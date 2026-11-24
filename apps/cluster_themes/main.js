@@ -64,7 +64,13 @@ mgu.run({
             title: ctx.spec.title, what: 'cluster',
             look: { name: 'Themes', style: 'hero', tags: { apex: 'needle dash · G-meter', veloce: 'arc · hex', circuit: 'three dials · red band' } },
             tabs: ['look', 'map', 'alerts', 'gmeter', 'settings'],
-            shiftLights: false,   // no theme here has shift lights: Alerts shows the warnings alone
+            shiftLights: false,
+            // the Settings tab lists only the settings of the theme on the cluster (shared/page.js); not listed: all themes
+            settingThemes: {
+                showBoost: ['apex', 'circuit'], leftTop: ['apex', 'circuit'], leftBottom: ['apex', 'circuit'],
+                apexBackdrop: ['apex'], gearStyle: ['apex'], tachSpeed: ['apex'], dialGlow: ['apex'], leftStyle: ['apex'],
+                gaugeFill: ['apex'], rightPanel: ['apex'], cameraNotch: ['apex'],
+            },   // no theme here has shift lights: Alerts shows the warnings alone
             settings: ['units', 'tempUnits', 'pressureUnits', 'showBoost', 'nightDim', 'backdrops', 'apexBackdrop', 'tachResponse', 'gearStyle', 'gearSource', 'tachSpeed', 'readingsCheck', 'dialGlow', 'leftStyle', 'leftTop', 'leftBottom', 'gaugeFill', 'rightPanel', 'cameraNotch', 'keepStrip', 'holiday', 'demo'],
             // the drive mode check's candidates this app's app.json listens to (issue #8; shared/hud.js modeDiagLines)
             modeCheck: ['HMI', 'MDrive', 'Engine', 'Sport2'],
