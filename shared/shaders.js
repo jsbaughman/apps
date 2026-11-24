@@ -2429,10 +2429,11 @@ float bands(float q, float w) {
     return 0.34 - 0.12 * smoothstep(0.25 - w, 0.25 + w, q) - 0.08 * smoothstep(0.5 - w, 0.5 + w, q) - 0.06 * smoothstep(0.75 - w, 0.75 + w, q);
 }
 // a track: s px under its top line, T deep, lit to (behind, lead), red from (red 0/1); returns the colour over c
-vec3 track(vec3 c, float s, float T, float behind, float lead, float red, float fade) {
+// mid: how near the middle of the screen (1 at it): the bar is lit from the middle, its top most, darkening outward
+vec3 track(vec3 c, float s, float T, float behind, float lead, float red, float fade, float mid) {
     float q = clamp(s / T, 0.0, 1.0), w = 0.11;   // wide soft steps: the four bands blend into each other (looked rigid on the car)
     float inT = smoothstep(-1.0, 0.6, s) * smoothstep(T + 1.0, T - 0.6, s);
-    float bv = bands(q, w) + behind * (0.04 + 0.09 * lead) * (1.0 - 0.7 * q);
+    float bv = bands(q, w) * (0.62 + 0.5 * mid) + 0.13 * mid * pow(1.0 - q, 2.0) + behind * (0.04 + 0.09 * lead) * (1.0 - 0.7 * q);
     vec3 tc = vec3(bv * 0.95, bv * 0.98, bv * 1.06);
     tc = mix(tc, tc * vec3(1.0, 0.4, 0.4) + vec3(0.32, 0.0, 0.0) * exp(-pow((q - 0.4) / 0.35, 2.0)), red);
     c = mix(c, tc, inT * fade);
@@ -2444,7 +2445,7 @@ vec3 track(vec3 c, float s, float T, float behind, float lead, float red, float 
     float g = smoothstep(T, T + 2.0, s) * exp(-max(s - T, 0.0) / (T * 1.05)) * smoothstep(T * 2.9, T * 2.4, s);
     c += vec3(0.62, 0.2, 0.08) * g * behind * (0.25 + 0.75 * lead) * fade;
     // the silver top line, the dark lower edge
-    c = mix(c, vec3(0.74, 0.76, 0.8), exp(-pow((s + 0.5) / 1.4, 2.0)) * fade);
+    c = mix(c, vec3(0.74, 0.76, 0.8) * (0.7 + 0.4 * mid), exp(-pow((s + 0.5) / 1.4, 2.0)) * fade);
     c *= 1.0 - 0.5 * exp(-pow((s - T) / 1.2, 2.0)) * fade;
     return c;
 }
@@ -2499,7 +2500,7 @@ void main() {
         float behind = step(f, u_scale.w);
         float lead = pow(clamp(1.0 - (u_scale.w - f) * span / 700.0, 0.0, 1.0), 1.2);
         float red = smoothstep(u_zone.x, u_zone.x + 60.0 / span, f);
-        c = track(c, s, T, behind, lead, red, fade);
+        c = track(c, s, T, behind, lead, red, fade, exp(-pow((p.x - u_size.x * 0.5) / 560.0, 2.0)));
         // the shift light: the track glows red over the count-in, bright red while it flashes
         float inT = step(0.0, s) * step(s, T) * fade;
         c = mix(c, vec3(0.95, 0.1, 0.08), inT * (0.35 * u_shift.x * (1.0 - u_shift.y) + 0.8 * u_shift.y));
@@ -2541,7 +2542,7 @@ void main() {
         float fade = clamp(min(bx + 30.0, B.z + 30.0 - bx) / 30.0, 0.0, 1.0);
         float behind = step(0.0, bf) * step(bf, val);
         float lead = clamp(1.0 - (val - bf) * B.z / 260.0, 0.0, 1.0);
-        c = track(c, bs, B.w, behind, lead, step(rz, bf) * step(bf, 1.03) * step(rz, 0.999), fade);
+        c = track(c, bs, B.w, behind, lead, step(rz, bf) * step(bf, 1.03) * step(rz, 0.999), fade, 0.6 + 0.3 * exp(-pow((bf - 0.5) / 0.45, 2.0)));
         float kk = clamp(floor(bf * 4.0 + 0.5), 0.0, 4.0);
         c = tab(c, bx - B.z * kk / 4.0, bs, -4.0, B.w + 7.0, 4.0, 2.2, kk / 4.0 >= rz - 0.001 && rz < 0.999 ? vec3(0.8, 0.12, 0.12) : vec3(0.78, 0.8, 0.83));
         // the pointer: a small flat blade at the value, its shadow
