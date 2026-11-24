@@ -339,7 +339,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=us",
+      "toggle": "uTemp=us",
       "rate": 2000
     },
     {
@@ -354,7 +354,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=us",
+      "toggle": "uTemp=us",
       "rate": 2000
     },
     {
@@ -369,7 +369,7 @@
       "font": "vl_sm",
       "color": "hot",
       "align": "center",
-      "toggle": "units=us",
+      "toggle": "uTemp=us",
       "rate": 2000
     },
     {
@@ -384,7 +384,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=metric",
+      "toggle": "uTemp=metric",
       "rate": 2000
     },
     {
@@ -399,7 +399,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=metric",
+      "toggle": "uTemp=metric",
       "rate": 2000
     },
     {
@@ -414,7 +414,7 @@
       "font": "vl_sm",
       "color": "hot",
       "align": "center",
-      "toggle": "units=metric",
+      "toggle": "uTemp=metric",
       "rate": 2000
     },
     {
@@ -473,7 +473,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=us",
+      "toggle": "uPress=us",
       "rate": 2000
     },
     {
@@ -488,7 +488,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=us",
+      "toggle": "uPress=us",
       "rate": 2000
     },
     {
@@ -503,7 +503,7 @@
       "font": "vl_sm",
       "color": "hot",
       "align": "center",
-      "toggle": "units=us",
+      "toggle": "uPress=us",
       "rate": 2000
     },
     {
@@ -518,7 +518,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=metric",
+      "toggle": "uPress=metric",
       "rate": 2000
     },
     {
@@ -533,7 +533,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=metric",
+      "toggle": "uPress=metric",
       "rate": 2000
     },
     {
@@ -548,7 +548,7 @@
       "font": "vl_sm",
       "color": "hot",
       "align": "center",
-      "toggle": "units=metric",
+      "toggle": "uPress=metric",
       "rate": 2000
     },
     {
@@ -748,7 +748,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=us",
+      "toggle": "uTemp=us",
       "conn": 1,
       "rate": 2000
     },
@@ -764,7 +764,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=us",
+      "toggle": "uTemp=us",
       "conn": 1,
       "rate": 2000
     },
@@ -780,7 +780,7 @@
       "font": "vl_sm",
       "color": "hot",
       "align": "center",
-      "toggle": "units=us",
+      "toggle": "uTemp=us",
       "conn": 1,
       "rate": 2000
     },
@@ -796,7 +796,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=metric",
+      "toggle": "uTemp=metric",
       "conn": 1,
       "rate": 2000
     },
@@ -812,7 +812,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "units=metric",
+      "toggle": "uTemp=metric",
       "conn": 1,
       "rate": 2000
     },
@@ -828,7 +828,7 @@
       "font": "vl_sm",
       "color": "hot",
       "align": "center",
-      "toggle": "units=metric",
+      "toggle": "uTemp=metric",
       "conn": 1,
       "rate": 2000
     },

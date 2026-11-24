@@ -24,6 +24,8 @@ NUMS_R = 0.78                             # the numbers' place, as a fraction of
 
 # the scale numbers follow the Units setting (one condition each)
 US, METRIC = 'units=us', 'units=metric'
+TUS, TMET = 'uTemp=us', 'uTemp=metric'      # temperatures: the Temperature setting
+PUS, PMET = 'uPress=us', 'uPress=metric'    # pressures: the Pressure setting
 
 
 def text(id_, x, y, w, h, t, font, color='fg', align='center', **kw):
@@ -42,7 +44,7 @@ def mini_block(n, mini, label, value, unit, nums, conn=None):
            text('m%d_v' % n, x + w - 136, y - 54 - 33, 130, 33, value, 'vl_lab', 'fg', 'right'),
            text('m%d_u' % n, x + w, y - 54 - 33, 60, 33, unit, 'vl_lab', 'dim', 'left')]
     for cond, (lo, mid, hi) in nums:
-        tag = 'us' if cond == US else 'm'
+        tag = 'us' if cond in (US, TUS, PUS) else 'm'
         out += [text('m%d_lo_%s' % (n, tag), x - 36, y - 19 - 25, 72, 25, lo, 'vl_sm', 'dim', 'center', toggle=cond),
                 text('m%d_mid_%s' % (n, tag), x + w / 2 - 36, y - 19 - 25, 72, 25, mid, 'vl_sm', 'dim', 'center', toggle=cond),
                 text('m%d_hi_%s' % (n, tag), x + w - 36, y - 19 - 25, 72, 25, hi, 'vl_sm', 'hot', 'center', toggle=cond)]
@@ -84,13 +86,13 @@ def build():
     ]
     # the side scales
     widgets += mini_block(0, minis[0], 'Oil Temp', '{{oil}}', '{{u:temp}}',
-                          [(US, ('122', '212', '302')), (METRIC, ('50', '100', '150'))])
+                          [(TUS, ('122', '212', '302')), (TMET, ('50', '100', '150'))])
     widgets += mini_block(1, minis[1], 'Boost', '{{boost}}', '{{u:boostLc}}',
-                          [(US, ('0', '20', '40')), (METRIC, ('0', '1.4', '2.8'))])
+                          [(PUS, ('0', '20', '40')), (PMET, ('0', '1.4', '2.8'))])
     widgets += mini_block(2, minis[2], 'Fuel', '{{fuelPct}}', '%',
                           [(US, ('0', '50', '100')), (METRIC, ('0', '50', '100'))], conn=1)
     widgets += mini_block(3, minis[3], 'Water Temp', '{{coolant}}', '{{u:temp}}',
-                          [(US, ('104', '185', '266')), (METRIC, ('40', '85', '130'))], conn=1)
+                          [(TUS, ('104', '185', '266')), (TMET, ('40', '85', '130'))], conn=1)
     # the bottom strip: clock, range, outside temperature; BMW's gear letter left uncovered
     widgets += [
         {'id': 'strip_cover_l', 'type': 'fill', 'class': 'content', 'z': 0, 'x': 0, 'y': 660, 'w': 1380, 'h': 60,

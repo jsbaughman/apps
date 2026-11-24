@@ -1835,8 +1835,10 @@ void main() {
         bool across = mod(cell.x + cell.y, 4.0) < 2.0;
         float lit = across ? 0.62 + 0.38 * sin(3.14159 * fq.y) : 0.3 + 0.22 * sin(3.14159 * fq.x);
         lit *= smoothstep(0.0, 0.12, across ? fq.y : fq.x) * smoothstep(1.0, 0.88, across ? fq.y : fq.x) * 0.55 + 0.45;
-        float side = 1.0 - smoothstep(u_tach.z * 0.95, u_size.x * 0.52, abs(p.x - u_tach.x));
-        c = vec3(0.086, 0.088, 0.094) * lit * pow(side, 1.4) * mix(1.0, 0.72, v_uv.y);
+        // lit along the dial's row, fading to black at the top and the bottom, a little at the sides (as Circuit's)
+        float vert = 1.0 - smoothstep(40.0, u_size.y * 0.5 + 8.0, abs(p.y - u_tach.y));
+        float side = 1.0 - 0.45 * smoothstep(u_size.x * 0.3, u_size.x * 0.5, abs(p.x - u_tach.x));
+        c = vec3(0.086, 0.088, 0.094) * lit * pow(vert, 1.3) * side;
     } else {
         // near black with a faint carbon weave
         vec2 q = p / 6.0;

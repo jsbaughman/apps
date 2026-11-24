@@ -38,6 +38,8 @@ CHOICES = [
      ('32', '77', '122', '167', '212'), ('0', '25', '50', '75', '100')),
     ('oilP', 'Oil Pressure', '{{oilP}}', '{{u:boostLc}}', {'signal': 'oilP', 'min': 0, 'max': 5.516, 'red': 1},
      ('0', '20', '40', '60', '80'), ('0', '1.4', '2.8', '4.1', '5.5')),
+    ('coolant', 'Water Temp', '{{coolant}}', '{{u:temp}}', {'signal': 'coolant', 'min': 50, 'max': 130, 'red': 0.81},
+     ('122', '158', '194', '230', '266'), ('50', '70', '90', '110', '130')),
 ]
 PICKS = {k: {c[0]: c[4] for c in CHOICES} for k in ('left0', 'left1')}
 ARCS = [(-68.0, 136.0), (248.0, -136.0)]   # top scale: start, sweep (clockwise); bottom: the other way round, left to right
@@ -92,9 +94,10 @@ def build(cells):
             for j in range(5):
                 a = math.radians(a0 + sw * j / 4.0)
                 x, y = lx + anr * math.sin(a), ly - anr * math.cos(a)
+                sysk = 'uPress' if key in ('boost', 'oilP') else 'uTemp'   # the scale follows Temperature / Pressure
                 for units, labels in (('us', us), ('metric', metric)):
                     widgets.append(centred('a%d%s_%d%s' % (spot, key, j, units[0]), x, y, 70, cells['ci_anum'], labels[j],
-                                           'ci_anum', 'fg', toggle=pick + '&units=' + units))
+                                           'ci_anum', 'fg', toggle=pick + '&' + sysk + '=' + units))
             widgets += [
                 centred('l%d%s_h' % (spot, key), lx, vy - 40 * KS, 220, cells['ci_lab'], label, 'ci_lab', 'dim', toggle=pick),
                 text('l%d%s_v' % (spot, key), lx - 8 * KS - 200, vy + 4 * KS - cells['ci_val'] / 2.0, 200, cells['ci_val'],

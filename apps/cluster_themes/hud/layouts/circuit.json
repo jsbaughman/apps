@@ -28,6 +28,12 @@
         "min": 0,
         "max": 5.516,
         "red": 1
+      },
+      "coolant": {
+        "signal": "coolant",
+        "min": 50,
+        "max": 130,
+        "red": 0.81
       }
     },
     "left1": {
@@ -54,6 +60,12 @@
         "min": 0,
         "max": 5.516,
         "red": 1
+      },
+      "coolant": {
+        "signal": "coolant",
+        "min": 50,
+        "max": 130,
+        "red": 0.81
       }
     }
   },
@@ -327,7 +339,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=boost&units=us",
+      "toggle": "left0=boost&uPress=us",
       "rate": 2000
     },
     {
@@ -342,7 +354,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=boost&units=metric",
+      "toggle": "left0=boost&uPress=metric",
       "rate": 2000
     },
     {
@@ -357,7 +369,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=boost&units=us",
+      "toggle": "left0=boost&uPress=us",
       "rate": 2000
     },
     {
@@ -372,7 +384,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=boost&units=metric",
+      "toggle": "left0=boost&uPress=metric",
       "rate": 2000
     },
     {
@@ -387,7 +399,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=boost&units=us",
+      "toggle": "left0=boost&uPress=us",
       "rate": 2000
     },
     {
@@ -402,7 +414,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=boost&units=metric",
+      "toggle": "left0=boost&uPress=metric",
       "rate": 2000
     },
     {
@@ -417,7 +429,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=boost&units=us",
+      "toggle": "left0=boost&uPress=us",
       "rate": 2000
     },
     {
@@ -432,7 +444,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=boost&units=metric",
+      "toggle": "left0=boost&uPress=metric",
       "rate": 2000
     },
     {
@@ -447,7 +459,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=boost&units=us",
+      "toggle": "left0=boost&uPress=us",
       "rate": 2000
     },
     {
@@ -462,7 +474,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=boost&units=metric",
+      "toggle": "left0=boost&uPress=metric",
       "rate": 2000
     },
     {
@@ -523,7 +535,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oil&units=us",
+      "toggle": "left0=oil&uTemp=us",
       "rate": 2000
     },
     {
@@ -538,7 +550,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oil&units=metric",
+      "toggle": "left0=oil&uTemp=metric",
       "rate": 2000
     },
     {
@@ -553,7 +565,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oil&units=us",
+      "toggle": "left0=oil&uTemp=us",
       "rate": 2000
     },
     {
@@ -568,7 +580,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oil&units=metric",
+      "toggle": "left0=oil&uTemp=metric",
       "rate": 2000
     },
     {
@@ -583,7 +595,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oil&units=us",
+      "toggle": "left0=oil&uTemp=us",
       "rate": 2000
     },
     {
@@ -598,7 +610,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oil&units=metric",
+      "toggle": "left0=oil&uTemp=metric",
       "rate": 2000
     },
     {
@@ -613,7 +625,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oil&units=us",
+      "toggle": "left0=oil&uTemp=us",
       "rate": 2000
     },
     {
@@ -628,7 +640,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oil&units=metric",
+      "toggle": "left0=oil&uTemp=metric",
       "rate": 2000
     },
     {
@@ -643,7 +655,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oil&units=us",
+      "toggle": "left0=oil&uTemp=us",
       "rate": 2000
     },
     {
@@ -658,7 +670,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oil&units=metric",
+      "toggle": "left0=oil&uTemp=metric",
       "rate": 2000
     },
     {
@@ -717,7 +729,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=intake&units=us",
+      "toggle": "left0=intake&uTemp=us",
       "rate": 2000
     },
     {
@@ -732,7 +744,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=intake&units=metric",
+      "toggle": "left0=intake&uTemp=metric",
       "rate": 2000
     },
     {
@@ -747,7 +759,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=intake&units=us",
+      "toggle": "left0=intake&uTemp=us",
       "rate": 2000
     },
     {
@@ -762,7 +774,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=intake&units=metric",
+      "toggle": "left0=intake&uTemp=metric",
       "rate": 2000
     },
     {
@@ -777,7 +789,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=intake&units=us",
+      "toggle": "left0=intake&uTemp=us",
       "rate": 2000
     },
     {
@@ -792,7 +804,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=intake&units=metric",
+      "toggle": "left0=intake&uTemp=metric",
       "rate": 2000
     },
     {
@@ -807,7 +819,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=intake&units=us",
+      "toggle": "left0=intake&uTemp=us",
       "rate": 2000
     },
     {
@@ -822,7 +834,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=intake&units=metric",
+      "toggle": "left0=intake&uTemp=metric",
       "rate": 2000
     },
     {
@@ -837,7 +849,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=intake&units=us",
+      "toggle": "left0=intake&uTemp=us",
       "rate": 2000
     },
     {
@@ -852,7 +864,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=intake&units=metric",
+      "toggle": "left0=intake&uTemp=metric",
       "rate": 2000
     },
     {
@@ -911,7 +923,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oilP&units=us",
+      "toggle": "left0=oilP&uPress=us",
       "rate": 2000
     },
     {
@@ -926,7 +938,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oilP&units=metric",
+      "toggle": "left0=oilP&uPress=metric",
       "rate": 2000
     },
     {
@@ -941,7 +953,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oilP&units=us",
+      "toggle": "left0=oilP&uPress=us",
       "rate": 2000
     },
     {
@@ -956,7 +968,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oilP&units=metric",
+      "toggle": "left0=oilP&uPress=metric",
       "rate": 2000
     },
     {
@@ -971,7 +983,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oilP&units=us",
+      "toggle": "left0=oilP&uPress=us",
       "rate": 2000
     },
     {
@@ -986,7 +998,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oilP&units=metric",
+      "toggle": "left0=oilP&uPress=metric",
       "rate": 2000
     },
     {
@@ -1001,7 +1013,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oilP&units=us",
+      "toggle": "left0=oilP&uPress=us",
       "rate": 2000
     },
     {
@@ -1016,7 +1028,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oilP&units=metric",
+      "toggle": "left0=oilP&uPress=metric",
       "rate": 2000
     },
     {
@@ -1031,7 +1043,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oilP&units=us",
+      "toggle": "left0=oilP&uPress=us",
       "rate": 2000
     },
     {
@@ -1046,7 +1058,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left0=oilP&units=metric",
+      "toggle": "left0=oilP&uPress=metric",
       "rate": 2000
     },
     {
@@ -1094,6 +1106,200 @@
       "rate": 2000
     },
     {
+      "id": "a0coolant_0u",
+      "type": "text",
+      "z": 5,
+      "x": 139,
+      "y": 281,
+      "w": 70,
+      "h": 29,
+      "text": "122",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left0=coolant&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "a0coolant_0m",
+      "type": "text",
+      "z": 5,
+      "x": 139,
+      "y": 281,
+      "w": 70,
+      "h": 29,
+      "text": "50",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left0=coolant&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "a0coolant_1u",
+      "type": "text",
+      "z": 5,
+      "x": 204,
+      "y": 201,
+      "w": 70,
+      "h": 29,
+      "text": "158",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left0=coolant&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "a0coolant_1m",
+      "type": "text",
+      "z": 5,
+      "x": 204,
+      "y": 201,
+      "w": 70,
+      "h": 29,
+      "text": "70",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left0=coolant&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "a0coolant_2u",
+      "type": "text",
+      "z": 5,
+      "x": 303,
+      "y": 171,
+      "w": 70,
+      "h": 29,
+      "text": "194",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left0=coolant&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "a0coolant_2m",
+      "type": "text",
+      "z": 5,
+      "x": 303,
+      "y": 171,
+      "w": 70,
+      "h": 29,
+      "text": "90",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left0=coolant&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "a0coolant_3u",
+      "type": "text",
+      "z": 5,
+      "x": 402,
+      "y": 201,
+      "w": 70,
+      "h": 29,
+      "text": "230",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left0=coolant&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "a0coolant_3m",
+      "type": "text",
+      "z": 5,
+      "x": 402,
+      "y": 201,
+      "w": 70,
+      "h": 29,
+      "text": "110",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left0=coolant&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "a0coolant_4u",
+      "type": "text",
+      "z": 5,
+      "x": 467,
+      "y": 281,
+      "w": 70,
+      "h": 29,
+      "text": "266",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left0=coolant&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "a0coolant_4m",
+      "type": "text",
+      "z": 5,
+      "x": 467,
+      "y": 281,
+      "w": 70,
+      "h": 29,
+      "text": "130",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left0=coolant&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "l0coolant_h",
+      "type": "text",
+      "z": 5,
+      "x": 228,
+      "y": 272,
+      "w": 220,
+      "h": 23,
+      "text": "Water Temp",
+      "font": "ci_lab",
+      "color": "dim",
+      "align": "center",
+      "toggle": "left0=coolant",
+      "rate": 2000
+    },
+    {
+      "id": "l0coolant_v",
+      "type": "text",
+      "z": 5,
+      "x": 130,
+      "y": 304,
+      "w": 200,
+      "h": 43,
+      "text": "{{coolant}}",
+      "font": "ci_val",
+      "color": "fg",
+      "align": "right",
+      "toggle": "left0=coolant"
+    },
+    {
+      "id": "l0coolant_u",
+      "type": "text",
+      "z": 5,
+      "x": 340,
+      "y": 322,
+      "w": 80,
+      "h": 27,
+      "text": "{{u:temp}}",
+      "font": "ci_unit",
+      "color": "fg",
+      "align": "left",
+      "toggle": "left0=coolant",
+      "rate": 2000
+    },
+    {
       "id": "a1boost_0u",
       "type": "text",
       "z": 5,
@@ -1105,7 +1311,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=boost&units=us",
+      "toggle": "left1=boost&uPress=us",
       "rate": 2000
     },
     {
@@ -1120,7 +1326,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=boost&units=metric",
+      "toggle": "left1=boost&uPress=metric",
       "rate": 2000
     },
     {
@@ -1135,7 +1341,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=boost&units=us",
+      "toggle": "left1=boost&uPress=us",
       "rate": 2000
     },
     {
@@ -1150,7 +1356,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=boost&units=metric",
+      "toggle": "left1=boost&uPress=metric",
       "rate": 2000
     },
     {
@@ -1165,7 +1371,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=boost&units=us",
+      "toggle": "left1=boost&uPress=us",
       "rate": 2000
     },
     {
@@ -1180,7 +1386,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=boost&units=metric",
+      "toggle": "left1=boost&uPress=metric",
       "rate": 2000
     },
     {
@@ -1195,7 +1401,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=boost&units=us",
+      "toggle": "left1=boost&uPress=us",
       "rate": 2000
     },
     {
@@ -1210,7 +1416,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=boost&units=metric",
+      "toggle": "left1=boost&uPress=metric",
       "rate": 2000
     },
     {
@@ -1225,7 +1431,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=boost&units=us",
+      "toggle": "left1=boost&uPress=us",
       "rate": 2000
     },
     {
@@ -1240,7 +1446,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=boost&units=metric",
+      "toggle": "left1=boost&uPress=metric",
       "rate": 2000
     },
     {
@@ -1301,7 +1507,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oil&units=us",
+      "toggle": "left1=oil&uTemp=us",
       "rate": 2000
     },
     {
@@ -1316,7 +1522,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oil&units=metric",
+      "toggle": "left1=oil&uTemp=metric",
       "rate": 2000
     },
     {
@@ -1331,7 +1537,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oil&units=us",
+      "toggle": "left1=oil&uTemp=us",
       "rate": 2000
     },
     {
@@ -1346,7 +1552,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oil&units=metric",
+      "toggle": "left1=oil&uTemp=metric",
       "rate": 2000
     },
     {
@@ -1361,7 +1567,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oil&units=us",
+      "toggle": "left1=oil&uTemp=us",
       "rate": 2000
     },
     {
@@ -1376,7 +1582,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oil&units=metric",
+      "toggle": "left1=oil&uTemp=metric",
       "rate": 2000
     },
     {
@@ -1391,7 +1597,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oil&units=us",
+      "toggle": "left1=oil&uTemp=us",
       "rate": 2000
     },
     {
@@ -1406,7 +1612,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oil&units=metric",
+      "toggle": "left1=oil&uTemp=metric",
       "rate": 2000
     },
     {
@@ -1421,7 +1627,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oil&units=us",
+      "toggle": "left1=oil&uTemp=us",
       "rate": 2000
     },
     {
@@ -1436,7 +1642,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oil&units=metric",
+      "toggle": "left1=oil&uTemp=metric",
       "rate": 2000
     },
     {
@@ -1495,7 +1701,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=intake&units=us",
+      "toggle": "left1=intake&uTemp=us",
       "rate": 2000
     },
     {
@@ -1510,7 +1716,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=intake&units=metric",
+      "toggle": "left1=intake&uTemp=metric",
       "rate": 2000
     },
     {
@@ -1525,7 +1731,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=intake&units=us",
+      "toggle": "left1=intake&uTemp=us",
       "rate": 2000
     },
     {
@@ -1540,7 +1746,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=intake&units=metric",
+      "toggle": "left1=intake&uTemp=metric",
       "rate": 2000
     },
     {
@@ -1555,7 +1761,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=intake&units=us",
+      "toggle": "left1=intake&uTemp=us",
       "rate": 2000
     },
     {
@@ -1570,7 +1776,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=intake&units=metric",
+      "toggle": "left1=intake&uTemp=metric",
       "rate": 2000
     },
     {
@@ -1585,7 +1791,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=intake&units=us",
+      "toggle": "left1=intake&uTemp=us",
       "rate": 2000
     },
     {
@@ -1600,7 +1806,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=intake&units=metric",
+      "toggle": "left1=intake&uTemp=metric",
       "rate": 2000
     },
     {
@@ -1615,7 +1821,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=intake&units=us",
+      "toggle": "left1=intake&uTemp=us",
       "rate": 2000
     },
     {
@@ -1630,7 +1836,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=intake&units=metric",
+      "toggle": "left1=intake&uTemp=metric",
       "rate": 2000
     },
     {
@@ -1689,7 +1895,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oilP&units=us",
+      "toggle": "left1=oilP&uPress=us",
       "rate": 2000
     },
     {
@@ -1704,7 +1910,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oilP&units=metric",
+      "toggle": "left1=oilP&uPress=metric",
       "rate": 2000
     },
     {
@@ -1719,7 +1925,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oilP&units=us",
+      "toggle": "left1=oilP&uPress=us",
       "rate": 2000
     },
     {
@@ -1734,7 +1940,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oilP&units=metric",
+      "toggle": "left1=oilP&uPress=metric",
       "rate": 2000
     },
     {
@@ -1749,7 +1955,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oilP&units=us",
+      "toggle": "left1=oilP&uPress=us",
       "rate": 2000
     },
     {
@@ -1764,7 +1970,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oilP&units=metric",
+      "toggle": "left1=oilP&uPress=metric",
       "rate": 2000
     },
     {
@@ -1779,7 +1985,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oilP&units=us",
+      "toggle": "left1=oilP&uPress=us",
       "rate": 2000
     },
     {
@@ -1794,7 +2000,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oilP&units=metric",
+      "toggle": "left1=oilP&uPress=metric",
       "rate": 2000
     },
     {
@@ -1809,7 +2015,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oilP&units=us",
+      "toggle": "left1=oilP&uPress=us",
       "rate": 2000
     },
     {
@@ -1824,7 +2030,7 @@
       "font": "ci_anum",
       "color": "fg",
       "align": "center",
-      "toggle": "left1=oilP&units=metric",
+      "toggle": "left1=oilP&uPress=metric",
       "rate": 2000
     },
     {
@@ -1869,6 +2075,200 @@
       "color": "fg",
       "align": "left",
       "toggle": "left1=oilP",
+      "rate": 2000
+    },
+    {
+      "id": "a1coolant_0u",
+      "type": "text",
+      "z": 5,
+      "x": 139,
+      "y": 414,
+      "w": 70,
+      "h": 29,
+      "text": "122",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left1=coolant&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "a1coolant_0m",
+      "type": "text",
+      "z": 5,
+      "x": 139,
+      "y": 414,
+      "w": 70,
+      "h": 29,
+      "text": "50",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left1=coolant&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "a1coolant_1u",
+      "type": "text",
+      "z": 5,
+      "x": 204,
+      "y": 494,
+      "w": 70,
+      "h": 29,
+      "text": "158",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left1=coolant&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "a1coolant_1m",
+      "type": "text",
+      "z": 5,
+      "x": 204,
+      "y": 494,
+      "w": 70,
+      "h": 29,
+      "text": "70",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left1=coolant&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "a1coolant_2u",
+      "type": "text",
+      "z": 5,
+      "x": 303,
+      "y": 524,
+      "w": 70,
+      "h": 29,
+      "text": "194",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left1=coolant&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "a1coolant_2m",
+      "type": "text",
+      "z": 5,
+      "x": 303,
+      "y": 524,
+      "w": 70,
+      "h": 29,
+      "text": "90",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left1=coolant&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "a1coolant_3u",
+      "type": "text",
+      "z": 5,
+      "x": 402,
+      "y": 494,
+      "w": 70,
+      "h": 29,
+      "text": "230",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left1=coolant&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "a1coolant_3m",
+      "type": "text",
+      "z": 5,
+      "x": 402,
+      "y": 494,
+      "w": 70,
+      "h": 29,
+      "text": "110",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left1=coolant&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "a1coolant_4u",
+      "type": "text",
+      "z": 5,
+      "x": 467,
+      "y": 414,
+      "w": 70,
+      "h": 29,
+      "text": "266",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left1=coolant&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "a1coolant_4m",
+      "type": "text",
+      "z": 5,
+      "x": 467,
+      "y": 414,
+      "w": 70,
+      "h": 29,
+      "text": "130",
+      "font": "ci_anum",
+      "color": "fg",
+      "align": "center",
+      "toggle": "left1=coolant&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "l1coolant_h",
+      "type": "text",
+      "z": 5,
+      "x": 228,
+      "y": 387,
+      "w": 220,
+      "h": 23,
+      "text": "Water Temp",
+      "font": "ci_lab",
+      "color": "dim",
+      "align": "center",
+      "toggle": "left1=coolant",
+      "rate": 2000
+    },
+    {
+      "id": "l1coolant_v",
+      "type": "text",
+      "z": 5,
+      "x": 130,
+      "y": 419,
+      "w": 200,
+      "h": 43,
+      "text": "{{coolant}}",
+      "font": "ci_val",
+      "color": "fg",
+      "align": "right",
+      "toggle": "left1=coolant"
+    },
+    {
+      "id": "l1coolant_u",
+      "type": "text",
+      "z": 5,
+      "x": 340,
+      "y": 437,
+      "w": 80,
+      "h": 27,
+      "text": "{{u:temp}}",
+      "font": "ci_unit",
+      "color": "fg",
+      "align": "left",
+      "toggle": "left1=coolant",
       "rate": 2000
     },
     {

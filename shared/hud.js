@@ -746,6 +746,10 @@ class HudApp {
     setting(key) {
         // "mapUp": not saved, the Waze map is showing inside the theme now (the setting on, waze.js says so)
         if (key === 'mapUp') return !!(this.waze && this.waze.up && this.ctx.settings.get('mapInTheme') === true);
+        // "uTemp" / "uPress": not saved, 'us' or 'metric' for temperatures / pressures as the readings show them (the
+        // Temperature and Pressure settings, "Match speed" following Units): the gauges' scale numbers toggle on these
+        if (key === 'uTemp') return this._us('temp') ? 'us' : 'metric';
+        if (key === 'uPress') return this._us('pressure') ? 'us' : 'metric';
         // "left0" / "left1": not saved, what Apex's two left gauges show ("leftTop" / "leftBottom"); boost turned off
         // ("Show boost") puts the intake temperature in its place, for cars without a turbo
         if (key === 'left0' || key === 'left1') {

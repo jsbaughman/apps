@@ -70,20 +70,22 @@ def cam_copy(ws):
 # unit, the bar (signal, min, max, where red starts 0..1) and the scale's numbers per unit system (min, middle, max)
 LEFT = [
     ('boost', 'Boost', '{{boost}}', '{{u:boostLc}}', {'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
-     [(['units=us'], ('0', '20', '40')), (['units=metric'], ('0', '1.4', '2.8'))]),
+     [(['uPress=us'], ('0', '20', '40')), (['uPress=metric'], ('0', '1.4', '2.8'))]),
     ('oil', 'Oil Temp', '{{oil}}', '{{u:temp}}', {'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8},
-     [(['units=us'], ('122', '212', '302')), (['units=metric'], ('50', '100', '150'))]),
+     [(['uTemp=us'], ('122', '212', '302')), (['uTemp=metric'], ('50', '100', '150'))]),
     ('intake', 'Intake Temp', '{{intake}}', '{{u:temp}}', {'signal': 'intake', 'min': 0, 'max': 100, 'red': 0.6},
-     [(['units=us'], ('32', '122', '212')), (['units=metric'], ('0', '50', '100'))]),
+     [(['uTemp=us'], ('32', '122', '212')), (['uTemp=metric'], ('0', '50', '100'))]),
     ('oilP', 'Oil Pressure', '{{oilP}}', '{{u:boostLc}}', {'signal': 'oilP', 'min': 0, 'max': 6.205, 'red': 1},
-     [(['units=us'], ('0', '45', '90')), (['units=metric'], ('0', '3.1', '6.2'))]),
+     [(['uPress=us'], ('0', '45', '90')), (['uPress=metric'], ('0', '3.1', '6.2'))]),
+    ('coolant', 'Water Temp', '{{coolant}}', '{{u:temp}}', {'signal': 'coolant', 'min': 50, 'max': 130, 'red': 0.81},
+     [(['uTemp=us'], ('122', '194', '266')), (['uTemp=metric'], ('50', '90', '130'))]),
 ]
 PICKS = {k: {c[0]: c[4] for c in LEFT} for k in ('left0', 'left1')}
 
-PSI = ['units=us']
-BAR = ['units=metric']
-DEGF = ['units=us']
-DEGC = ['units=metric']
+PSI = ['uPress=us']
+BAR = ['uPress=metric']
+DEGF = ['uTemp=us']
+DEGC = ['uTemp=metric']
 
 
 def text(id_, x, y, w, h, t, font, color='fg', align='center', **kw):
