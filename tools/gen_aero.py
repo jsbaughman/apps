@@ -84,12 +84,12 @@ def build(cells):
         x = SCALE[0] + span * k / SCALE[2]
         dk = x - RAIL[1]; sl = dk / RAIL[2]; cs = 1 / math.sqrt(1 + sl * sl)
         n = (-sl * cs, cs)
-        cx, cy = x + n[0] * (T + 12), rail_y(x) + n[1] * (T + 12) + 32
+        cx, cy = x + n[0] * (T + 12), rail_y(x) + n[1] * (T + 12) + 35
         red = k * 1000 >= ZONES[1]
         band = [k * 1000, 99999] if red else [k * 1000, (k + 1) * 1000]
         widgets += [
-            centred('rn%d_s' % k, cx + 4, cy + 5, 80, cells, str(k), 'ae_num', 'shade', z=4),
-            centred('rn%d' % k, cx, cy, 80, cells, str(k), 'ae_num', 'numRed' if red else 'num', litBand=band,
+            centred('rn%d_s' % k, cx + 4, cy + 5, 90, cells, str(k), 'ae_num', 'shade', z=4),
+            centred('rn%d' % k, cx, cy, 90, cells, str(k), 'ae_num', 'numRed' if red else 'num', litBand=band,
                     litColor='hot' if red else 'fg', rate=100),
         ]
     x8 = SCALE[1]

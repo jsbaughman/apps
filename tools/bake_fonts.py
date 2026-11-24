@@ -81,7 +81,7 @@ CLUSTER_FONTS = [
     ('a_tach', 'Outfit[wght].ttf', 58, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the rev counter's numbers, as the speed
     ('a_speed_m', 'Outfit[wght].ttf', 70, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the speed in map view, 20 % bigger
     # Aero (tools/gen_aero.py): Oxanium on the rev scale, Saira for the rest (SIL OFL)
-    ('ae_num', 'Oxanium-Medium.woff', 56, DIGITS),
+    ('ae_num', 'Oxanium-Medium.woff', 62, DIGITS),
     ('ae_bnum', 'Oxanium-Medium.woff', 26, DIGITS + '.'),
     ('ae_tiny', 'Oxanium-SemiBold.woff', 16, 'RPMx' + DIGITS),
     ('ae_gear', 'Saira-SemiBold.woff', 260, DIGITS + 'PRNDSM-'),
