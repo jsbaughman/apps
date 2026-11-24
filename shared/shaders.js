@@ -2389,4 +2389,205 @@ void main() {
 }
 `;
 
-module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gdash: GDASH, gtext: GTEXT };
+const ADASH = `// The Aero theme in one cluster-render "effect" layer (GLSL ES 1.00), layout made by tools/gen_aero.py: a deep navy
+// backdrop; a full-width rev rail across the top (a silver top line over a four-band track, light to dark, a white line
+// to the needle with an orange glow under it, outlined tabs at each thousand, a flat blade needle with a soft grey and a
+// drop shadow, a red zone, fading at both sides); two small straight rails on the left (picked readings); four curved
+// frame lines with a gradient and a drop shadow; the tyres round the car on the right; a slim curved fuel column.
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 v_uv;
+uniform vec2 u_size;
+uniform vec4 u_rail;       // the rail: top-line y at its middle, middle x, curve radius, track depth
+uniform vec4 u_scale;      // x at 0 rpm, x at the top of the scale, thousands, revs 0..1
+uniform vec2 u_zone;       // red from (0..1 of the scale), 0
+uniform vec2 u_shift;      // the shift light: count 0..1, flash 0 / 1
+uniform vec4 u_bars[2];    // the left rails: left x, top-line y, width, track depth
+uniform vec4 u_barV;       // their values 0..1 (x, y), red from (z, w)
+uniform vec4 u_frame[12];  // per frame: [x0, y0, x1, y1] the straight run, [cx, cy, r, 0] the bend, [x2, y2, x3, y3] the slant
+uniform vec4 u_car;        // the car: centre x, y, tyre offset x, tyre offset y
+uniform vec4 u_tyre;       // FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
+uniform vec4 u_fuel;       // the fuel column: bottom x, bottom y, top y, level 0..1
+uniform float u_plain;     // 1: no backdrop (the "Backgrounds" setting off)
+
+float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
+vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
+float segd(vec2 p, vec2 a, vec2 b) {
+    vec2 ba = b - a;
+    float h = clamp(dot(p - a, ba) / max(dot(ba, ba), 0.001), 0.0, 1.0);
+    return length(p - a - ba * h);
+}
+float rboxd(vec2 p, vec2 c, vec2 h, float r) { vec2 q = abs(p - c) - h + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }
+// the four bands, lightest at the top: q 0..1 down the track; soft steps (a slight blur)
+float bands(float q, float w) {
+    return 0.34 - 0.12 * smoothstep(0.25 - w, 0.25 + w, q) - 0.08 * smoothstep(0.5 - w, 0.5 + w, q) - 0.06 * smoothstep(0.75 - w, 0.75 + w, q);
+}
+// a track: s px under its top line, T deep, lit to (behind, lead), red from (red 0/1); returns the colour over c
+vec3 track(vec3 c, float s, float T, float behind, float lead, float red, float fade) {
+    float q = clamp(s / T, 0.0, 1.0), w = 1.6 / T;
+    float inT = smoothstep(-1.0, 0.6, s) * smoothstep(T + 1.0, T - 0.6, s);
+    float bv = bands(q, w) + behind * (0.04 + 0.09 * lead) * (1.0 - 0.7 * q);
+    vec3 tc = vec3(bv * 0.95, bv * 0.98, bv * 1.06);
+    tc = mix(tc, tc * vec3(1.0, 0.4, 0.4) + vec3(0.32, 0.0, 0.0) * exp(-pow((q - 0.4) / 0.35, 2.0)), red);
+    c = mix(c, tc, inT * fade);
+    // the white line to the value, brightest at it; a faint halo
+    float wl = clamp((0.13 * T - abs(s - 0.4 * T)) / 1.2, 0.0, 1.0) * behind * (0.1 + 0.9 * pow(lead, 0.9));
+    c = mix(c, vec3(0.97, 0.98, 1.0), wl * fade);
+    c += vec3(0.14) * exp(-pow((s - 0.4 * T) / (0.2 * T), 2.0)) * behind * lead * fade;
+    // the orange glow under it
+    float g = smoothstep(T, T + 2.0, s) * exp(-max(s - T, 0.0) / (T * 1.05)) * smoothstep(T * 2.9, T * 2.4, s);
+    c += vec3(0.62, 0.2, 0.08) * g * behind * (0.25 + 0.75 * lead) * fade;
+    // the silver top line, the dark lower edge
+    c = mix(c, vec3(0.74, 0.76, 0.8), exp(-pow((s + 0.5) / 1.4, 2.0)) * fade);
+    c *= 1.0 - 0.5 * exp(-pow((s - T) / 1.2, 2.0)) * fade;
+    return c;
+}
+// an outlined tapered tab hanging from a top line: a along the line, b down; top bt, bottom bb, half widths w0, w1
+vec3 tab(vec3 c, float a, float b, float bt, float bb, float w0, float w1, vec3 edge) {
+    float hw = mix(w0, w1, clamp((b - bt) / (bb - bt), 0.0, 1.0));
+    float d = max(abs(a) - hw, max(bt - b, b - bb));
+    c = put(c, vec3(0.07, 0.078, 0.1), cov(d));
+    return put(c, edge, cov(abs(d) - 0.9));
+}
+
+void main() {
+    vec2 p = v_uv * u_size;
+    // --- the backdrop: deep navy, lit behind the middle and along the rail, black at the corners and the foot
+    vec2 X = vec2(p.x / 1920.0, p.y / 720.0);
+    float gl = exp(-(pow((X.x - 0.5) / 0.42, 2.0) + pow((X.y - 0.42) / 0.55, 2.0)));
+    float v = 0.012 + 0.10 * gl + 0.015 * exp(-pow((X.y - 0.2) / 0.16, 2.0));
+    vec3 c = vec3(v * 0.45, v * 0.78, v * 1.25) * (1.0 - u_plain);
+
+    // --- the rev rail
+    float T = u_rail.w, R = u_rail.z;
+    float dx = p.x - u_rail.y, sl = dx / R;
+    float yr = u_rail.x + dx * dx / (2.0 * R);
+    float cs = inversesqrt(1.0 + sl * sl);
+    float s = (p.y - yr) * cs;
+    float f = (p.x - u_scale.x) / (u_scale.y - u_scale.x);
+    float span = u_scale.y - u_scale.x;
+    if (s > -30.0 && s < T + 150.0) {
+        float fade = pow(clamp(min(p.x, u_size.x - p.x) / 220.0, 0.0, 1.0), 1.5);
+        float behind = step(f, u_scale.w);
+        float lead = pow(clamp(1.0 - (u_scale.w - f) * span / 700.0, 0.0, 1.0), 1.2);
+        float red = smoothstep(u_zone.x, u_zone.x + 60.0 / span, f);
+        c = track(c, s, T, behind, lead, red, fade);
+        // the shift light: the track glows red over the count-in, bright red while it flashes
+        float inT = step(0.0, s) * step(s, T) * fade;
+        c = mix(c, vec3(0.95, 0.1, 0.08), inT * (0.35 * u_shift.x * (1.0 - u_shift.y) + 0.8 * u_shift.y));
+        // the tab of the nearest thousand
+        float k = clamp(floor(f * u_scale.z + 0.5), 0.0, u_scale.z);
+        float xk = u_scale.x + span * k / u_scale.z, dk = xk - u_rail.y;
+        vec2 Pk = vec2(xk, u_rail.x + dk * dk / (2.0 * R));
+        vec2 tk = normalize(vec2(1.0, dk / R)), nk = vec2(-tk.y, tk.x);
+        vec2 dp = p - Pk;
+        bool redk = k / u_scale.z >= u_zone.x - 0.001;
+        c = tab(c, dot(dp, tk), dot(dp, nk), -7.0, T + 12.0, 6.5, 3.5, redk ? vec3(0.8, 0.12, 0.12) : vec3(0.78, 0.8, 0.83));
+        // the needle: a flat blade with a rounded head, a soft grey down its right side and to the point; its shadow
+        float xn = u_scale.x + span * u_scale.w, dn = xn - u_rail.y;
+        vec2 Pn = vec2(xn, u_rail.x + dn * dn / (2.0 * R));
+        vec2 tn = normalize(vec2(1.0, dn / R)), nn = vec2(-tn.y, tn.x);
+        float tip = T + 82.0;
+        for (int i = 0; i < 2; i++) {
+            vec2 q = p - Pn - (i == 0 ? vec2(7.0, 6.0) : vec2(0.0));
+            float a = dot(q, tn), b = dot(q, nn);
+            float t = clamp((b + 6.0) / (tip + 6.0), 0.0, 1.0);
+            float ctr = mix(-5.5, 1.5, t), hw = mix(11.5, 1.2, t);
+            float d = b < -6.0 ? length(vec2(a + 5.5, (b + 6.0) / 0.9)) - 11.5 : max(abs(a - ctr) - hw, b - tip);
+            if (i == 0) c *= 1.0 - 0.55 * smoothstep(7.0, -3.0, d);
+            else {
+                vec3 nc = vec3(0.886, 0.898, 0.922);
+                nc = mix(nc, vec3(0.47, 0.486, 0.525), 0.55 * smoothstep(-0.2 * hw, hw, a - ctr) + 0.3 * smoothstep(0.55, 1.0, t));
+                c = put(c, nc, cov(d));
+            }
+        }
+    }
+
+    // --- the left rails
+    for (int i = 0; i < 2; i++) {
+        vec4 B = u_bars[i];
+        float bs = p.y - B.y, bx = p.x - B.x;
+        if (bs < -20.0 || bs > B.w + 60.0 || bx < -40.0 || bx > B.z + 40.0) continue;
+        float val = i == 0 ? u_barV.x : u_barV.y, rz = i == 0 ? u_barV.z : u_barV.w;
+        float bf = bx / B.z;
+        float fade = clamp(min(bx + 30.0, B.z + 30.0 - bx) / 30.0, 0.0, 1.0);
+        float behind = step(0.0, bf) * step(bf, val);
+        float lead = clamp(1.0 - (val - bf) * B.z / 260.0, 0.0, 1.0);
+        c = track(c, bs, B.w, behind, lead, step(rz, bf) * step(bf, 1.03) * step(rz, 0.999), fade);
+        float kk = clamp(floor(bf * 4.0 + 0.5), 0.0, 4.0);
+        c = tab(c, bx - B.z * kk / 4.0, bs, -4.0, B.w + 7.0, 4.0, 2.2, kk / 4.0 >= rz - 0.001 && rz < 0.999 ? vec3(0.8, 0.12, 0.12) : vec3(0.78, 0.8, 0.83));
+        // the pointer: a small flat blade at the value, its shadow
+        for (int j = 0; j < 2; j++) {
+            vec2 q = vec2(bx - B.z * val, bs) - (j == 0 ? vec2(4.0, 4.0) : vec2(0.0));
+            float t = clamp((q.y + 9.0) / (B.w + 24.0), 0.0, 1.0);
+            float d = q.y < -9.0 ? length(q - vec2(-0.5, -9.0)) - 5.5 : max(abs(q.x - mix(-0.5, 0.8, t)) - mix(5.5, 0.6, t), q.y - B.w - 15.0);
+            if (j == 0) c *= 1.0 - 0.5 * smoothstep(5.0, -2.0, d);
+            else c = put(c, mix(vec3(0.886, 0.898, 0.922), vec3(0.5, 0.51, 0.55), 0.5 * smoothstep(-2.0, 4.0, q.x - mix(-0.5, 0.8, t))), cov(d));
+        }
+    }
+
+    // --- the frame lines: a straight run, a bend, a slant; faint at the outer end, brightest from the bend on; a drop
+    // shadow; a light core over a darker body
+    for (int i = 0; i < 4; i++) {
+        vec4 A = u_frame[i * 3], C = u_frame[i * 3 + 1], D = u_frame[i * 3 + 2];
+        if (p.y < min(A.y, D.w) - 30.0 || p.y > max(A.y, D.w) + 30.0) continue;
+        for (int j = 0; j < 2; j++) {
+            vec2 q = p - (j == 0 ? vec2(3.0, 5.0) : vec2(0.0));
+            float d = min(segd(q, A.xy, A.zw), segd(q, D.xy, D.zw));
+            vec2 m = q - C.xy;
+            vec2 e0 = A.zw - C.xy, e1 = D.xy - C.xy;
+            if (e0.x * m.y - e0.y * m.x >= 0.0 == e0.x * e1.y - e0.y * e1.x >= 0.0 && m.x * e1.y - m.y * e1.x >= 0.0 == e0.x * e1.y - e0.y * e1.x >= 0.0)
+                d = min(d, abs(length(m) - C.z));
+            if (j == 0) c *= 1.0 - 0.6 * exp(-max(d - 2.0, 0.0) / 3.5);
+            else {
+                float run = clamp((q.x - A.x) / (A.z - A.x), 0.0, 1.0);
+                float k = 0.12 + 0.88 * pow(run, 1.6);
+                if (abs(q.x - A.x) > abs(A.z - A.x)) k = mix(1.0, 0.6, clamp(abs(q.x - A.z) / max(abs(D.z - A.z), 1.0), 0.0, 1.0));
+                c = put(c, vec3(0.47, 0.486, 0.525) * k, cov(d - 2.0));
+                c = put(c, vec3(0.92, 0.933, 0.96) * k, cov(d - 0.8) * 0.9);
+            }
+        }
+    }
+
+    // --- the tyres round the car (the car is an image over them): blue, red when low, grey without a reading
+    for (int k = 0; k < 4; k++) {
+        float sx = (k == 0 || k == 2) ? -1.0 : 1.0, sy = k < 2 ? -1.0 : 1.0;
+        float st = k == 0 ? u_tyre.x : k == 1 ? u_tyre.y : k == 2 ? u_tyre.z : u_tyre.w;
+        vec3 col = st > 1.5 ? vec3(0.88, 0.16, 0.16) : st > 0.5 ? vec3(0.27, 0.59, 1.0) : vec3(0.3, 0.3, 0.33);
+        c = put(c, col, cov(rboxd(p, u_car.xy + vec2(sx * u_car.z, sy * u_car.w), vec2(9.0, 24.0), 6.0)));
+    }
+
+    // --- the fuel column: bowing a little, a dark track, a green fill with a glow, ticks every quarter reaching left
+    {
+        float t = (u_fuel.y - p.y) / (u_fuel.y - u_fuel.z);
+        if (t > -0.2 && t < 1.1 && p.x > u_fuel.x - 60.0 && p.x < u_fuel.x + 40.0) {
+            float tc = clamp(t, 0.0, 1.0);
+            float xc = u_fuel.x - 12.0 * sin(3.14159 * tc) - 6.0 * tc;
+            float dd = abs(p.x - xc), inCol = step(0.0, t) * step(t, 1.0);
+            c *= 1.0 - 0.6 * exp(-max(abs(p.x - xc - 3.0) - 3.5, 0.0) / 4.0) * step(-0.02, t) * step(t, 1.02);
+            c = put(c, vec3(0.149, 0.157, 0.18), cov(dd - 3.5) * inCol);
+            c = put(c, vec3(0.275, 0.286, 0.314), cov(abs(p.x - xc + 1.5) - 1.0) * inCol);
+            float on = inCol * step(t, u_fuel.w);
+            c += vec3(0.16, 0.86, 0.31) * 0.35 * exp(-max(dd - 3.5, 0.0) / 6.0) * step(0.0, t) * step(t, u_fuel.w);
+            c = put(c, vec3(0.18, 0.78, 0.3), cov(dd - 3.5) * on);
+            c = put(c, vec3(0.59, 1.0, 0.67), cov(abs(p.x - xc + 0.5) - 1.0) * on);
+            for (int k = 0; k < 5; k++) {
+                float tk = float(k) * 0.25, yk = u_fuel.y - (u_fuel.y - u_fuel.z) * tk;
+                float xk = u_fuel.x - 12.0 * sin(3.14159 * tk) - 6.0 * tk;
+                float rx = k == 0 ? -12.0 : -26.0, lx = k == 0 ? 6.0 : 4.0;
+                float al = k == 0 ? 1.0 : pow(clamp((p.x - xk - rx) / -rx, 0.0, 1.0), 1.4);
+                c = put(c, vec3(0.92, 0.93, 0.95), cov(abs(p.y - yk) - 1.1) * step(xk + rx, p.x) * step(p.x, xk + lx) * al);
+            }
+        }
+        // the filler side arrow beside the pump icon
+        vec2 ar = p - vec2(u_fuel.x + 14.0, u_fuel.y + 32.0);
+        c = put(c, vec3(0.92, 0.93, 0.95), cov(max(-ar.x, ar.x * 0.875 + abs(ar.y) - 7.0)));
+    }
+    gl_FragColor = vec4(c, 1.0);
+}
+`;
+
+module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gdash: GDASH, adash: ADASH, gtext: GTEXT };

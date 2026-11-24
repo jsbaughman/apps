@@ -101,6 +101,8 @@
  *             (0..1: a soft glow fading outward from the ring round the gear), "car" [cx, cy, half width, half length] (the
  *             tyre panel's car, drawn while the "rightPanel" setting is "tyres"); the Waze map as a round window in the square "hole"
  *             (with "holeWhen": "mapUp"), "holeFoot" 0..1 how dark its lower part gets (0), "holeFeather" px its edge fades over, inward (0: hard), "holeTop" y where the map picture starts (faded in below it)
+ *   adash     effect layer; the whole Aero theme (shaders.js adash, layout made by tools/gen_aero.py): the rev rail, the left
+ *             rails ("arcs" picked), frame lines, tyres, fuel column
  *   gdash     effect layer; the whole Circuit theme (shaders.js gdash, layout made by tools/gen_circuit.py): three round dials
  *             ("tach", "left", "right"), the left one's two scales ("arcs", picked like Apex's left gauges), the tyres ("car")
  *   ldash     effect layer; the whole Veloce theme (shaders.js ldash, layout made by tools/gen_veloce.py): "arc" [cx, cy, rx,
@@ -383,7 +385,7 @@ function mediaText(v) {
 /** Seconds as m:ss. */
 function clockOf(sec) { const t = Math.max(0, Math.floor(sec)); return Math.floor(t / 60) + ':' + ('0' + (t % 60)).slice(-2); }   // its speed scale: 0..200 mph by 20, 0..330 km/h by 30 (linear)
 const ROAD_DASH_M = 12;            // the Sport road: metres per dash and gap (shaders.js sdash u_road)
-const CUE_TYPES = { lights: true, shiftbar: true, revbar: true, revarc: true, ribbon: true, mtach: true, cdash: true, ldash: true, gdash: true };
+const CUE_TYPES = { lights: true, shiftbar: true, revbar: true, revarc: true, ribbon: true, mtach: true, cdash: true, ldash: true, gdash: true, adash: true };
 // the shift-light test (page.js Alerts): rpm climbs from TEST_FROM to just past the shift point, then holds
 const TEST_FROM = 1500, TEST_CLIMB_MS = 2500, TEST_HOLD_MS = 1200;
 // night colours (Cluster Themes "nightDim"): after sunset the theme's whites and greys go to this brightness
@@ -627,7 +629,7 @@ class HudApp {
             if (['hudLayout', 'inComfort', 'inSport', 'inEco', 'byMode'].indexOf(key) >= 0 && this.screen.yielded) this.screen.release();
             if (PLACE_KEYS.indexOf(key) >= 0) this._guard('place', () => this._place());
             else if (LIVE_KEYS.indexOf(key) >= 0) this.widgets.forEach((x) => { x.last = null; });
-            else if (LOOK_KEYS.indexOf(key) >= 0) this.widgets.forEach((x) => { if (!x.sheet && /^[clg]dash$/.test(x.w.type)) this._dashLook(x); });
+            else if (LOOK_KEYS.indexOf(key) >= 0) this.widgets.forEach((x) => { if (!x.sheet && /^[clga]dash$/.test(x.w.type)) this._dashLook(x); });
             else if (key !== 'demo') this._rebuild(); else this._status();
         });
     }
@@ -668,9 +670,9 @@ class HudApp {
             if (sn) ids.push(sn.id);
         }));
         shown.forEach((w) => { if (w.type === 'cdash') this._barsOf(w).forEach((b) => { if (b && b.pick && (!b.toggle || this._toggleOn(b.toggle))) ids.push(b.signal); }); });
-        shown.forEach((w) => { if (w.type === 'gdash') (w.arcs || []).forEach((b) => { const r = this._pickOf(b); if (r && r.signal) ids.push(r.signal); }); });
+        shown.forEach((w) => { if (w.type === 'gdash' || w.type === 'adash') (w.arcs || []).forEach((b) => { const r = this._pickOf(b); if (r && r.signal) ids.push(r.signal); }); });
         const j = JSON.stringify(shown.map((w) => (w.type === 'cdash' ? Object.assign({}, w, { bars: (w.bars || []).filter((b) => b && !b.pick) })
-            : w.type === 'gdash' ? Object.assign({}, w, { arcs: [] }) : w))) + ' ' + ids.join(' ');
+            : w.type === 'gdash' || w.type === 'adash' ? Object.assign({}, w, { arcs: [] }) : w))) + ' ' + ids.join(' ');
         this.needsBoost = /boost/.test(j);
         this.needsIntake = /intake/.test(j);
         this.needsOilP = /oilP/.test(j);
@@ -1986,6 +1988,10 @@ class HudApp {
                 if (this.setting('gearSource') === 'quick' && !d.demo && isNum(this.car.guessed) && isNum(d.speed) && d.speed > 8) return String(this.car.guessed);
                 return isNum(d.gear) && d.gear > 0 ? String(d.gear) : (d.gear === 0 ? 'N' : '-');
             }
+            case 'progLetter': {     // in drive the programme letter D / S / M, else nothing (Aero's small letter by the gear)
+                const d = this.car.data();
+                return d.stage === 'D' || (!d.stage && isNum(d.gear) && d.gear > 0) ? this._program(d) : '';
+            }
             case 'stage': {          // the selector letter alone: P R N, or D / S / M by the shifter programme
                 const d = this.car.data();
                 return d.stage === 'D' || (!d.stage && isNum(d.gear) && d.gear > 0) ? this._program(d) : (d.stage || '-');
@@ -2361,7 +2367,7 @@ class HudApp {
         else if (w.type === 'garland') { x.tw = new Garland.Twinkle(w); this._blit(x, null, Garland.paint(w, x.tw.lvl, null)); }
         else if (w.type === 'icon' && w.icon === 'carTop') this._blit(x, null, paintCarTop(w.w, w.h));   // the tyre panel's car (car_top.js)
         else if (w.type === 'icon') this._blit(x, null, paintIcon(w.icon, w.w, w.h, color(t, w.color || 'fg')));
-        if (w.type === 'cdash' || w.type === 'ldash' || w.type === 'gdash') this._dashLook(x);
+        if (w.type === 'cdash' || w.type === 'ldash' || w.type === 'gdash' || w.type === 'adash') this._dashLook(x);
         if (w.type === 'sdash') {
             c.uniform(ref, 'u_size', [w.w, w.h]);
             c.uniform(ref, 'u_geo', w.geo);
@@ -2448,6 +2454,27 @@ class HudApp {
             c.uniform(ref, 'u_red', [(w.red || 7000) / (A[7] * 1000), A[8] || 0.16, A[7]]);
             c.uniform(ref, 'u_band', [B[0] - w.x, B[1] - w.y, B[2], B[3]]);
             c.uniform(ref, 'u_miniZ', [0, 1, 2, 3].map((i) => { const m = (w.minis || [])[i]; return m && isNum(m.red) ? m.red : 1; }));
+        } else if (w.type === 'adash') {
+            // Aero (tools/gen_aero.py): "rail" [top-line y at the middle, middle x, curve radius, track depth], "scale" [x at 0,
+            // x at the top, thousands], "zones" [amber, red] rpm, "bars" (2: [left x, top-line y, width, depth]), "frames" (4:
+            // [x0, y0, x1, y1, cx, cy, r, x2, y2, x3, y3]), "car" [cx, cy, tyre dx, tyre dy], "fuel" [bottom x, bottom y,
+            // top y]; "arcs" the left rails' picks; target px
+            const Rl = w.rail, Sc = w.scale, Z = w.zones || [6500, 7000];
+            c.uniform(ref, 'u_size', [w.w, w.h]);
+            c.uniform(ref, 'u_rail', [Rl[0] - w.y, Rl[1] - w.x, Rl[2], Rl[3]]);
+            c.uniform(ref, 'u_scale', [Sc[0] - w.x, Sc[1] - w.x, Sc[2], 0]);
+            c.uniform(ref, 'u_zone', [Z[1] / (Sc[2] * 1000), 0]);
+            const bu = [];
+            [0, 1].forEach((i) => { const b = (w.bars || [])[i] || [0, -999, 1, 1]; bu.push(b[0] - w.x, b[1] - w.y, b[2], b[3]); });
+            c.uniform(ref, 'u_bars', bu, { type: 'vec4' });
+            const fu = [];
+            [0, 1, 2, 3].forEach((i) => {
+                const f = (w.frames || [])[i] || [0, -999, 0, -999, 0, -999, 0, 0, -999, 0, -999];
+                fu.push(f[0] - w.x, f[1] - w.y, f[2] - w.x, f[3] - w.y, f[4] - w.x, f[5] - w.y, f[6], 0, f[7] - w.x, f[8] - w.y, f[9] - w.x, f[10] - w.y);
+            });
+            c.uniform(ref, 'u_frame', fu, { type: 'vec4' });
+            const C = w.car;
+            c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
         } else if (w.type === 'gdash') {
             // Circuit (tools/gen_circuit.py): "tach" [cx, cy, r, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "left" / "right" [cx, cy, r] (the side dials), "gbox" [cx, cy, half w, half h] (the gear's box), "car"
@@ -2944,6 +2971,8 @@ class HudApp {
                 if (w.coldWhen && sp[w.coldWhen]) role = VERDICT.COLD;
                 if (w.hotWhen && sp[w.hotWhen]) role = 'hot';
             }
+            // "litBand" [from, to] rpm: the colour "litColor" while the revs are in that band (Aero's scale numbers)
+            if (w.litBand) { const r = isNum(this.rpmF) ? this.rpmF : this._raw('rpm'); if (isNum(r) && r >= w.litBand[0] && r < w.litBand[1]) role = w.litColor || 'fg'; }
             role = smartTemps.role(this, w, role);       // temperature bands (cold, warming, hot), outside ice
             // over its warning limit: the value flashes in the shift red
             // ("warnFlash": false: not on a tile that turns red itself, the Dyno theme's)
@@ -3121,6 +3150,25 @@ class HudApp {
             const mu = [];
             ms.forEach((m, i) => mu.push(m ? m.x - w.x : 0, m ? m.y - w.y : 0, m ? m.w : 0, mv[i]));
             x.c.uniform(x.ref, 'u_mini', mu, { type: 'vec4' });
+        } else if (w.type === 'adash') {
+            const Sc = w.scale, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
+            const rpm = this._raw('rpm');
+            const rv = isNum(rpm) ? q(rpm / (Sc[2] * 1000)) : 0;
+            const arcs = [0, 1].map((i) => this._pickOf((w.arcs || [])[i]));
+            const av = arcs.map((b) => { const v = b && b.signal ? this._raw(b.signal) : null; return isNum(v) ? q((v - b.min) / (b.max - b.min)) : 0; });
+            const low = isNum(w.tyreLow) ? w.tyreLow : 33;
+            const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
+            const fuel = this._raw('fuel'), fl = isNum(fuel) ? Math.round(Math.min(1, Math.max(0, fuel)) * 100) / 100 : 0;
+            const sh = this._shiftNow(now);
+            const key = [rv].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), sh, fl).join('|');
+            if (!force && key === x.last) return;
+            x.last = key;
+            x.c.uniform(x.ref, 'u_scale', [Sc[0] - w.x, Sc[1] - w.x, Sc[2], rv]);
+            x.c.uniform(x.ref, 'u_shift', sh);
+            x.c.uniform(x.ref, 'u_barV', [av[0], av[1], arcs[0] && isNum(arcs[0].red) ? arcs[0].red : 1, arcs[1] && isNum(arcs[1].red) ? arcs[1].red : 1]);
+            x.c.uniform(x.ref, 'u_tyre', ts);
+            const F = w.fuel;
+            x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2] - w.y, fl]);
         } else if (w.type === 'gdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
             const rpm = this._raw('rpm');

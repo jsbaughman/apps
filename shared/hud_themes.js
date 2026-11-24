@@ -107,6 +107,18 @@ const THEMES = {
         ink: [12, 12, 14, 255], accent: [255, 92, 58, 255], well: [0, 0, 0, 255], faint: [96, 100, 110, 255],
         hot: [238, 24, 26, 255],
     },
+    // Aero (layout aero.json, tools/gen_aero.py): a British hypercar style, a silver rev rail on deep navy, orange accents.
+    aero: {
+        name: 'Aero',
+        fg: [240, 241, 244, 255], dim: [170, 174, 184, 255], track: [44, 44, 50, 255], arc: [240, 241, 244, 255],
+        glow: 0, stripe: false,
+        bar: { low: [240, 241, 244], mid: [240, 241, 244], high: [235, 40, 38], midAt: 'shift' },
+        rev: { from: [235, 40, 38], to: [235, 40, 38] },
+        bg: [0, 0, 0, 255], panel: [0, 0, 0, 255], line: [128, 130, 138, 255], head: [226, 228, 232, 255],
+        ink: [12, 12, 14, 255], accent: [255, 122, 26, 255], well: [0, 0, 0, 255], faint: [96, 100, 110, 255],
+        hot: [235, 42, 40, 255], cool: [70, 150, 255, 255], num: [132, 138, 150, 255], numRed: [150, 28, 28, 255],
+        sub: [150, 152, 160, 255], shade: [0, 0, 0, 200],
+    },
     // Circuit (layout circuit.json, tools/gen_circuit.py): a German track-car style, round dials with red number bands
     // on carbon, white type, blue tyre temperatures.
     circuit: {

@@ -80,6 +80,23 @@ CLUSTER_FONTS = [
     ('a_unit', 'Outfit[wght].ttf', 34, LOWER + '/', 0, 'Bold', None, '', 0.2),   # the speed's unit (mph, km/h)
     ('a_tach', 'Outfit[wght].ttf', 58, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the rev counter's numbers, as the speed
     ('a_speed_m', 'Outfit[wght].ttf', 70, DIGITS, 0, 'ExtraBold', None, '', 0.2),   # the speed in map view, 20 % bigger
+    # Aero (tools/gen_aero.py): Oxanium on the rev scale, Saira for the rest (SIL OFL)
+    ('ae_num', 'Oxanium-Medium.woff', 56, DIGITS),
+    ('ae_bnum', 'Oxanium-Medium.woff', 26, DIGITS + '.'),
+    ('ae_tiny', 'Oxanium-SemiBold.woff', 16, 'RPMx' + DIGITS),
+    ('ae_gear', 'Saira-SemiBold.woff', 260, DIGITS + 'PRNDSM-'),
+    ('ae_prog', 'Saira-SemiBold.woff', 54, 'DSM'),
+    ('ae_speed', 'Saira-SemiBold.woff', 96, DIGITS + '-'),
+    ('ae_lab', 'Saira-Regular.woff', 26, UPPER + LOWER + '/ '),
+    ('ae_unit', 'Saira-Regular.woff', 22, UPPER + LOWER + '/°%'),
+    ('ae_psi', 'Saira-Regular.woff', 16, LOWER),
+    ('ae_val', 'Saira-SemiBold.woff', 46, DIGITS + '.-'),
+    ('ae_tp', 'Saira-SemiBold.woff', 40, DIGITS + '.-'),
+    ('ae_tt', 'Saira-Regular.woff', 26, DIGITS + '°-'),
+    ('ae_mode', 'Saira-Regular.woff', 22, UPPER + ' '),
+    ('ae_pct', 'Saira-SemiBold.woff', 40, DIGITS + '-', 0, None, None, '', 0.22),
+    ('ae_pctu', 'Saira-Regular.woff', 22, '%', 0, None, None, '', 0.22),
+    ('ae_strip', 'Saira-SemiBold.woff', 30, DIGITS + ':-° FCampm'),
     # Circuit (tools/gen_circuit.py): Barlow, upright
     ('ci_num', 'BarlowCondensed-Bold.ttf', 59, DIGITS),
     ('ci_anum', 'BarlowCondensed-Bold.ttf', 36, DIGITS + '.'),
