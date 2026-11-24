@@ -259,7 +259,8 @@
  * {{runLabel}} (0-60 MPH, 0-100 KM/H): runs.js. {{warm}}: WARMING UP while the oil is under 80 C, then ENGINE WARM.
  * {{badge}}: the model picked on the Badge tab (badges.js), "BMW X3 M40i" with the lettering on, '' for none.
  * Warnings: a text showing oil, coolant or boost (a {{oil}} / {{coolant}} / {{boost}} token, or a readout slot with that
- * sensor) flashes in the shift red while the value is over "warnOil" / "warnCoolant" (C) / "warnBoost" (bar); 0 = off.
+ * sensor) flashes in the shift red while the value is over "warnOil" / "warnCoolant" / "warnIntake" (C) / "warnBoost" (bar),
+ * or under "warnOilP" (bar, oil pressure, only with the engine running); 0 = off.
  * Shift-light test (testShift(), the page's Alerts tab): for about 4 s the rpm every widget sees climbs from 1500 to just
  * past the shift point and holds there; only while the car stands. Shift scoring keeps the car's own rpm.
  * Play demo (demo_script.js, the page's button): a scripted one-minute drive on the real HUD / cluster with a DEMO tag,
@@ -334,7 +335,7 @@ const PLACE_KEYS = ['hudX', 'hudY', 'hudScale'];
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
 const LOOK_KEYS = ['backdrops', 'apexBackdrop'];   // only a dash's uniforms change (_dashLook): no rebuild
-const LIVE_KEYS = ['tachResponse', 'warnOil', 'warnCoolant', 'warnBoost', 'badge', 'badgeBMW', 'gFlipLat', 'gFlipLong', 'gRange', 'gTrail'];
+const LIVE_KEYS = ['tachResponse', 'warnOil', 'warnCoolant', 'warnBoost', 'warnIntake', 'warnOilP', 'badge', 'badgeBMW', 'gFlipLat', 'gFlipLong', 'gRange', 'gTrail'];
 // g (after cauliflowermossgrape's G-Force, MIT, idea only): a sample over G_BAD is a bad reading, not a corner;
 // the rest are averaged over G_AVG_MS so kerbs and potholes don't throw the dot about
 const G_BAD = 3;
@@ -344,7 +345,8 @@ const G_AVG_MS = 150;
 const G_SECTORS = 48, G_SPREAD = 3, G_TRAIL = 16;
 const G_ENV_TEX = 64;                   // the envelope asset's width (R8, 64 x 1; sectors in texels 0..47)
 // warnings (page.js Alerts): a readout of oil / coolant / boost over its limit flashes in the shift red
-const WARN = { oil: 'warnOil', coolant: 'warnCoolant', boost: 'warnBoost' };
+const WARN = { oil: 'warnOil', coolant: 'warnCoolant', boost: 'warnBoost', intake: 'warnIntake', oilP: 'warnOilP' };
+const WARN_LOW = { oilP: true };   // these warn UNDER their limit (oil pressure: only with the engine running)
 const WARN_FLASH_MS = 300;
 // a tile's bar (the Dyno theme's "tiles") per sensor (sensors.js id): the raw reading (hud _raw) between min and
 // max, "z" for a zoned bar (blue, dark blue, red past u_at); a sensor not here has no bar. rpm runs to the bar max.
@@ -1614,13 +1616,17 @@ class HudApp {
         else if (t.indexOf('{{oil}}') >= 0) id = 'oil';
         else if (t.indexOf('{{coolant}}') >= 0) id = 'coolant';
         else if (t.indexOf('{{boost}}') >= 0) id = 'boost';
+        else if (t.indexOf('{{intake}}') >= 0) id = 'intake';
+        else if (t.indexOf('{{oilP}}') >= 0) id = 'oilP';
         return this._overLimit(id);
     }
     /** `id` (oil / coolant / boost) if that reading is over its warning limit now, else null. */
     _overLimit(id) {
         if (!WARN[id]) return null;
         const lim = this.setting(WARN[id]), v = this._raw(id);
-        return isNum(lim) && lim > 0 && isNum(v) && v > lim ? id : null;
+        if (!(isNum(lim) && lim > 0 && isNum(v))) return null;
+        if (WARN_LOW[id]) { const rpm = this._raw('rpm'); return isNum(rpm) && rpm > 500 && v < lim ? id : null; }
+        return v > lim ? id : null;
     }
 
     _barMax(w) { return Math.ceil(this.setting('redline') / 1000) * 1000 + ((w && w.over) || 0); }

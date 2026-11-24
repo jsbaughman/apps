@@ -89,7 +89,7 @@ class Page {
         const s = this.item(k), v = this.get(k);
         if (!s) return '';
         if (s.type === 'bool') return v ? 'On' : 'Off';
-        if (s.type === 'number' && WARN_KEYS.indexOf(k) >= 0) return warnText(k, v, sensors.imperial((x) => this.get(x), k === 'warnBoost' ? 'pressure' : 'temp'));
+        if (s.type === 'number' && WARN_KEYS.indexOf(k) >= 0) return warnText(k, v, sensors.imperial((x) => this.get(x), k === 'warnBoost' || k === 'warnOilP' ? 'pressure' : 'temp'));
         if (k === 'timeZone') return tzText(v);
         if (k === 'tankLitres') return fmtInt(v) + ' L';
         if (s.type === 'number') return k === 'shiftBefore' ? (v ? fmtInt(v) + ' rpm before' : 'At the redline') : fmtInt(v) + ' rpm';
@@ -471,10 +471,19 @@ class Page {
     /* ---------- Alerts (both) ---------- */
     /** Warning limits (the readout flashes red over one) and the shift-light test. */
     alertsTab(cv) {
-        label(cv, CX, 70, 'Warnings · the readout flashes red over its limit');
+        label(cv, CX, 70, 'Warnings · the readout flashes red past its limit');
         let y = 84;
-        const w = CW * 0.62;
+        // an app without shift lights (cfg.shiftLights false: Cluster Themes' own themes have none) shows the warnings alone
+        const shift = this.cfg.shiftLights !== false;
+        const w = shift ? CW * 0.62 : CW * 0.7;
         WARN_KEYS.forEach((k) => { if (this.item(k)) y = this.stepRow(cv, CX, y, w, this.item(k).label.replace(/ warning$/, ''), k); });
+        if (!shift) {
+            note(cv, CX, y + 22, [
+                'The reading flashes red while it is over its limit; oil pressure while it is under, with the engine running.',
+                'A warning shows wherever that reading is on the cluster. Set a limit to Off to turn that warning off.',
+            ]);
+            return;
+        }
         y += 24;
         label(cv, CX, y, 'Shift lights');
         y += 14;
@@ -742,11 +751,11 @@ class Page {
 
 /* ---------- small pieces ---------- */
 const LOOK_KEYS = ['hudLayout', 'inComfort', 'inSport', 'inEco'];
-const WARN_KEYS = ['warnOil', 'warnCoolant', 'warnBoost'];
+const WARN_KEYS = ['warnOil', 'warnCoolant', 'warnBoost', 'warnIntake', 'warnOilP'];
 /** A warning limit as the page shows it, in the display units: "266 °F", "1.2 bar", "Off". */
 function warnText(k, v, us) {
     if (!(v > 0)) return 'Off';
-    if (k === 'warnBoost') return us ? Math.round(v * 14.5038) + ' psi' : v.toFixed(1) + ' bar';
+    if (k === 'warnBoost' || k === 'warnOilP') return (k === 'warnOilP' ? 'under ' : '') + (us ? Math.round(v * 14.5038) + ' psi' : v.toFixed(1) + ' bar');
     return us ? Math.round(v * 9 / 5 + 32) + ' °F' : v + ' °C';
 }
 /** a "timeZone" setting value as the row shows it (shared/tz.js) */
