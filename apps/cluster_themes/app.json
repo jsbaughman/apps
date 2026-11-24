@@ -2,7 +2,7 @@
   "id": "cluster_themes",
   "title": "Cluster Themes",
   "description": "Redraws the instrument cluster as Apex, a needle rev counter with boost, oil temperature, a G-meter, coolant and fuel; Veloce, a wide arc of lit tiles over a hex backdrop with a big hollow gear and four side scales; or Off for BMW's own cluster",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "autostart": true,
   "vendor": "custom",
   "loggingId": "OAC1",
@@ -810,6 +810,26 @@
       "label": "Backgrounds (all themes; off: black)",
       "type": "bool",
       "default": true
+    },
+    {
+      "key": "circuitColor",
+      "label": "Dial colour (Circuit)",
+      "type": "choice",
+      "default": "red",
+      "options": [
+        [
+          "red",
+          "Red"
+        ],
+        [
+          "yellow",
+          "Yellow"
+        ],
+        [
+          "blue",
+          "Blue"
+        ]
+      ]
     },
     {
       "key": "apexBackdrop",

@@ -334,6 +334,12 @@ const PLACE_KEYS = ['hudX', 'hudY', 'hudScale'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
+// Circuit's number band colours (setting "circuitColor"): the band (shader, linear 0..1) and the numbers on it (RGBA)
+const CIRCUIT_COLORS = {
+    red: { band: [0.80, 0.07, 0.09], ink: [255, 255, 255, 255] },
+    yellow: { band: [0.95, 0.74, 0.04], ink: [255, 255, 255, 255] },
+    blue: { band: [0.05, 0.33, 0.78], ink: [255, 255, 255, 255] },
+};
 const LOOK_KEYS = ['backdrops', 'apexBackdrop'];   // only a dash's uniforms change (_dashLook): no rebuild
 const LIVE_KEYS = ['tachResponse', 'warnOil', 'warnCoolant', 'warnBoost', 'warnIntake', 'warnOilP', 'badge', 'badgeBMW', 'gFlipLat', 'gFlipLong', 'gRange', 'gTrail'];
 // g (after cauliflowermossgrape's G-Force, MIT, idea only): a sample over G_BAD is a bad reading, not a corner;
@@ -2111,6 +2117,8 @@ class HudApp {
         this.layoutTheme = layout.theme && THEMES[layout.theme] ? layout.theme : null;
         this.themeName = this._themeName();
         this.theme = THEMES[this.themeName] || THEMES.classic;
+        // Circuit's band colour (setting "circuitColor"): the numbers on the bands ("bandInk")
+        if (this.themeName === 'circuit') this.theme = Object.assign({}, this.theme, { bandInk: (CIRCUIT_COLORS[this.setting('circuitColor')] || CIRCUIT_COLORS.red).ink });
         this.hudHoliday = this._hudHoliday();      // the HUD's holiday colours (hud_holiday.js), null for none
         if (this.hudHoliday) this.theme = hudHoliday.theme(this.theme, this.hudHoliday);
         this.nightOn = this._nightDim();
@@ -2453,6 +2461,7 @@ class HudApp {
             c.uniform(ref, 'u_right', [Rd[0] - w.x, Rd[1] - w.y, Rd[2], 0]);
             c.uniform(ref, 'u_gbox', [G[0] - w.x, G[1] - w.y, G[2], G[3]]);
             c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
+            c.uniform(ref, 'u_bandCol', (CIRCUIT_COLORS[this.setting('circuitColor')] || CIRCUIT_COLORS.red).band);
         } else if (w.type === 'cdash') {
             // Apex (tools/gen_apex.py): "tach" [cx, cy, outer r, band, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "panels" [left inner x, right inner x, glow top y, bottom y], "bars" (up to 4: {x, y, w, signal, min, max, red}),

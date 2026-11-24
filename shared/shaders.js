@@ -2203,9 +2203,9 @@ uniform vec4 u_gbox;       // the gear's box: centre x, y, half width, half heig
 uniform vec4 u_car;        // the right dial's car: centre x, y, half width, half length
 uniform vec4 u_tyre;       // its tyres FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
 uniform float u_plain;     // 1: no backdrop, plain black (the "Backgrounds" setting off)
+uniform vec3 u_bandCol;   // the number bands' colour (setting "circuitColor": red, yellow, blue)
 uniform vec2 u_shift;      // the shift light: x the count towards the shift point 0..1, y 1 while it flashes on (hud.js _shiftNow)
 
-const vec3 REDB = vec3(0.80, 0.07, 0.09);
 const vec3 CREAM = vec3(0.96, 0.91, 0.75);
 const vec3 TICK = vec3(0.92, 0.92, 0.95);
 const vec3 HOT = vec3(0.95, 0.12, 0.12);
@@ -2235,7 +2235,7 @@ vec3 body(vec3 c, vec2 d, float R) {
 // the red band with fine machined grooves, lit from the top
 vec3 redBand(float r, float lit) {
     float g = 0.86 + 0.14 * (0.5 + 0.5 * cos(r / 3.2 * 6.28318));
-    return REDB * g * (0.82 + 0.18 * lit);
+    return u_bandCol * g * (0.82 + 0.18 * lit);
 }
 // a tick across radius rr at angle a (rad) of length L and width w; p relative to the centre
 float tick(vec2 d, float a, float ro, float L, float w) {
@@ -2249,15 +2249,17 @@ vec3 arcScale(vec3 c, vec2 d, float R, float a0, float sw, vec4 v) {
     float ang = degrees(atan(d.x, -d.y));
     float rel = sw > 0.0 ? mod(ang - a0 + 720.0, 360.0) : mod(a0 - ang + 720.0, 360.0);
     float f = rel / abs(sw);
-    if (f > 1.03) return c;
-    float on = step(f, 1.0);
+    if (f > 1.5) f -= 360.0 / abs(sw);              // just before the start: a small negative fraction
+    if (f < -0.03 || f > 1.03) return c;
+    float on = step(0.0, f) * step(f, 1.0);
+    float bandOn = on;                               // the band ends square at the first and the last number
     float inner = R - 22.0 * R / 322.0, tr1 = inner - 4.0, tr0 = inner - 40.0, rb1 = inner - 44.0, rb0 = inner - 98.0;
     c += vec3(0.3, 0.32, 0.36) * 0.07 * ring(r, tr0, tr1) * on;
-    float mb = ring(r, rb0, rb1) * on;
+    float mb = ring(r, rb0, rb1) * bandOn;
     c = put(c, redBand(r, lit), mb);
-    c = put(c, vec3(0.95, 0.55, 0.55), ring(r, rb1 - 1.5, rb1) * on * 0.35);
-    if (r > rb1 && r < tr1) c *= 1.0 - on * 0.6 * exp(-(r - rb1) / 8.0);
-    if (r < rb0) c *= 1.0 - on * 0.6 * exp(-(rb0 - r) / 10.0);
+    c = put(c, mix(u_bandCol, vec3(1.0), 0.5), ring(r, rb1 - 1.5, rb1) * bandOn * 0.35);
+    if (r > rb1 && r < tr1) c *= 1.0 - bandOn * 0.6 * exp(-(r - rb1) / 8.0);
+    if (r < rb0) c *= 1.0 - bandOn * 0.6 * exp(-(rb0 - r) / 10.0);
     // ticks: the nearest of 21
     float i = floor(f * 20.0 + 0.5);
     float big = step(abs(mod(i, 5.0)), 0.5);
@@ -2331,7 +2333,7 @@ void main() {
         if (r > rb1) c *= 1.0 - 0.6 * exp(-(inner - r) / 14.0) * lit;
         // the red number band, standing proud: its shadow on the track; the face sits down inside it
         c = put(c, redBand(r, lit), ring(r, rb0, rb1));
-        c = put(c, vec3(0.95, 0.55, 0.55), ring(r, rb1 - 1.5, rb1) * 0.35);
+        c = put(c, mix(u_bandCol, vec3(1.0), 0.5), ring(r, rb1 - 1.5, rb1) * 0.35);
         if (r > rb1) c *= 1.0 - 0.75 * exp(-(r - rb1) / 10.0) * (0.6 + 0.4 * (1.0 - lit));
         if (r < rb0) {
             c = vec3(0.02, 0.02, 0.024) * clamp(1.0 - r / rb0, 0.0, 1.0);

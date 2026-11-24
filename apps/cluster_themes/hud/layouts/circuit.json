@@ -140,7 +140,7 @@
       "h": 46,
       "text": "0",
       "font": "ci_num",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "rate": 2000
     },
@@ -154,7 +154,7 @@
       "h": 46,
       "text": "1",
       "font": "ci_num",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "rate": 2000
     },
@@ -168,7 +168,7 @@
       "h": 46,
       "text": "2",
       "font": "ci_num",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "rate": 2000
     },
@@ -182,7 +182,7 @@
       "h": 46,
       "text": "3",
       "font": "ci_num",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "rate": 2000
     },
@@ -196,7 +196,7 @@
       "h": 46,
       "text": "4",
       "font": "ci_num",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "rate": 2000
     },
@@ -210,7 +210,7 @@
       "h": 46,
       "text": "5",
       "font": "ci_num",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "rate": 2000
     },
@@ -224,7 +224,7 @@
       "h": 46,
       "text": "6",
       "font": "ci_num",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "rate": 2000
     },
@@ -238,7 +238,7 @@
       "h": 46,
       "text": "7",
       "font": "ci_num",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "rate": 2000
     },
@@ -252,7 +252,7 @@
       "h": 46,
       "text": "8",
       "font": "ci_num",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "rate": 2000
     },
@@ -337,7 +337,7 @@
       "h": 29,
       "text": "0",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=boost&uPress=us",
       "rate": 2000
@@ -352,7 +352,7 @@
       "h": 29,
       "text": "0",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=boost&uPress=metric",
       "rate": 2000
@@ -367,7 +367,7 @@
       "h": 29,
       "text": "10",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=boost&uPress=us",
       "rate": 2000
@@ -382,7 +382,7 @@
       "h": 29,
       "text": "0.7",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=boost&uPress=metric",
       "rate": 2000
@@ -397,7 +397,7 @@
       "h": 29,
       "text": "20",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=boost&uPress=us",
       "rate": 2000
@@ -412,7 +412,7 @@
       "h": 29,
       "text": "1.4",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=boost&uPress=metric",
       "rate": 2000
@@ -427,7 +427,7 @@
       "h": 29,
       "text": "30",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=boost&uPress=us",
       "rate": 2000
@@ -442,7 +442,7 @@
       "h": 29,
       "text": "2.1",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=boost&uPress=metric",
       "rate": 2000
@@ -457,7 +457,7 @@
       "h": 29,
       "text": "40",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=boost&uPress=us",
       "rate": 2000
@@ -472,7 +472,7 @@
       "h": 29,
       "text": "2.8",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=boost&uPress=metric",
       "rate": 2000
@@ -533,7 +533,7 @@
       "h": 29,
       "text": "122",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oil&uTemp=us",
       "rate": 2000
@@ -548,7 +548,7 @@
       "h": 29,
       "text": "50",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oil&uTemp=metric",
       "rate": 2000
@@ -563,7 +563,7 @@
       "h": 29,
       "text": "167",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oil&uTemp=us",
       "rate": 2000
@@ -578,7 +578,7 @@
       "h": 29,
       "text": "75",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oil&uTemp=metric",
       "rate": 2000
@@ -593,7 +593,7 @@
       "h": 29,
       "text": "212",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oil&uTemp=us",
       "rate": 2000
@@ -608,7 +608,7 @@
       "h": 29,
       "text": "100",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oil&uTemp=metric",
       "rate": 2000
@@ -623,7 +623,7 @@
       "h": 29,
       "text": "257",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oil&uTemp=us",
       "rate": 2000
@@ -638,7 +638,7 @@
       "h": 29,
       "text": "125",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oil&uTemp=metric",
       "rate": 2000
@@ -653,7 +653,7 @@
       "h": 29,
       "text": "302",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oil&uTemp=us",
       "rate": 2000
@@ -668,7 +668,7 @@
       "h": 29,
       "text": "150",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oil&uTemp=metric",
       "rate": 2000
@@ -727,7 +727,7 @@
       "h": 29,
       "text": "32",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=intake&uTemp=us",
       "rate": 2000
@@ -742,7 +742,7 @@
       "h": 29,
       "text": "0",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=intake&uTemp=metric",
       "rate": 2000
@@ -757,7 +757,7 @@
       "h": 29,
       "text": "77",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=intake&uTemp=us",
       "rate": 2000
@@ -772,7 +772,7 @@
       "h": 29,
       "text": "25",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=intake&uTemp=metric",
       "rate": 2000
@@ -787,7 +787,7 @@
       "h": 29,
       "text": "122",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=intake&uTemp=us",
       "rate": 2000
@@ -802,7 +802,7 @@
       "h": 29,
       "text": "50",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=intake&uTemp=metric",
       "rate": 2000
@@ -817,7 +817,7 @@
       "h": 29,
       "text": "167",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=intake&uTemp=us",
       "rate": 2000
@@ -832,7 +832,7 @@
       "h": 29,
       "text": "75",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=intake&uTemp=metric",
       "rate": 2000
@@ -847,7 +847,7 @@
       "h": 29,
       "text": "212",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=intake&uTemp=us",
       "rate": 2000
@@ -862,7 +862,7 @@
       "h": 29,
       "text": "100",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=intake&uTemp=metric",
       "rate": 2000
@@ -921,7 +921,7 @@
       "h": 29,
       "text": "0",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oilP&uPress=us",
       "rate": 2000
@@ -936,7 +936,7 @@
       "h": 29,
       "text": "0",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oilP&uPress=metric",
       "rate": 2000
@@ -951,7 +951,7 @@
       "h": 29,
       "text": "20",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oilP&uPress=us",
       "rate": 2000
@@ -966,7 +966,7 @@
       "h": 29,
       "text": "1.4",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oilP&uPress=metric",
       "rate": 2000
@@ -981,7 +981,7 @@
       "h": 29,
       "text": "40",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oilP&uPress=us",
       "rate": 2000
@@ -996,7 +996,7 @@
       "h": 29,
       "text": "2.8",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oilP&uPress=metric",
       "rate": 2000
@@ -1011,7 +1011,7 @@
       "h": 29,
       "text": "60",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oilP&uPress=us",
       "rate": 2000
@@ -1026,7 +1026,7 @@
       "h": 29,
       "text": "4.1",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oilP&uPress=metric",
       "rate": 2000
@@ -1041,7 +1041,7 @@
       "h": 29,
       "text": "80",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oilP&uPress=us",
       "rate": 2000
@@ -1056,7 +1056,7 @@
       "h": 29,
       "text": "5.5",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=oilP&uPress=metric",
       "rate": 2000
@@ -1115,7 +1115,7 @@
       "h": 29,
       "text": "122",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=coolant&uTemp=us",
       "rate": 2000
@@ -1130,7 +1130,7 @@
       "h": 29,
       "text": "50",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=coolant&uTemp=metric",
       "rate": 2000
@@ -1145,7 +1145,7 @@
       "h": 29,
       "text": "158",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=coolant&uTemp=us",
       "rate": 2000
@@ -1160,7 +1160,7 @@
       "h": 29,
       "text": "70",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=coolant&uTemp=metric",
       "rate": 2000
@@ -1175,7 +1175,7 @@
       "h": 29,
       "text": "194",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=coolant&uTemp=us",
       "rate": 2000
@@ -1190,7 +1190,7 @@
       "h": 29,
       "text": "90",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=coolant&uTemp=metric",
       "rate": 2000
@@ -1205,7 +1205,7 @@
       "h": 29,
       "text": "230",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=coolant&uTemp=us",
       "rate": 2000
@@ -1220,7 +1220,7 @@
       "h": 29,
       "text": "110",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=coolant&uTemp=metric",
       "rate": 2000
@@ -1235,7 +1235,7 @@
       "h": 29,
       "text": "266",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=coolant&uTemp=us",
       "rate": 2000
@@ -1250,7 +1250,7 @@
       "h": 29,
       "text": "130",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left0=coolant&uTemp=metric",
       "rate": 2000
@@ -1309,7 +1309,7 @@
       "h": 29,
       "text": "0",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=boost&uPress=us",
       "rate": 2000
@@ -1324,7 +1324,7 @@
       "h": 29,
       "text": "0",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=boost&uPress=metric",
       "rate": 2000
@@ -1339,7 +1339,7 @@
       "h": 29,
       "text": "10",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=boost&uPress=us",
       "rate": 2000
@@ -1354,7 +1354,7 @@
       "h": 29,
       "text": "0.7",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=boost&uPress=metric",
       "rate": 2000
@@ -1369,7 +1369,7 @@
       "h": 29,
       "text": "20",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=boost&uPress=us",
       "rate": 2000
@@ -1384,7 +1384,7 @@
       "h": 29,
       "text": "1.4",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=boost&uPress=metric",
       "rate": 2000
@@ -1399,7 +1399,7 @@
       "h": 29,
       "text": "30",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=boost&uPress=us",
       "rate": 2000
@@ -1414,7 +1414,7 @@
       "h": 29,
       "text": "2.1",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=boost&uPress=metric",
       "rate": 2000
@@ -1429,7 +1429,7 @@
       "h": 29,
       "text": "40",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=boost&uPress=us",
       "rate": 2000
@@ -1444,7 +1444,7 @@
       "h": 29,
       "text": "2.8",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=boost&uPress=metric",
       "rate": 2000
@@ -1505,7 +1505,7 @@
       "h": 29,
       "text": "122",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oil&uTemp=us",
       "rate": 2000
@@ -1520,7 +1520,7 @@
       "h": 29,
       "text": "50",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oil&uTemp=metric",
       "rate": 2000
@@ -1535,7 +1535,7 @@
       "h": 29,
       "text": "167",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oil&uTemp=us",
       "rate": 2000
@@ -1550,7 +1550,7 @@
       "h": 29,
       "text": "75",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oil&uTemp=metric",
       "rate": 2000
@@ -1565,7 +1565,7 @@
       "h": 29,
       "text": "212",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oil&uTemp=us",
       "rate": 2000
@@ -1580,7 +1580,7 @@
       "h": 29,
       "text": "100",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oil&uTemp=metric",
       "rate": 2000
@@ -1595,7 +1595,7 @@
       "h": 29,
       "text": "257",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oil&uTemp=us",
       "rate": 2000
@@ -1610,7 +1610,7 @@
       "h": 29,
       "text": "125",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oil&uTemp=metric",
       "rate": 2000
@@ -1625,7 +1625,7 @@
       "h": 29,
       "text": "302",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oil&uTemp=us",
       "rate": 2000
@@ -1640,7 +1640,7 @@
       "h": 29,
       "text": "150",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oil&uTemp=metric",
       "rate": 2000
@@ -1699,7 +1699,7 @@
       "h": 29,
       "text": "32",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=intake&uTemp=us",
       "rate": 2000
@@ -1714,7 +1714,7 @@
       "h": 29,
       "text": "0",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=intake&uTemp=metric",
       "rate": 2000
@@ -1729,7 +1729,7 @@
       "h": 29,
       "text": "77",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=intake&uTemp=us",
       "rate": 2000
@@ -1744,7 +1744,7 @@
       "h": 29,
       "text": "25",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=intake&uTemp=metric",
       "rate": 2000
@@ -1759,7 +1759,7 @@
       "h": 29,
       "text": "122",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=intake&uTemp=us",
       "rate": 2000
@@ -1774,7 +1774,7 @@
       "h": 29,
       "text": "50",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=intake&uTemp=metric",
       "rate": 2000
@@ -1789,7 +1789,7 @@
       "h": 29,
       "text": "167",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=intake&uTemp=us",
       "rate": 2000
@@ -1804,7 +1804,7 @@
       "h": 29,
       "text": "75",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=intake&uTemp=metric",
       "rate": 2000
@@ -1819,7 +1819,7 @@
       "h": 29,
       "text": "212",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=intake&uTemp=us",
       "rate": 2000
@@ -1834,7 +1834,7 @@
       "h": 29,
       "text": "100",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=intake&uTemp=metric",
       "rate": 2000
@@ -1893,7 +1893,7 @@
       "h": 29,
       "text": "0",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oilP&uPress=us",
       "rate": 2000
@@ -1908,7 +1908,7 @@
       "h": 29,
       "text": "0",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oilP&uPress=metric",
       "rate": 2000
@@ -1923,7 +1923,7 @@
       "h": 29,
       "text": "20",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oilP&uPress=us",
       "rate": 2000
@@ -1938,7 +1938,7 @@
       "h": 29,
       "text": "1.4",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oilP&uPress=metric",
       "rate": 2000
@@ -1953,7 +1953,7 @@
       "h": 29,
       "text": "40",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oilP&uPress=us",
       "rate": 2000
@@ -1968,7 +1968,7 @@
       "h": 29,
       "text": "2.8",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oilP&uPress=metric",
       "rate": 2000
@@ -1983,7 +1983,7 @@
       "h": 29,
       "text": "60",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oilP&uPress=us",
       "rate": 2000
@@ -1998,7 +1998,7 @@
       "h": 29,
       "text": "4.1",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oilP&uPress=metric",
       "rate": 2000
@@ -2013,7 +2013,7 @@
       "h": 29,
       "text": "80",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oilP&uPress=us",
       "rate": 2000
@@ -2028,7 +2028,7 @@
       "h": 29,
       "text": "5.5",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=oilP&uPress=metric",
       "rate": 2000
@@ -2087,7 +2087,7 @@
       "h": 29,
       "text": "122",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=coolant&uTemp=us",
       "rate": 2000
@@ -2102,7 +2102,7 @@
       "h": 29,
       "text": "50",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=coolant&uTemp=metric",
       "rate": 2000
@@ -2117,7 +2117,7 @@
       "h": 29,
       "text": "158",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=coolant&uTemp=us",
       "rate": 2000
@@ -2132,7 +2132,7 @@
       "h": 29,
       "text": "70",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=coolant&uTemp=metric",
       "rate": 2000
@@ -2147,7 +2147,7 @@
       "h": 29,
       "text": "194",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=coolant&uTemp=us",
       "rate": 2000
@@ -2162,7 +2162,7 @@
       "h": 29,
       "text": "90",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=coolant&uTemp=metric",
       "rate": 2000
@@ -2177,7 +2177,7 @@
       "h": 29,
       "text": "230",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=coolant&uTemp=us",
       "rate": 2000
@@ -2192,7 +2192,7 @@
       "h": 29,
       "text": "110",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=coolant&uTemp=metric",
       "rate": 2000
@@ -2207,7 +2207,7 @@
       "h": 29,
       "text": "266",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=coolant&uTemp=us",
       "rate": 2000
@@ -2222,7 +2222,7 @@
       "h": 29,
       "text": "130",
       "font": "ci_anum",
-      "color": "fg",
+      "color": "bandInk",
       "align": "center",
       "toggle": "left1=coolant&uTemp=metric",
       "rate": 2000

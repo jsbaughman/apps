@@ -75,7 +75,7 @@ def build(cells):
     for k in range(THOUSANDS + 1):
         a = math.radians(START + SWEEP * k / float(THOUSANDS))
         widgets.append(centred('rpm%d' % k, cx + nr * math.sin(a), cy - nr * math.cos(a), 80, cells['ci_num'], str(k),
-                               'ci_num', 'fg'))
+                               'ci_num', 'bandInk'))
     widgets += [
         centred('mode', cx, cy - 70 * K, 300, cells['ci_mode'], '{{mode}}', 'ci_mode', 'dim'),
         centred('rpm_u', cx, cy + R - 36 * K, 200, cells['ci_rpm'], 'RPM x 1000', 'ci_rpm', 'dim'),
@@ -97,7 +97,7 @@ def build(cells):
                 sysk = 'uPress' if key in ('boost', 'oilP') else 'uTemp'   # the scale follows Temperature / Pressure
                 for units, labels in (('us', us), ('metric', metric)):
                     widgets.append(centred('a%d%s_%d%s' % (spot, key, j, units[0]), x, y, 70, cells['ci_anum'], labels[j],
-                                           'ci_anum', 'fg', toggle=pick + '&' + sysk + '=' + units))
+                                           'ci_anum', 'bandInk', toggle=pick + '&' + sysk + '=' + units))
             widgets += [
                 centred('l%d%s_h' % (spot, key), lx, vy - 40 * KS, 220, cells['ci_lab'], label, 'ci_lab', 'dim', toggle=pick),
                 text('l%d%s_v' % (spot, key), lx - 8 * KS - 200, vy + 4 * KS - cells['ci_val'] / 2.0, 200, cells['ci_val'],
