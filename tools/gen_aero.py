@@ -24,6 +24,7 @@ ZONES = [6500, 7000]
 BARS = [[130, 380, 430, 22], [130, 540, 430, 22]]
 CAR = [1570, 440, 56, 64]
 FUEL = [1858, 596, 372]
+MAP = [640, 215, 640, 445]           # the map window x, y, w, h (between the panels, under the rail)
 FAST = 45
 LEFT = [
     ('boost', 'Boost', '{{boost}}', '{{u:boostLc}}', {'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75}, 'uPress',
@@ -75,6 +76,8 @@ def build(cells):
     frames = [frame((90, 262), (560, 262), (610, 292)), frame((90, 640), (560, 640), (610, 610)),
               frame((1830, 262), (1360, 262), (1310, 292)), frame((1830, 640), (1360, 640), (1310, 610))]
     widgets = [{'id': 'dash', 'type': 'adash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
+                # the Waze map (Map tab): a window in the middle between the panels, hosted there (hud.js _mapHost)
+                'hole': [MAP[0], MAP[1], MAP[2], MAP[3]], 'holeWhen': 'mapUp', 'holeInset': 0, 'holeFeather': 40,
                 'rail': RAIL, 'scale': SCALE, 'zones': ZONES, 'bars': BARS, 'frames': frames, 'car': CAR, 'fuel': FUEL,
                 'arcs': [{'pick': 'left0', 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
                          {'pick': 'left1', 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8}]}]
@@ -99,10 +102,15 @@ def build(cells):
     ]
     # --- the middle: the gear, the programme letter, the speed ------------------------------------------------------
     widgets += [
-        centred('gear', 960, 380, 300, cells, '{{gearnum}}', 'ae_gear', 'accent', rate=FAST, own=True),
-        text('prog', 1040, 452 - cells['ae_prog'] / 2.0, 60, cells['ae_prog'], '{{progLetter}}', 'ae_prog', 'accent', 'left', rate=FAST),
-        centred('speed', 960, 565, 260, cells, '{{speed}}', 'ae_speed', 'fg', rate=FAST, own=True),
-        centred('speed_u', 960, 628, 140, cells, '{{u:speed}}', 'ae_lab', 'fg'),
+        centred('gear', 960, 380, 300, cells, '{{gearnum}}', 'ae_gear', 'accent', rate=FAST, own=True, toggle='!mapUp'),
+        text('prog', 1040, 452 - cells['ae_prog'] / 2.0, 60, cells['ae_prog'], '{{progLetter}}', 'ae_prog', 'accent', 'left', rate=FAST, toggle='!mapUp'),
+        centred('speed', 960, 565, 260, cells, '{{speed}}', 'ae_speed', 'fg', rate=FAST, own=True, toggle='!mapUp'),
+        centred('speed_u', 960, 628, 140, cells, '{{u:speed}}', 'ae_lab', 'fg', toggle='!mapUp'),
+        # with the map in the middle: the gear bottom left, the speed bottom right, over the window's faded foot
+        centred('gear_m', 720, 590, 160, cells, '{{gearnum}}', 'ae_gear_m', 'accent', rate=FAST, own=True, toggle='mapUp'),
+        text('prog_m', 768, 620 - cells['ae_prog_m'] / 2.0, 40, cells['ae_prog_m'], '{{progLetter}}', 'ae_prog_m', 'accent', 'left', rate=FAST, toggle='mapUp'),
+        text('speed_m', 1250 - 200, 580 - cells['ae_speed_m'] / 2.0, 200, cells['ae_speed_m'], '{{speed}}', 'ae_speed_m', 'fg', 'right', rate=FAST, own=True, toggle='mapUp'),
+        text('speed_um', 1250 - 120, 638 - cells['ae_lab'] / 2.0, 120, cells['ae_lab'], '{{u:speed}}', 'ae_lab', 'fg', 'right', toggle='mapUp'),
     ]
     # --- the left rails: per spot and choice the label, the value and unit, five numbers per unit system -------------
     for spot, (bx, by, bw, bt) in enumerate(BARS):
@@ -155,7 +163,7 @@ def build(cells):
     # connections: the right panel on 1, the left rails' text on 2 (each connection has 8 layers: smaller sheets)
     for w in widgets:
         i = w['id']
-        if i.startswith(('tp_', 'tpu_', 'tt_', 'tyre_car', 'mode', 'fuel_')):
+        if i.startswith(('tp_', 'tpu_', 'tt_', 'tyre_car', 'mode', 'fuel_', 'speed_m', 'speed_um')):
             w['conn'] = 1
         elif i.startswith('b') and i[1:2] in ('0', '1'):
             w['conn'] = 2
@@ -173,7 +181,7 @@ if __name__ == '__main__':
     root = sys.argv[1] if len(sys.argv) > 1 else '.'
     fonts = root + '/apps/cluster_themes/hud/fonts/'
     cells = {}
-    for f in ('ae_num', 'ae_bnum', 'ae_tiny', 'ae_gear', 'ae_prog', 'ae_speed', 'ae_lab', 'ae_unit', 'ae_psi', 'ae_val', 'ae_tp',
+    for f in ('ae_gear_m', 'ae_prog_m', 'ae_speed_m', 'ae_num', 'ae_bnum', 'ae_tiny', 'ae_gear', 'ae_prog', 'ae_speed', 'ae_lab', 'ae_unit', 'ae_psi', 'ae_val', 'ae_tp',
               'ae_tt', 'ae_mode', 'ae_pct', 'ae_pctu', 'ae_strip'):
         cells[f] = json.load(open(fonts + f + '.json'))['cellHeight']
     path = root + '/apps/cluster_themes/hud/layouts/aero.json'

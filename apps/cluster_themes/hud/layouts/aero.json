@@ -79,6 +79,15 @@
       "y": 0,
       "w": 1920,
       "h": 660,
+      "hole": [
+        640,
+        215,
+        640,
+        445
+      ],
+      "holeWhen": "mapUp",
+      "holeInset": 0,
+      "holeFeather": 40,
       "rail": [
         75,
         960,
@@ -528,7 +537,8 @@
       "color": "accent",
       "align": "center",
       "rate": 45,
-      "own": true
+      "own": true,
+      "toggle": "!mapUp"
     },
     {
       "id": "prog",
@@ -542,7 +552,8 @@
       "font": "ae_prog",
       "color": "accent",
       "align": "left",
-      "rate": 45
+      "rate": 45,
+      "toggle": "!mapUp"
     },
     {
       "id": "speed",
@@ -557,7 +568,8 @@
       "color": "fg",
       "align": "center",
       "rate": 45,
-      "own": true
+      "own": true,
+      "toggle": "!mapUp"
     },
     {
       "id": "speed_u",
@@ -571,7 +583,72 @@
       "font": "ae_lab",
       "color": "fg",
       "align": "center",
+      "toggle": "!mapUp",
       "rate": 2000
+    },
+    {
+      "id": "gear_m",
+      "type": "text",
+      "z": 5,
+      "x": 640,
+      "y": 542,
+      "w": 160,
+      "h": 95,
+      "text": "{{gearnum}}",
+      "font": "ae_gear_m",
+      "color": "accent",
+      "align": "center",
+      "rate": 45,
+      "own": true,
+      "toggle": "mapUp"
+    },
+    {
+      "id": "prog_m",
+      "type": "text",
+      "z": 5,
+      "x": 768,
+      "y": 606,
+      "w": 40,
+      "h": 27,
+      "text": "{{progLetter}}",
+      "font": "ae_prog_m",
+      "color": "accent",
+      "align": "left",
+      "rate": 45,
+      "toggle": "mapUp"
+    },
+    {
+      "id": "speed_m",
+      "type": "text",
+      "z": 5,
+      "x": 1050,
+      "y": 548,
+      "w": 200,
+      "h": 64,
+      "text": "{{speed}}",
+      "font": "ae_speed_m",
+      "color": "fg",
+      "align": "right",
+      "rate": 45,
+      "own": true,
+      "toggle": "mapUp",
+      "conn": 1
+    },
+    {
+      "id": "speed_um",
+      "type": "text",
+      "z": 5,
+      "x": 1130,
+      "y": 624,
+      "w": 120,
+      "h": 29,
+      "text": "{{u:speed}}",
+      "font": "ae_lab",
+      "color": "fg",
+      "align": "right",
+      "toggle": "mapUp",
+      "rate": 2000,
+      "conn": 1
     },
     {
       "id": "b0boost_l",

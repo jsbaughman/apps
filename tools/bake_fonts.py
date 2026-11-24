@@ -86,6 +86,9 @@ CLUSTER_FONTS = [
     ('ae_tiny', 'Oxanium-SemiBold.woff', 16, 'RPMx' + DIGITS),
     ('ae_gear', 'Saira-SemiBold.woff', 260, DIGITS + 'PRNDSM-'),
     ('ae_prog', 'Saira-SemiBold.woff', 54, 'DSM'),
+    ('ae_gear_m', 'Saira-SemiBold.woff', 130, DIGITS + 'PRNDSM-'),   # the gear with the map up
+    ('ae_prog_m', 'Saira-SemiBold.woff', 32, 'DSM'),
+    ('ae_speed_m', 'Saira-SemiBold.woff', 84, DIGITS + '-'),
     ('ae_speed', 'Saira-SemiBold.woff', 96, DIGITS + '-'),
     ('ae_lab', 'Saira-Regular.woff', 26, UPPER + LOWER + '/ '),
     ('ae_unit', 'Saira-Regular.woff', 22, UPPER + LOWER + '/°%'),

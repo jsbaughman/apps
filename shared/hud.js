@@ -2074,7 +2074,15 @@ class HudApp {
     /* ---------------- layers ---------------- */
 
     _rebuild() {
-        this._guard('rebuild', () => this._rebuildInner());
+        // never inside itself: a rebuild asked for while one runs (the Waze map coming as _wazeWant runs mid-rebuild,
+        // Nov 24 2026: the nested one dropped nothing yet made, the outer then made its layers too, 32 layers for 16)
+        // runs once the current one ends
+        if (this.rebuilding) { this.rebuildAgain = true; return; }
+        this.rebuilding = true;
+        try {
+            let n = 0;
+            do { this.rebuildAgain = false; this._guard('rebuild', () => this._rebuildInner()); } while (this.rebuildAgain && ++n < 3);
+        } finally { this.rebuilding = false; }
         this._status();
     }
 
@@ -2475,6 +2483,8 @@ class HudApp {
             c.uniform(ref, 'u_frame', fu, { type: 'vec4' });
             const C = w.car;
             c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
+            c.uniform(ref, 'u_hole', this._hole(w));
+            c.uniform(ref, 'u_holeF', [isNum(w.holeFeather) ? w.holeFeather : 0]);
         } else if (w.type === 'gdash') {
             // Circuit (tools/gen_circuit.py): "tach" [cx, cy, r, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "left" / "right" [cx, cy, r] (the side dials), "gbox" [cx, cy, half w, half h] (the gear's box), "car"

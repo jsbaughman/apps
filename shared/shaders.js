@@ -2412,6 +2412,8 @@ uniform vec4 u_car;        // the car: centre x, y, tyre offset x, tyre offset y
 uniform vec4 u_tyre;       // FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
 uniform vec4 u_fuel;       // the fuel column: bottom x, bottom y, top y, level 0..1
 uniform float u_plain;     // 1: no backdrop (the "Backgrounds" setting off)
+uniform vec4 u_hole;       // the Waze map window x, y, w, h (w 0 = none): see-through, its edge feathered over u_holeF px
+uniform float u_holeF;
 
 float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
 vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
@@ -2586,7 +2588,16 @@ void main() {
         vec2 ar = p - vec2(u_fuel.x + 14.0, u_fuel.y + 32.0);
         c = put(c, vec3(0.92, 0.93, 0.95), cov(max(-ar.x, ar.x * 0.875 + abs(ar.y) - 7.0)));
     }
-    gl_FragColor = vec4(c, 1.0);
+    // the map window: a rounded rect, see-through, its edge fading into the theme
+    float alpha = 1.0;
+    if (u_hole.z > 0.0) {
+        vec2 hs = u_hole.zw * 0.5;
+        float d = rboxd(p, u_hole.xy + hs, hs, 28.0);
+        float inside = 1.0 - smoothstep(-u_holeF, 0.0, d);
+        alpha = 1.0 - inside;
+        c = mix(c, vec3(0.0), inside);
+    }
+    gl_FragColor = vec4(c, alpha);
 }
 `;
 
