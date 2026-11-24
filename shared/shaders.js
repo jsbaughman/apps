@@ -2414,6 +2414,7 @@ uniform vec4 u_fuel;       // the fuel column: bottom x, bottom y, top y, level 
 uniform float u_plain;     // 1: no backdrop (the "Backgrounds" setting off)
 uniform vec4 u_hole;       // the Waze map window x, y, w, h (w 0 = none): see-through, its edge feathered over u_holeF px
 uniform float u_holeF;
+uniform float u_bgStyle;   // the backdrop (setting "aeroBackdrop"): 0 deep navy, 1 carbon, 2 brushed anthracite
 
 float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
 vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
@@ -2429,7 +2430,7 @@ float bands(float q, float w) {
 }
 // a track: s px under its top line, T deep, lit to (behind, lead), red from (red 0/1); returns the colour over c
 vec3 track(vec3 c, float s, float T, float behind, float lead, float red, float fade) {
-    float q = clamp(s / T, 0.0, 1.0), w = 1.6 / T;
+    float q = clamp(s / T, 0.0, 1.0), w = 0.11;   // wide soft steps: the four bands blend into each other (looked rigid on the car)
     float inT = smoothstep(-1.0, 0.6, s) * smoothstep(T + 1.0, T - 0.6, s);
     float bv = bands(q, w) + behind * (0.04 + 0.09 * lead) * (1.0 - 0.7 * q);
     vec3 tc = vec3(bv * 0.95, bv * 0.98, bv * 1.06);
@@ -2460,8 +2461,30 @@ void main() {
     // --- the backdrop: deep navy, lit behind the middle and along the rail, black at the corners and the foot
     vec2 X = vec2(p.x / 1920.0, p.y / 720.0);
     float gl = exp(-(pow((X.x - 0.5) / 0.42, 2.0) + pow((X.y - 0.42) / 0.55, 2.0)));
-    float v = 0.012 + 0.10 * gl + 0.015 * exp(-pow((X.y - 0.2) / 0.16, 2.0));
-    vec3 c = vec3(v * 0.45, v * 0.78, v * 1.25) * (1.0 - u_plain);
+    vec3 c;
+    if (u_bgStyle > 1.5) {
+        // brushed anthracite: a fine horizontal grain (a hash per row, a little per 8 px along it), lit from the top middle
+        float row = fract(sin(floor(p.y) * 12.9898) * 43758.55) - 0.5;
+        float seg = fract(sin(floor(p.y) * 7.13 + floor(p.x / 8.0) * 3.71) * 24634.63) - 0.5;
+        float gm = exp(-(pow((X.x - 0.5) / 0.55, 2.0) + pow((X.y - 0.3) / 0.6, 2.0)));
+        float v = (0.02 + 0.075 * gm) * (1.0 + 0.06 * (row + 0.3 * seg));
+        c = vec3(v * 0.96, v * 0.98, v * 1.04);
+    } else if (u_bgStyle > 0.5) {
+        // carbon: a 2 x 2 twill of 7 px strands, lit round the middle, fading to the edges
+        vec2 q = p / 7.0;
+        vec2 cell = floor(q), fq = fract(q);
+        bool across = mod(cell.x + cell.y, 4.0) < 2.0;
+        float wv = across ? fq.y : fq.x;
+        float lc = across ? 0.62 + 0.38 * sin(3.14159 * fq.y) : 0.3 + 0.22 * sin(3.14159 * fq.x);
+        lc *= smoothstep(0.0, 0.12, wv) * smoothstep(1.0, 0.88, wv) * 0.55 + 0.45;
+        float gc = exp(-(pow((X.x - 0.5) / 0.5, 2.0) + pow((X.y - 0.45) / 0.5, 2.0)));
+        float v = 0.11 * lc * gc;
+        c = vec3(v, v * 1.02, v * 1.1);
+    } else {
+        float v = 0.012 + 0.10 * gl + 0.015 * exp(-pow((X.y - 0.2) / 0.16, 2.0));
+        c = vec3(v * 0.45, v * 0.78, v * 1.25);
+    }
+    c *= 1.0 - u_plain;
 
     // --- the rev rail
     float T = u_rail.w, R = u_rail.z;

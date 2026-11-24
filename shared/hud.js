@@ -342,7 +342,7 @@ const CIRCUIT_COLORS = {
     yellow: { band: [0.95, 0.74, 0.04], ink: [255, 255, 255, 255] },
     blue: { band: [0.05, 0.33, 0.78], ink: [255, 255, 255, 255] },
 };
-const LOOK_KEYS = ['backdrops', 'apexBackdrop'];   // only a dash's uniforms change (_dashLook): no rebuild
+const LOOK_KEYS = ['backdrops', 'apexBackdrop', 'aeroBackdrop'];   // only a dash's uniforms change (_dashLook): no rebuild
 const LIVE_KEYS = ['tachResponse', 'warnOil', 'warnCoolant', 'warnBoost', 'warnIntake', 'warnOilP', 'badge', 'badgeBMW', 'gFlipLat', 'gFlipLong', 'gRange', 'gTrail'];
 // g (after cauliflowermossgrape's G-Force, MIT, idea only): a sample over G_BAD is a bad reading, not a corner;
 // the rest are averaged over G_AVG_MS so kerbs and potholes don't throw the dot about
@@ -2799,6 +2799,7 @@ class HudApp {
     _dashLook(x) {
         x.c.uniform(x.ref, 'u_plain', [this.setting('backdrops') === false ? 1 : 0]);
         if (x.w.type === 'cdash') x.c.uniform(x.ref, 'u_bgStyle', [this.setting('apexBackdrop') === 'carbon' ? 1 : 0]);
+        if (x.w.type === 'adash') x.c.uniform(x.ref, 'u_bgStyle', [{ carbon: 1, metal: 2 }[this.setting('aeroBackdrop')] || 0]);
     }
 
     _barsOf(w) { return (w.bars || []).map((b) => this._pickOf(b)); }
