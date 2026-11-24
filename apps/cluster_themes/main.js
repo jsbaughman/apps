@@ -68,7 +68,7 @@ mgu.run({
             // the Settings tab lists only the settings of the theme on the cluster (shared/page.js); not listed: all themes
             settingThemes: {
                 showBoost: ['apex', 'circuit', 'aero'], leftTop: ['apex', 'circuit', 'aero'], leftBottom: ['apex', 'circuit', 'aero'],
-                circuitColor: ['circuit'], aeroBackdrop: ['aero'], apexBackdrop: ['apex'], gearStyle: ['apex'], tachSpeed: ['apex'], dialGlow: ['apex'], leftStyle: ['apex'],
+                circuitColor: ['circuit'], aeroBackdrop: ['aero'], apexBackdrop: ['apex'], gearStyle: ['apex', 'veloce'], tachSpeed: ['apex'], dialGlow: ['apex'], leftStyle: ['apex'],
                 gaugeFill: ['apex'], rightPanel: ['apex'], cameraNotch: ['apex', 'circuit'],
             },   // no theme here has shift lights: Alerts shows the warnings alone
             settings: ['units', 'tempUnits', 'pressureUnits', 'showBoost', 'shiftLight', 'redline', 'shiftBefore', 'coldGuard', 'nightDim', 'backdrops', 'circuitColor', 'aeroBackdrop', 'apexBackdrop', 'tachResponse', 'gearStyle', 'gearSource', 'tachSpeed', 'readingsCheck', 'dialGlow', 'leftStyle', 'leftTop', 'leftBottom', 'gaugeFill', 'rightPanel', 'cameraNotch', 'keepStrip', 'holiday', 'demo'],

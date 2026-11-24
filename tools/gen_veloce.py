@@ -74,7 +74,8 @@ def build():
         widgets.append(text('rpm%d' % k, x - 40, y - 24, 80, 47, str(k), 'a_tach', 'hot' if k * 1000 >= RED else 'fg'))
     # the middle: the gear over the band, the drive mode beside it, the rpm in digits in the band
     widgets += [
-        text('gear', 830, 320, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7),
+        text('gear', 830, 320, 260, 163, '{{gearnum}}', 'a_gear', 'hot', dx=-7, toggle='!gearStyle=solid'),
+        text('gear_s', 830, 326, 260, 151, '{{gearnum}}', 'a_gear_s', 'hot', dx=-12, toggle='gearStyle=solid'),   # the solid one (Apex's)
         text('mode', 1040, 420, 220, 24, '{{mode}}', 'v_label', 'hot', 'left'),
         text('rpm_d', 680, 359, 190, 47, '{{rpm}}', 'a_tach', 'ink', 'right', dx=-6),
         text('rpm_u', 1130, 369, 160, 30, 'RPM', 'r_label', 'ink', 'left'),
@@ -110,7 +111,7 @@ def build():
     # uploads only that small picture's changed rect); the slow readings once a second, fixed labels and units every 2 s;
     # the drive mode, the rpm digits and oil / coolant (they flash over their warning limit, 300 ms) at the default 200 ms
     for w in widgets:
-        if w.get('id') in ('gear', 'speed', 'm1_v'):
+        if w.get('id') in ('gear', 'gear_s', 'speed', 'm1_v'):
             w['rate'] = 45
             w['own'] = True
             w['conn'] = 2
