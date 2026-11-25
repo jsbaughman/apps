@@ -343,6 +343,7 @@ const PRED_SLOPE = 30;           // rpm per ms it runs on at most (an M4 free-re
 const PRED_MAX = 9500;           // and never past this
 const SHIFT_DASH = { cdash: 1, ldash: 1, adash: 1, gdash: 1, rdash: 1 };   // dashes whose u_shift _tachTick sends
 const PULL_LOW = 0.2, PULL_RESET_MS = 4000, PULL_SHOW = 0.3;   // Vetro's peak boost: bar under which a pull ends, ms, bar to show from
+const REV_PEAK_DROP = 0.06, REV_PEAK_HOLD = 400, REV_PEAK_FADE = 1000, REV_PEAK_MIN = 0.45;   // Vetro's lit ladder: its peak mark
 const TACH_MS = 16;              // ~60 Hz: the rev counter's needle / band alone (_tachTick), the display's own frame rate
 const TEXT_MS = 200;             // text re-draws at most 5 times a second (what BMW's own readouts do)
 const TARGET_SIZES = { hud: [800, 480], panel: [1920, 720] };
@@ -373,7 +374,7 @@ function cachedText(w, h, s, o) {
 }
 // settings that always rebuild (they pick another layout, change the theme's colours or what is placed where); every
 // other setting first tries _softSwitch, which swaps text in the layers already on the cluster
-const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap'];
+const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap', 'vetroRev'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
@@ -2618,6 +2619,7 @@ class HudApp {
             c.uniform(ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], 0]);
             c.uniform(ref, 'u_scale', [T[3], T[4], T[5], (w.red || 7200) / (T[5] * 1000)]);
             c.uniform(ref, 'u_dial', [{ red: 1, yellow: 2 }[this.setting('vetroDial')] || 0]);
+            c.uniform(ref, 'u_rev', [this.setting('vetroRev') === 'ladder' ? 1 : 0, 0, 0]);
             c.uniform(ref, 'u_left', [L[0] - w.x, L[1] - w.y, L[2] - w.y, L[3]]);
             c.uniform(ref, 'u_right', [Rg[0] - w.y, Rg[1] - w.y, Rg[2] - w.x, Rg[3] - w.x]);
             // while the map shows in the left panel ("hole", "holeWhen" mapUp), the tyres smaller ("mapCar", "mapTbox") and
@@ -3044,6 +3046,11 @@ class HudApp {
             if (!u) return;
             const k = u[1][3];
             if (k !== x.lastTach) { x.lastTach = k; x.c.uniform(x.ref, u[0], u[1]); }
+            // Vetro's lit ladder: the revs' peak after a pull, held a moment, then fading out
+            if (x.w.type === 'rdash' && this.setting('vetroRev') === 'ladder') {
+                const pv = this._revPeak(now, u[1][3]), pk = pv.join(',');
+                if (pk !== x.lastRevPeak) { x.lastRevPeak = pk; x.c.uniform(x.ref, 'u_rev', [1, pv[0], pv[1]]); }
+            }
             // the shift light (the tach flashing red) of the dashes that have one
             if (SHIFT_DASH[x.w.type]) {
                 sh = sh || this._shiftNow(now);
@@ -3054,6 +3061,17 @@ class HudApp {
     }
 
     /** A dash effect's rev uniform: [name, vec4 with the revs' fraction of its scale last], or null. */
+    _revPeak(now, f) {
+        // the highest revs of a pull: held while they climb; once they have dropped REV_PEAK_DROP of the scale below it
+        // it stays REV_PEAK_HOLD ms and fades over REV_PEAK_FADE ms; a pull under REV_PEAK_MIN shows none
+        const P = this.revPk || (this.revPk = { v: 0, at: 0 });
+        if (f >= P.v || (P.at && now - P.at > REV_PEAK_HOLD + REV_PEAK_FADE)) { P.v = f; P.at = 0; }
+        else if (!P.at && P.v - f > REV_PEAK_DROP) P.at = now;
+        if (!P.at || P.v < REV_PEAK_MIN) return [0, 0];
+        const t = now - P.at;
+        return [P.v, Math.round(Math.max(0, Math.min(1, 1 - (t - REV_PEAK_HOLD) / REV_PEAK_FADE)) * 20) / 20];
+    }
+
     _tachUniform(x) {
         const w = x.w, rpm = this._raw('rpm'), f = (max) => (isNum(rpm) ? Math.round(Math.min(1, Math.max(0, rpm / max)) * 2000) / 2000 : 0);
         if (w.type === 'cdash') { const T = w.tach; return ['u_tachA', [T[4], T[5], T[6], f(T[6] * 1000)]]; }

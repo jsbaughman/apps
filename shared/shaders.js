@@ -2668,6 +2668,7 @@ uniform vec4 u_tyre;       // FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
 uniform float u_plain;     // 1: no floor (the "Backgrounds" setting off)
 uniform vec4 u_hole;       // the Waze map's window in the left panel while it shows: x, y, w, h (w 0: none)
 uniform vec4 u_tbox;       // the tyre boxes' half width, half height, the wheels' x offset, the wheels' scale
+uniform vec3 u_rev;        // "vetroRev": x 1 the lit ladder (no needle), 0 the needle; y the revs' peak 0..1, z its fade 1..0
 uniform float u_peak;      // the peak boost on the first bar, 0..1 (< 0: none; setting "vetroPeak")
 uniform vec4 u_hv;         // the HV battery gauge (setting "vetroHv"): x, y, height, charge 0..1; x < 0: none
 
@@ -2678,6 +2679,13 @@ float segd(vec2 p, vec2 a, vec2 b) {
     vec2 ba = b - a;
     float h = clamp(dot(p - a, ba) / dot(ba, ba), 0.0, 1.0);
     return length(p - a - ba * h);
+}
+// the lit ladder's colour at t (0..1 of the scale): cool blue-white, warm white, amber, orange, red
+vec3 revCol(float t) {
+    vec3 c = mix(vec3(0.45, 0.62, 0.95), vec3(0.85, 0.9, 1.0), smoothstep(0.0, 0.35, t));
+    c = mix(c, vec3(1.0, 0.72, 0.3), smoothstep(0.35, 0.62, t));
+    c = mix(c, vec3(1.0, 0.4, 0.1), smoothstep(0.62, 0.8, t));
+    return mix(c, vec3(1.0, 0.1, 0.07), smoothstep(0.8, 0.92, t));
 }
 
 void main() {
@@ -2871,19 +2879,35 @@ void main() {
         // the ticks: two fine rings with rungs every 100 rpm between them, a dot on the inner one at each thousand
         vec3 tick = u_dial > 1.5 ? vec3(0.16) : vec3(0.77, 0.78, 0.82);
         vec3 tickR = u_dial > 0.5 && u_dial < 1.5 ? vec3(0.08, 0.016, 0.016) : vec3(0.92, 0.14, 0.12);
-        vec3 tc = k >= redK ? tickR : tick;
-        float ro = R - 7.0, ri = R - 21.0;
+        // the red zone fades in from 6500 to 85 % at 7000, to full at the top: almost solid from 7 to 8
+        float rz = 0.85 * smoothstep(6.5, 7.0, k) + 0.15 * clamp(k - 7.0, 0.0, 1.0);
+        float ro = R - 7.0, ri = R - 26.0;
+        float inL = float(onScale) * step(ri, d) * step(d, ro);
+        float lit = u_rev.x * step(k, u_tach.w * u_scale.z) * inL;            // the lit ladder: up to the revs
+        float lead = clamp(1.0 - (u_tach.w * u_scale.z - k) / 3.0, 0.0, 1.0);
+        vec3 tc = mix(tick, tickR, rz) * (1.0 - 0.45 * u_rev.x * (1.0 - lit));     // the unlit ladder dimmer with it
         float rng = min(abs(d - ro) - 0.85, abs(d - ri) - 0.75);
         float rung = abs(fract(k * 10.0 + 0.5) - 0.5) / 10.0 * pxk * (d / R) - 0.75;
         float lad = onScale ? min(rng, max(rung, max(ri - d, d - ro))) : 99.0;
         col = mix(col, tc, cov(lad));
-        // past the redline the ladder fills with a red glow
-        col = mix(col, tickR, step(redK, k) * float(onScale) * step(ri, d) * step(d, ro) * 0.45);
+        col = mix(col, tickR, rz * inL * 0.92 * (1.0 - lit));
+        // the lit ladder: the band filled in the revs' colour, brightest at the value, a white-hot tip, an orange glow
+        // spilling inward; red and bright while the shift light flashes
+        vec3 rc = mix(revCol(k / u_scale.z), vec3(1.0, 0.12, 0.08), u_shift.y);
+        col = mix(col, rc * (1.0 + 0.6 * u_shift.y), lit * (0.55 + 0.45 * max(lead, u_shift.y)));
+        float tipd = (k - u_tach.w * u_scale.z) * pxk * (d / R);
+        col += u_rev.x * float(onScale) * (vec3(1.0) * exp(-tipd * tipd / 4.0) * 0.9 * step(ri - 4.0, d) * step(d, ro + 4.0)
+               + mix(rc, vec3(1.0, 0.45, 0.12), 0.5) * exp(-max(ri - d, 0.0) / 16.0) * step(d, ri) * step(ri - 60.0, d)
+                 * step(k, u_tach.w * u_scale.z) * lead * 0.6);
+        // the revs' peak after a pull: a thin bright mark on the ladder, fading out
+        float pkd = (k - u_rev.y * u_scale.z) * pxk * (d / R);
+        col = mix(col, vec3(1.0, 0.92, 0.85), clamp(1.6 - abs(pkd), 0.0, 1.0) * inL * u_rev.z * u_rev.x);
+        col += vec3(1.0, 0.5, 0.2) * exp(-pkd * pkd / 18.0) * inL * u_rev.z * u_rev.x * 0.5;
         float kk = floor(k + 0.5);
         float ak = radians(u_scale.x + u_scale.y * kk / u_scale.z);
         vec2 dot_ = C + ri * vec2(sin(ak), -cos(ak));
-        col = mix(col, kk >= redK - 0.01 ? tickR : (u_dial > 1.5 ? vec3(0.1) : vec3(0.94, 0.95, 0.97)), cov(length(p - dot_) - 2.6) * step(kk, u_scale.z + 0.01));
-        // the shift light on the ladder: the ticks glow red while it flashes
+        col = mix(col, kk > 7.5 ? tickR : (u_dial > 1.5 ? vec3(0.1) : vec3(0.94, 0.95, 0.97)), cov(length(p - dot_) - 2.6) * step(kk, u_scale.z + 0.01));
+        // the shift light on the ladder (needle): the ticks glow red while it flashes
         col = mix(col, vec3(1.0, 0.2, 0.15), cov(lad) * u_shift.y);
         // (the needle and its cap are a layer of their own over the numbers: rneedle)
         // the speed and gear boxes: navy glass (the face through it), round corners at the left, a bright border along
@@ -2898,8 +2922,11 @@ void main() {
             vec3 tint = mix(i == 0 ? vec3(0.06, 0.10, 0.17) : vec3(0.075, 0.11, 0.17), vec3(0.03, 0.055, 0.10), bt);
             tint += vec3(0.6, 0.85, 1.0) * 0.045 * exp(-pow(((p.x - C.x) * 0.35 + (p.y - y0)) / (y1 - y0) - 0.55, 2.0) / 0.048);
             col = mix(col, tint, cov(bd) * 0.72);
-            float edgeR = cov(abs(d - rr + 1.5) - 1.3) * step(y0 + 2.0, p.y) * step(p.y, y1 - 2.0) * (0.35 + 0.65 * clamp(min(p.y - y0, y1 - p.y) / 14.0, 0.0, 1.0));
-            col = mix(col, vec3(0.80, 0.84, 0.90), edgeR * (i == 0 ? 0.95 : 0.9));
+            float edgeR = cov(abs(d - rr + 1.5) - 1.3) * step(y0 + 2.0, p.y) * step(p.y, y1 - 2.0) * step(C.x, p.x) * (0.35 + 0.65 * clamp(min(p.y - y0, y1 - p.y) / 14.0, 0.0, 1.0));
+            // with the lit ladder, the right edges take the revs' colour as they climb
+            vec3 ec = mix(vec3(0.80, 0.84, 0.90), revCol(u_tach.w), u_rev.x * smoothstep(0.45, 0.8, u_tach.w));
+            col = mix(col, ec, edgeR * (i == 0 ? 0.95 : 0.9));
+            col += revCol(u_tach.w) * exp(-pow((d - rr + 1.5) / 5.0, 2.0)) * step(y0 + 2.0, p.y) * step(p.y, y1 - 2.0) * step(C.x + 0.3 * R, p.x) * u_rev.x * smoothstep(0.55, 0.85, u_tach.w) * 0.35;
             float dim = max(cov(abs(p.y - y0 - 0.6) - 0.6) * 0.55, cov(abs(p.x - C.x + 0.4) - 0.6) * 0.35) * cov(bd);
             col = mix(col, vec3(0.35, 0.42, 0.52), dim * 0.5 * (1.0 - edgeR));
         }

@@ -81,9 +81,9 @@ def build(fonts):
 
     # --- the needle and its cap on a layer of their own, over the numbers (z 6)
     widgets.append({'id': 'needle', 'type': 'rneedle', 'class': 'content', 'z': 6, 'x': CX - R, 'y': CY - R, 'w': 2 * R, 'h': 2 * R,
-                    'tach': [CX, CY, R, START, SWEEP, THOUSANDS], 'conn': 1})
+                    'tach': [CX, CY, R, START, SWEEP, THOUSANDS], 'conn': 1, 'toggle': 'vetroRev=needle'})
     # --- the rev counter's numbers: a soft shadow under each, the number per face (silver; the redline one red)
-    nr = R - 72
+    nr = R - 77                                         # (the ladder 19 px wide)
     for k in range(THOUSANDS + 1):
         a = math.radians(START + SWEEP * k / float(THOUSANDS))
         x, y = CX + nr * math.sin(a), CY - nr * math.cos(a)
