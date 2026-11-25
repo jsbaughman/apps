@@ -107,7 +107,9 @@
  *             start deg, sweep deg, thousands], "red" rpm, "left" [end x, top y, bottom y, bow] (the left panel), "right" [top
  *             y, bottom y, right x at the top, at the bottom], "bars" (4: { x, y, w, signal, min, max, alt, altWhen }: the
  *             left bars; "alt" the signal shown instead while the setting "altWhen" is off), "fuel" [x, y, w], "hv" [x, y,
- *             height] (the HV battery gauge, shown with the setting "vetroHv"), "car"
+ *             height] (the HV battery gauge, shown with the setting "vetroHv"), "tbox" [box half w, half h, wheel dx,
+ *             wheel scale]; the Waze map in the left panel ("hole", "holeWhen" mapUp) with "mapCar", "mapTbox" and "mapBars"
+ *             ({ of: bar index, x, y, w }) for the right panel meanwhile; "car"
  *             [cx, cy, box dx, wheel dy] (the tyres); the face by the "vetroDial" setting
  *   gdash     effect layer; the whole Circuit theme (shaders.js gdash, layout made by tools/gen_circuit.py): three round dials
  *             ("tach", "left", "right"), the left one's two scales ("arcs", picked like Apex's left gauges), the tyres ("car")
@@ -369,7 +371,7 @@ function cachedText(w, h, s, o) {
 }
 // settings that always rebuild (they pick another layout, change the theme's colours or what is placed where); every
 // other setting first tries _softSwitch, which swaps text in the layers already on the cluster
-const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo'];
+const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
@@ -2603,7 +2605,13 @@ class HudApp {
             c.uniform(ref, 'u_dial', [{ red: 1, yellow: 2 }[this.setting('vetroDial')] || 0]);
             c.uniform(ref, 'u_left', [L[0] - w.x, L[1] - w.y, L[2] - w.y, L[3]]);
             c.uniform(ref, 'u_right', [Rg[0] - w.y, Rg[1] - w.y, Rg[2] - w.x, Rg[3] - w.x]);
-            c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
+            // while the map shows in the left panel ("hole", "holeWhen" mapUp), the tyres smaller ("mapCar", "mapTbox") and
+            // two of the bars under the car ("mapBars")
+            const mapOn = !!(w.hole && this.setting('mapUp') === true);
+            const C2 = mapOn && w.mapCar ? w.mapCar : C;
+            c.uniform(ref, 'u_car', [C2[0] - w.x, C2[1] - w.y, C2[2], C2[3]]);
+            c.uniform(ref, 'u_tbox', (mapOn && w.mapTbox) || w.tbox || [68, 37, 69, 1]);
+            c.uniform(ref, 'u_hole', this._hole(w));
             c.uniform(ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], 0]);
             c.uniform(ref, 'u_hv', w.hv && this.setting('vetroHv') === true ? [w.hv[0] - w.x, w.hv[1] - w.y, w.hv[2], 0] : [-1, 0, 1, 0]);
         } else if (w.type === 'gdash') {
@@ -3364,7 +3372,9 @@ class HudApp {
             x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2] - w.y, fl]);
         } else if (w.type === 'rdash') {
             const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 400) / 400;
-            const bars = (w.bars || []).slice(0, 4).map((b) => this._vetroBar(b));
+            const mapOn = !!(w.hole && this.setting('mapUp') === true);
+            const bars = (mapOn && w.mapBars ? w.mapBars.map((m) => Object.assign({}, w.bars[m.of], { x: m.x, y: m.y, w: m.w })) : (w.bars || []))
+                .slice(0, 4).map((b) => this._vetroBar(b));
             const bv = bars.map((b) => { const v = this._raw(b.signal); return isNum(v) ? q((v - b.min) / (b.max - b.min)) : 0; });
             const low = isNum(w.tyreLow) ? w.tyreLow : 33;
             const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });

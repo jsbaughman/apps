@@ -12,6 +12,8 @@ rdash effect layer (shaders.js) with text layers over it:
   oil temperature; water temperature; oil pressure) with their readings, the fuel cells and the range under it;
 - on the right a framed glass panel: the drive mode, "Tires", the car as an x-ray from above, each tyre's pressure and
   temperature in a box, its wheel green or red (under 33 psi).
+With "Show Waze map inside the theme" on, Waze's map takes the left panel while it shows; the right panel then has the car
+a bit smaller with two of the bars (boost or intake, oil) side by side under it.
 Nothing in the strip (covered, BMW's gear letter left clear, as Circuit).
 
     python3 tools/gen_vetro.py .
@@ -28,7 +30,12 @@ LEFT = [200, CY - 0.56 * R, CY + 0.80 * R, 26]          # the left panel: its en
 RIGHT = [CY - 0.60 * R, CY + 0.86 * R, 1890, 1846]      # the right panel: top, bottom, right x at the top, at the bottom
 CAR = [1560, 400, 175, 90]
 BAR_R, BAR_W = 602, 320                                # the left bars: one column, its right edge clear of the dial
-HV = [98, 220, 300]                                     # the HV battery gauge (vetroHv): x, y, height (30 wide)                              # the car's centre, the tyre boxes' x offset, the wheels' y offset
+HV = [98, 220, 300]
+# the Waze map in the left panel (setting "Show Waze map inside the theme"): the window, and the right panel meanwhile:
+# the car a bit smaller and higher, two of the bars (boost or intake, oil) side by side under it
+MAP = [196, LEFT[1] + 16, CX - 40 - 196, LEFT[2] - 16 - (LEFT[1] + 16)]
+MAP_CAR = [1566, 346, 160, 74]
+MAP_BARS = [{'of': 0, 'x': 1370, 'y': 506, 'w': 200}, {'of': 1, 'x': 1626, 'y': 506, 'w': 200}]                                     # the HV battery gauge (vetroHv): x, y, height (30 wide)                              # the car's centre, the tyre boxes' x offset, the wheels' y offset
 FACES = {                                                # the numbers' colours per face: (0..7, 8)
     'black': (('num', 'numLow'), ('numRed', 'numRedLow')),
     'red': (('num', 'numLow'), ('numBlack', 'numBlackLow')),
@@ -66,7 +73,9 @@ def build(fonts):
     F = [BAR_R - BAR_W, LEFT[2] + 30, 250]
     widgets.append({'id': 'dash', 'type': 'rdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                     'tach': [CX, CY, R, START, SWEEP, THOUSANDS], 'red': RED, 'left': [round(v, 1) for v in LEFT],
-                    'right': [round(v, 1) for v in RIGHT], 'bars': bars, 'fuel': F, 'hv': HV, 'car': CAR})
+                    'right': [round(v, 1) for v in RIGHT], 'bars': bars, 'fuel': F, 'hv': HV, 'car': CAR,
+                    'tbox': [68, 37, 69, 1], 'hole': MAP, 'holeWhen': 'mapUp', 'holeInset': 0, 'mapCar': MAP_CAR,
+                    'mapTbox': [58, 31, 56, 0.8], 'mapBars': MAP_BARS})
 
     # --- the rev counter's numbers: a soft shadow under each, the number per face (silver; the redline one red)
     nr = R - 72
@@ -88,25 +97,29 @@ def build(fonts):
     text('gear', CX + 0.30 * R, 428 + 0.36 * cell('vt_gear'), 120, '{{gearnum}}', 'vt_gear', 'fg', 'center', rate=FAST, own=True)
     text('prog', CX + 0.30 * R - 32, 484, 140, '{{progWord}}', 'vt_word', 'dim', 'left')
 
-    # --- the left bars: the reading over the right end (the number, the unit small after it), the icon before the track
-    for i, ((icon, tok, unit, ufont, sig, mn, mx), b) in enumerate(zip(ROWS, bars)):
-        x0, by = b['x'], b['y']
-        rx = x0 + BAR_W
+    # --- the bars: the reading over the right end (the number, the unit small after it), the icon before the track; in
+    #     the left panel, or the first two under the car while the map shows
+    places = [(b['x'], b['y'], BAR_W, i, '!mapUp', '') for i, b in enumerate(bars)]
+    places += [(m['x'], m['y'], m['w'], m['of'], 'mapUp', 'm') for m in MAP_BARS]
+    for x0, by, bw, i, mt, sfx in places:
+        icon, tok, unit, ufont, sig, mn, mx = ROWS[i]
+        rx = x0 + bw
         if sig == 'boost':
             for tg, t2, ic in (('showBoost', tok, 'gauge'), ('!showBoost', '{{intake}}', 'therm')):
-                text('b%d_v%s' % (i, '' if tg == 'showBoost' else 'i'), rx - 44, by - 8, 160, t2, 'vt_val', 'fg', 'right', toggle=tg,
+                k = '' if tg == 'showBoost' else 'i'
+                text('b%d_v%s%s' % (i, k, sfx), rx - 44, by - 8, 160, t2, 'vt_val', 'fg', 'right', toggle=tg + '&' + mt,
                      rate=FAST if tg == 'showBoost' else None, own=True)
-                text('b%d_u%s' % (i, '' if tg == 'showBoost' else 'i'), rx - 38, by - 8, 44, unit if tg == 'showBoost' else '{{u:temp}}',
-                     ufont if tg == 'showBoost' else 'vt_deg', 'dim', 'left', toggle=tg)
-                widgets.append({'id': 'b%d_icon%s' % (i, '' if tg == 'showBoost' else 'i'), 'type': 'icon', 'icon': ic, 'z': 5,
-                                'x': int(x0 - 42), 'y': int(by - 2), 'w': 30, 'h': 30, 'color': 'fg', 'toggle': tg})
+                text('b%d_u%s%s' % (i, k, sfx), rx - 38, by - 8, 44, unit if tg == 'showBoost' else '{{u:temp}}',
+                     ufont if tg == 'showBoost' else 'vt_deg', 'dim', 'left', toggle=tg + '&' + mt)
+                widgets.append({'id': 'b%d_icon%s%s' % (i, k, sfx), 'type': 'icon', 'icon': ic, 'z': 5,
+                                'x': int(x0 - 42), 'y': int(by - 2), 'w': 30, 'h': 30, 'color': 'fg', 'toggle': tg + '&' + mt})
             continue
-        text('b%d_v' % i, rx - 44, by - 8, 160, tok, 'vt_val', 'fg', 'right', own=True)
-        text('b%d_u' % i, rx - 38, by - 8, 44, unit, ufont, 'dim', 'left')
-        widgets.append({'id': 'b%d_icon' % i, 'type': 'icon', 'icon': icon, 'z': 5, 'x': int(x0 - 42), 'y': int(by - 2),
-                        'w': 30, 'h': 30, 'color': 'fg'})
+        text('b%d_v%s' % (i, sfx), rx - 44, by - 8, 160, tok, 'vt_val', 'fg', 'right', own=True, toggle=mt)
+        text('b%d_u%s' % (i, sfx), rx - 38, by - 8, 44, unit, ufont, 'dim', 'left', toggle=mt)
+        widgets.append({'id': 'b%d_icon%s' % (i, sfx), 'type': 'icon', 'icon': icon, 'z': 5, 'x': int(x0 - 42), 'y': int(by - 2),
+                        'w': 30, 'h': 30, 'color': 'fg', 'toggle': mt})
         if sig == 'oilP':
-            text('b%d_p' % i, x0 - 15, by + 7, 14, 'P', 'vt_p', 'fg', 'center')
+            text('b%d_p%s' % (i, sfx), x0 - 15, by + 7, 14, 'P', 'vt_p', 'fg', 'center', toggle=mt)
     # --- the HV battery (setting "vetroHv"): the charge over the gauge, HV under its battery
     hx = HV[0] + 15
     text('hv_v', hx + 8, HV[1] - 14, 100, '{{hvSoc}}', 'vt_val', 'fg', 'right', toggle='vetroHv')
@@ -125,13 +138,16 @@ def build(fonts):
     tx = CX + math.sqrt((band + 6) ** 2 - (RIGHT[0] + 18 - CY) ** 2) + 10
     text('mode', tx + 30, RIGHT[0] + 24, 400, '{{mode}}', 'vt_mode', 'accent', 'left')
     text('tyre_head', tx + 34, RIGHT[0] + 86, 200, 'Tires', 'vt_head', 'head', 'left')
-    widgets.append({'id': 'tyre_car', 'type': 'icon', 'icon': 'carXray', 'z': 5, 'x': CAR[0] - 75, 'y': CAR[1] - 150,
-                    'w': 150, 'h': 300})
-    for pos, sx, sy in (('FL', -1, -1), ('FR', 1, -1), ('RL', -1, 1), ('RR', 1, 1)):
-        bx, y0 = CAR[0] + sx * CAR[2], CAR[1] + sy * CAR[3] - 37
-        text('tp_' + pos, bx + 12, y0 + 40, 100, '{{tyreP:%s}}' % pos, 'vt_tp', 'fg', 'right')
-        text('tpu_' + pos, bx + 17, y0 + 40, 40, '{{u:pressure}}', 'vt_small', 'dim', 'left')
-        text('tt_' + pos, bx, y0 + 64, 110, '{{tyreT:%s}}{{u:temp}}' % pos, 'vt_tt', 'cool', 'center')
+    # the car and the tyres' readings: full size, or a bit smaller while the map shows
+    for mt, sfx, (cx_, cy_, dx_, dy_), cw, bh, pf, py, ty in (('!mapUp', '', CAR, 150, 37, 'vt_tp', 40, 64),
+                                                             ('mapUp', '_m', MAP_CAR, 124, 31, 'vt_val', 33, 54)):
+        widgets.append({'id': 'tyre_car' + sfx, 'type': 'icon', 'icon': 'carXray', 'z': 5, 'x': cx_ - cw // 2, 'y': cy_ - cw,
+                        'w': cw, 'h': 2 * cw, 'toggle': mt})
+        for pos, sx, sy in (('FL', -1, -1), ('FR', 1, -1), ('RL', -1, 1), ('RR', 1, 1)):
+            bx, y0 = cx_ + sx * dx_, cy_ + sy * dy_ - bh
+            text('tp_' + pos + sfx, bx + 12, y0 + py, 100, '{{tyreP:%s}}' % pos, pf, 'fg', 'right', toggle=mt)
+            text('tpu_' + pos + sfx, bx + 17, y0 + py, 40, '{{u:pressure}}', 'vt_small', 'dim', 'left', toggle=mt)
+            text('tt_' + pos + sfx, bx, y0 + ty, 110, '{{tyreT:%s}}{{u:temp}}' % pos, 'vt_tt', 'cool', 'center', toggle=mt)
 
     # --- the strip: covered, nothing in it; BMW's gear letter left clear ------------------------------------------------
     widgets += [

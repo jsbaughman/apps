@@ -2652,6 +2652,8 @@ uniform vec4 u_fuel;       // the fuel cells: x, y, width, level 0..1
 uniform vec4 u_car;        // the tyres: the car's centre x, y, the boxes' x offset, the wheels' y offset
 uniform vec4 u_tyre;       // FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
 uniform float u_plain;     // 1: no floor (the "Backgrounds" setting off)
+uniform vec4 u_hole;       // the Waze map's window in the left panel while it shows: x, y, w, h (w 0: none)
+uniform vec4 u_tbox;       // the tyre boxes' half width, half height, the wheels' x offset, the wheels' scale
 uniform vec4 u_hv;         // the HV battery gauge (setting "vetroHv"): x, y, height, charge 0..1; x < 0: none
 
 float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
@@ -2722,26 +2724,6 @@ void main() {
         float wt = max(cov(abs(p.y - lt) - 0.8) * clamp(1.0 - (p.x - u_left.x) / 300.0, 0.0, 1.0) * 0.55,
                        cov(abs(p.y - lb) - 0.8) * clamp(1.0 - (p.x - u_left.x) / 460.0, 0.0, 1.0) * 0.75);
         c = put(c, BLUE, max(cov(abs(dl + 0.8) - 0.7) * wl, wt) * 0.85);
-        // --- the bars: recessed tracks (an inset shadow along their top and left, a light lip along the foot and the
-        //     right end), a crisp light fill from the left, a blue start, a small red mark at the end
-        for (int i = 0; i < 4; i++) {
-            vec4 B = u_bars[i];
-            vec2 bh = vec2(B.z * 0.5, 13.0), bc = B.xy + bh;
-            float bd = rbox(p, bc, bh, 4.0);
-            if (bd > 3.0) continue;
-            float m = cov(bd);
-            vec3 bcol = vec3(0.008, 0.012, 0.02);
-            float pos = (p.x - B.x) / B.z;
-            float fl = step(pos, B.w) * step(B.y + 4.0, p.y) * step(p.y, B.y + 23.0) * step(B.x + 3.0, p.x);
-            bcol = mix(bcol, vec3(0.86, 0.91, 1.0) * (0.95 - 0.2 * clamp((B.y + 9.0 - p.y) / 5.0, 0.0, 1.0)) * clamp(1.0 - (B.w - pos) * 1.2, 0.82, 1.0), fl);
-            bcol = mix(bcol, vec3(0.30, 0.50, 1.0), clamp(1.0 - (p.x - B.x) / 40.0, 0.0, 1.0) * 0.55);
-            bcol = mix(bcol, vec3(0.85, 0.12, 0.10), step(B.x + B.z - 18.0, p.x) * step(p.x, B.x + B.z - 4.0) * step(B.y + 19.0, p.y) * step(p.y, B.y + 22.0));
-            bcol *= 1.0 - 0.75 * clamp(1.0 - min(p.y - B.y - 3.0, p.x - B.x - 2.0) / 4.0, 0.0, 1.0);
-            c = put(c, bcol, m);
-            c = put(c, BLUE * 0.85, cov(abs(p.y - B.y - 26.0) - 0.7) * step(B.x + 4.0, p.x) * step(p.x, B.x + B.z - 4.0) * 0.75);
-            c = put(c, BLUE * 0.85, cov(abs(p.x - B.x - B.z) - 0.6) * step(B.y + 4.0, p.y) * step(p.y, B.y + 22.0) * 0.4);
-            c = put(c, vec3(0.0), cov(abs(p.y - B.y) - 0.7) * step(B.x + 4.0, p.x) * step(p.x, B.x + B.z - 4.0) * 0.7);
-        }
     }
 
     // --- the fuel: slanted cells filled amber (a yellow lower edge), a dark track, a slanted yellow stroke at its end
@@ -2806,17 +2788,38 @@ void main() {
         for (int i = 0; i < 4; i++) {
             float sx_ = (i == 0 || i == 2) ? -1.0 : 1.0, sy_ = i < 2 ? -1.0 : 1.0;
             float st = i == 0 ? u_tyre.x : i == 1 ? u_tyre.y : i == 2 ? u_tyre.z : u_tyre.w;
-            vec2 wc = u_car.xy + vec2(sx_ * 69.0, sy_ * u_car.w);
+            vec2 wc = u_car.xy + vec2(sx_ * u_tbox.z, sy_ * u_car.w);
             vec2 bc = vec2(u_car.x + sx_ * u_car.z, wc.y);
-            float bd = rbox(p, bc, vec2(68.0, 37.0), 6.0);
+            float bd = rbox(p, bc, u_tbox.xy, 6.0);
             c = put(c, vec3(0.03, 0.063, 0.118), cov(bd));
             c = put(c, vec3(0.27, 0.35, 0.47), cov(abs(bd) - 0.6));
-            float bx = bc.x - sx_ * 67.0;
-            c = put(c, vec3(0.78, 0.82, 0.88), cov(abs(p.x - bx) - 0.8) * step(abs(p.y - bc.y), 29.0));
+            float bx = bc.x - sx_ * (u_tbox.x - 1.0);
+            c = put(c, vec3(0.78, 0.82, 0.88), cov(abs(p.x - bx) - 0.8) * step(abs(p.y - bc.y), u_tbox.y - 8.0));
             c = put(c, vec3(0.47, 0.59, 0.75), cov(abs(p.y - wc.y) - 0.6) * step(min(bx, wc.x - sx_ * 12.0), p.x) * step(p.x, max(bx, wc.x - sx_ * 12.0)));
             vec3 wcol = st > 1.5 ? vec3(0.92, 0.2, 0.16) : st > 0.5 ? vec3(0.31, 0.86, 0.47) : vec3(0.35, 0.38, 0.44);
-            c = put(c, wcol, cov(abs(rbox(p, wc, vec2(9.0, 22.0), 5.0)) - 1.0));
+            c = put(c, wcol, cov(abs(rbox(p, wc, vec2(9.0, 22.0) * u_tbox.w, 5.0)) - 1.0));
         }
+    }
+
+    // --- the bars (in the left panel; two under the car while the map shows): recessed tracks (an inset shadow along their top and left, a light lip along the foot and the
+    //     right end), a crisp light fill from the left, a blue start, a small red mark at the end
+    for (int i = 0; i < 4; i++) {
+        vec4 B = u_bars[i];
+        vec2 bh = vec2(B.z * 0.5, 13.0), bc = B.xy + bh;
+        float bd = rbox(p, bc, bh, 4.0);
+        if (bd > 3.0) continue;
+        float m = cov(bd);
+        vec3 bcol = vec3(0.008, 0.012, 0.02);
+        float pos = (p.x - B.x) / B.z;
+        float fl = step(pos, B.w) * step(B.y + 4.0, p.y) * step(p.y, B.y + 23.0) * step(B.x + 3.0, p.x);
+        bcol = mix(bcol, vec3(0.86, 0.91, 1.0) * (0.95 - 0.2 * clamp((B.y + 9.0 - p.y) / 5.0, 0.0, 1.0)) * clamp(1.0 - (B.w - pos) * 1.2, 0.82, 1.0), fl);
+        bcol = mix(bcol, vec3(0.30, 0.50, 1.0), clamp(1.0 - (p.x - B.x) / 40.0, 0.0, 1.0) * 0.55);
+        bcol = mix(bcol, vec3(0.85, 0.12, 0.10), step(B.x + B.z - 18.0, p.x) * step(p.x, B.x + B.z - 4.0) * step(B.y + 19.0, p.y) * step(p.y, B.y + 22.0));
+        bcol *= 1.0 - 0.75 * clamp(1.0 - min(p.y - B.y - 3.0, p.x - B.x - 2.0) / 4.0, 0.0, 1.0);
+        c = put(c, bcol, m);
+        c = put(c, BLUE * 0.85, cov(abs(p.y - B.y - 26.0) - 0.7) * step(B.x + 4.0, p.x) * step(p.x, B.x + B.z - 4.0) * 0.75);
+        c = put(c, BLUE * 0.85, cov(abs(p.x - B.x - B.z) - 0.6) * step(B.y + 4.0, p.y) * step(p.y, B.y + 22.0) * 0.4);
+        c = put(c, vec3(0.0), cov(abs(p.y - B.y) - 0.7) * step(B.x + 4.0, p.x) * step(p.x, B.x + B.z - 4.0) * 0.7);
     }
 
     // --- the dial
@@ -2920,7 +2923,19 @@ void main() {
     // a fine grain, strongest in the darks (as a real screen: no visible banding in the gradients)
     float lumc = dot(c, vec3(0.333));
     c += (fract(sin(dot(floor(p), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * (0.024 + 0.02 * (1.0 - clamp(lumc / 0.5, 0.0, 1.0)));
-    gl_FragColor = vec4(clamp(c, 0.0, 0.965), 1.0);
+    // the map's window: see-through in the left panel (the map is a layer under this one), round at its left corners,
+    // fading out toward the dial; its lower part a little darker
+    float ma = 0.0, mf = 1.0;
+    if (u_hole.z > 0.0) {
+        vec2 hc = u_hole.xy + u_hole.zw * 0.5;
+        float hd = rbox(p, hc, u_hole.zw * 0.5, 0.0);
+        vec2 cr = vec2(u_hole.x + 18.0, clamp(p.y, u_hole.y + 18.0, u_hole.y + u_hole.w - 18.0));
+        if (p.x < cr.x) hd = max(hd, length(p - cr) - 18.0);
+        ma = cov(hd) * cov(dl) * pow(clamp((d - R - 20.0) / 90.0, 0.0, 1.0), 1.2);
+        mf = 1.0 - 0.45 * clamp((p.y - u_hole.y - 0.55 * u_hole.w) / (0.45 * u_hole.w), 0.0, 1.0);
+    }
+    float al = 1.0 - ma * mf;
+    gl_FragColor = vec4(clamp(c, 0.0, 0.965) * (1.0 - ma) / max(al, 0.001), al);
 }
 `;
 

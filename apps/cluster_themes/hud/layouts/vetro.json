@@ -87,6 +87,46 @@
         400,
         175,
         90
+      ],
+      "tbox": [
+        68,
+        37,
+        69,
+        1
+      ],
+      "hole": [
+        196,
+        177.99999999999997,
+        724,
+        376.0
+      ],
+      "holeWhen": "mapUp",
+      "holeInset": 0,
+      "mapCar": [
+        1566,
+        346,
+        160,
+        74
+      ],
+      "mapTbox": [
+        58,
+        31,
+        56,
+        0.8
+      ],
+      "mapBars": [
+        {
+          "of": 0,
+          "x": 1370,
+          "y": 506,
+          "w": 200
+        },
+        {
+          "of": 1,
+          "x": 1626,
+          "y": 506,
+          "w": 200
+        }
       ]
     },
     {
@@ -733,7 +773,7 @@
       "font": "vt_val",
       "color": "fg",
       "align": "right",
-      "toggle": "showBoost",
+      "toggle": "showBoost&!mapUp",
       "rate": 45,
       "own": true,
       "conn": 2
@@ -750,7 +790,7 @@
       "font": "vt_small",
       "color": "dim",
       "align": "left",
-      "toggle": "showBoost",
+      "toggle": "showBoost&!mapUp",
       "conn": 2,
       "rate": 2000
     },
@@ -764,7 +804,7 @@
       "w": 30,
       "h": 30,
       "color": "fg",
-      "toggle": "showBoost",
+      "toggle": "showBoost&!mapUp",
       "conn": 2
     },
     {
@@ -779,7 +819,7 @@
       "font": "vt_val",
       "color": "fg",
       "align": "right",
-      "toggle": "!showBoost",
+      "toggle": "!showBoost&!mapUp",
       "own": true,
       "conn": 2
     },
@@ -795,7 +835,7 @@
       "font": "vt_deg",
       "color": "dim",
       "align": "left",
-      "toggle": "!showBoost",
+      "toggle": "!showBoost&!mapUp",
       "conn": 2,
       "rate": 2000
     },
@@ -809,7 +849,7 @@
       "w": 30,
       "h": 30,
       "color": "fg",
-      "toggle": "!showBoost",
+      "toggle": "!showBoost&!mapUp",
       "conn": 2
     },
     {
@@ -825,6 +865,7 @@
       "color": "fg",
       "align": "right",
       "own": true,
+      "toggle": "!mapUp",
       "conn": 2
     },
     {
@@ -839,6 +880,7 @@
       "font": "vt_deg",
       "color": "dim",
       "align": "left",
+      "toggle": "!mapUp",
       "conn": 2,
       "rate": 2000
     },
@@ -852,6 +894,7 @@
       "w": 30,
       "h": 30,
       "color": "fg",
+      "toggle": "!mapUp",
       "conn": 2
     },
     {
@@ -867,6 +910,7 @@
       "color": "fg",
       "align": "right",
       "own": true,
+      "toggle": "!mapUp",
       "conn": 2
     },
     {
@@ -881,6 +925,7 @@
       "font": "vt_deg",
       "color": "dim",
       "align": "left",
+      "toggle": "!mapUp",
       "conn": 2,
       "rate": 2000
     },
@@ -894,6 +939,7 @@
       "w": 30,
       "h": 30,
       "color": "fg",
+      "toggle": "!mapUp",
       "conn": 2
     },
     {
@@ -909,6 +955,7 @@
       "color": "fg",
       "align": "right",
       "own": true,
+      "toggle": "!mapUp",
       "conn": 2
     },
     {
@@ -923,6 +970,7 @@
       "font": "vt_small",
       "color": "dim",
       "align": "left",
+      "toggle": "!mapUp",
       "conn": 2,
       "rate": 2000
     },
@@ -936,6 +984,7 @@
       "w": 30,
       "h": 30,
       "color": "fg",
+      "toggle": "!mapUp",
       "conn": 2
     },
     {
@@ -950,8 +999,145 @@
       "font": "vt_p",
       "color": "fg",
       "align": "center",
+      "toggle": "!mapUp",
       "conn": 2,
       "rate": 2000
+    },
+    {
+      "id": "b0_vm",
+      "type": "text",
+      "z": 5,
+      "x": 1366,
+      "y": 474,
+      "w": 160,
+      "h": 27,
+      "text": "{{boost}}",
+      "font": "vt_val",
+      "color": "fg",
+      "align": "right",
+      "toggle": "showBoost&mapUp",
+      "rate": 45,
+      "own": true,
+      "conn": 1
+    },
+    {
+      "id": "b0_um",
+      "type": "text",
+      "z": 5,
+      "x": 1532,
+      "y": 485,
+      "w": 44,
+      "h": 18,
+      "text": "{{u:boostLc}}",
+      "font": "vt_small",
+      "color": "dim",
+      "align": "left",
+      "toggle": "showBoost&mapUp",
+      "conn": 1,
+      "rate": 2000
+    },
+    {
+      "id": "b0_iconm",
+      "type": "icon",
+      "icon": "gauge",
+      "z": 5,
+      "x": 1328,
+      "y": 504,
+      "w": 30,
+      "h": 30,
+      "color": "fg",
+      "toggle": "showBoost&mapUp",
+      "conn": 1
+    },
+    {
+      "id": "b0_vim",
+      "type": "text",
+      "z": 5,
+      "x": 1366,
+      "y": 474,
+      "w": 160,
+      "h": 27,
+      "text": "{{intake}}",
+      "font": "vt_val",
+      "color": "fg",
+      "align": "right",
+      "toggle": "!showBoost&mapUp",
+      "own": true,
+      "conn": 1
+    },
+    {
+      "id": "b0_uim",
+      "type": "text",
+      "z": 5,
+      "x": 1532,
+      "y": 479,
+      "w": 44,
+      "h": 21,
+      "text": "{{u:temp}}",
+      "font": "vt_deg",
+      "color": "dim",
+      "align": "left",
+      "toggle": "!showBoost&mapUp",
+      "conn": 1,
+      "rate": 2000
+    },
+    {
+      "id": "b0_iconim",
+      "type": "icon",
+      "icon": "therm",
+      "z": 5,
+      "x": 1328,
+      "y": 504,
+      "w": 30,
+      "h": 30,
+      "color": "fg",
+      "toggle": "!showBoost&mapUp",
+      "conn": 1
+    },
+    {
+      "id": "b1_vm",
+      "type": "text",
+      "z": 5,
+      "x": 1622,
+      "y": 474,
+      "w": 160,
+      "h": 27,
+      "text": "{{oil}}",
+      "font": "vt_val",
+      "color": "fg",
+      "align": "right",
+      "own": true,
+      "toggle": "mapUp",
+      "conn": 1
+    },
+    {
+      "id": "b1_um",
+      "type": "text",
+      "z": 5,
+      "x": 1788,
+      "y": 479,
+      "w": 44,
+      "h": 21,
+      "text": "{{u:temp}}",
+      "font": "vt_deg",
+      "color": "dim",
+      "align": "left",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 2000
+    },
+    {
+      "id": "b1_iconm",
+      "type": "icon",
+      "icon": "oilcan",
+      "z": 5,
+      "x": 1584,
+      "y": 504,
+      "w": 30,
+      "h": 30,
+      "color": "fg",
+      "toggle": "mapUp",
+      "conn": 1
     },
     {
       "id": "hv_v",
@@ -1093,6 +1279,7 @@
       "y": 250,
       "w": 150,
       "h": 300,
+      "toggle": "!mapUp",
       "conn": 1
     },
     {
@@ -1107,6 +1294,7 @@
       "font": "vt_tp",
       "color": "fg",
       "align": "right",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 1000
     },
@@ -1122,6 +1310,7 @@
       "font": "vt_small",
       "color": "dim",
       "align": "left",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 2000
     },
@@ -1137,6 +1326,7 @@
       "font": "vt_tt",
       "color": "cool",
       "align": "center",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 1000
     },
@@ -1152,6 +1342,7 @@
       "font": "vt_tp",
       "color": "fg",
       "align": "right",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 1000
     },
@@ -1167,6 +1358,7 @@
       "font": "vt_small",
       "color": "dim",
       "align": "left",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 2000
     },
@@ -1182,6 +1374,7 @@
       "font": "vt_tt",
       "color": "cool",
       "align": "center",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 1000
     },
@@ -1197,6 +1390,7 @@
       "font": "vt_tp",
       "color": "fg",
       "align": "right",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 1000
     },
@@ -1212,6 +1406,7 @@
       "font": "vt_small",
       "color": "dim",
       "align": "left",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 2000
     },
@@ -1227,6 +1422,7 @@
       "font": "vt_tt",
       "color": "cool",
       "align": "center",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 1000
     },
@@ -1242,6 +1438,7 @@
       "font": "vt_tp",
       "color": "fg",
       "align": "right",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 1000
     },
@@ -1257,6 +1454,7 @@
       "font": "vt_small",
       "color": "dim",
       "align": "left",
+      "toggle": "!mapUp",
       "conn": 1,
       "rate": 2000
     },
@@ -1272,6 +1470,211 @@
       "font": "vt_tt",
       "color": "cool",
       "align": "center",
+      "toggle": "!mapUp",
+      "conn": 1,
+      "rate": 1000
+    },
+    {
+      "id": "tyre_car_m",
+      "type": "icon",
+      "icon": "carXray",
+      "z": 5,
+      "x": 1504,
+      "y": 222,
+      "w": 124,
+      "h": 248,
+      "toggle": "mapUp",
+      "conn": 1
+    },
+    {
+      "id": "tp_FL_m",
+      "type": "text",
+      "z": 5,
+      "x": 1318,
+      "y": 250,
+      "w": 100,
+      "h": 27,
+      "text": "{{tyreP:FL}}",
+      "font": "vt_val",
+      "color": "fg",
+      "align": "right",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 1000
+    },
+    {
+      "id": "tpu_FL_m",
+      "type": "text",
+      "z": 5,
+      "x": 1423,
+      "y": 261,
+      "w": 40,
+      "h": 18,
+      "text": "{{u:pressure}}",
+      "font": "vt_small",
+      "color": "dim",
+      "align": "left",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 2000
+    },
+    {
+      "id": "tt_FL_m",
+      "type": "text",
+      "z": 5,
+      "x": 1351,
+      "y": 277,
+      "w": 110,
+      "h": 20,
+      "text": "{{tyreT:FL}}{{u:temp}}",
+      "font": "vt_tt",
+      "color": "cool",
+      "align": "center",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 1000
+    },
+    {
+      "id": "tp_FR_m",
+      "type": "text",
+      "z": 5,
+      "x": 1638,
+      "y": 250,
+      "w": 100,
+      "h": 27,
+      "text": "{{tyreP:FR}}",
+      "font": "vt_val",
+      "color": "fg",
+      "align": "right",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 1000
+    },
+    {
+      "id": "tpu_FR_m",
+      "type": "text",
+      "z": 5,
+      "x": 1743,
+      "y": 261,
+      "w": 40,
+      "h": 18,
+      "text": "{{u:pressure}}",
+      "font": "vt_small",
+      "color": "dim",
+      "align": "left",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 2000
+    },
+    {
+      "id": "tt_FR_m",
+      "type": "text",
+      "z": 5,
+      "x": 1671,
+      "y": 277,
+      "w": 110,
+      "h": 20,
+      "text": "{{tyreT:FR}}{{u:temp}}",
+      "font": "vt_tt",
+      "color": "cool",
+      "align": "center",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 1000
+    },
+    {
+      "id": "tp_RL_m",
+      "type": "text",
+      "z": 5,
+      "x": 1318,
+      "y": 398,
+      "w": 100,
+      "h": 27,
+      "text": "{{tyreP:RL}}",
+      "font": "vt_val",
+      "color": "fg",
+      "align": "right",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 1000
+    },
+    {
+      "id": "tpu_RL_m",
+      "type": "text",
+      "z": 5,
+      "x": 1423,
+      "y": 409,
+      "w": 40,
+      "h": 18,
+      "text": "{{u:pressure}}",
+      "font": "vt_small",
+      "color": "dim",
+      "align": "left",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 2000
+    },
+    {
+      "id": "tt_RL_m",
+      "type": "text",
+      "z": 5,
+      "x": 1351,
+      "y": 425,
+      "w": 110,
+      "h": 20,
+      "text": "{{tyreT:RL}}{{u:temp}}",
+      "font": "vt_tt",
+      "color": "cool",
+      "align": "center",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 1000
+    },
+    {
+      "id": "tp_RR_m",
+      "type": "text",
+      "z": 5,
+      "x": 1638,
+      "y": 398,
+      "w": 100,
+      "h": 27,
+      "text": "{{tyreP:RR}}",
+      "font": "vt_val",
+      "color": "fg",
+      "align": "right",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 1000
+    },
+    {
+      "id": "tpu_RR_m",
+      "type": "text",
+      "z": 5,
+      "x": 1743,
+      "y": 409,
+      "w": 40,
+      "h": 18,
+      "text": "{{u:pressure}}",
+      "font": "vt_small",
+      "color": "dim",
+      "align": "left",
+      "toggle": "mapUp",
+      "conn": 1,
+      "rate": 2000
+    },
+    {
+      "id": "tt_RR_m",
+      "type": "text",
+      "z": 5,
+      "x": 1671,
+      "y": 425,
+      "w": 110,
+      "h": 20,
+      "text": "{{tyreT:RR}}{{u:temp}}",
+      "font": "vt_tt",
+      "color": "cool",
+      "align": "center",
+      "toggle": "mapUp",
       "conn": 1,
       "rate": 1000
     },
