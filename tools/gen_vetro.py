@@ -169,7 +169,7 @@ def build(fonts):
     ]
     # connections (8 layers each): the right panel on 1, the left side on 2, the dial and the strip on 0
     for w in widgets:
-        if w['id'] in ('dash',) or w['id'].startswith('strip'):
+        if w['id'] in ('dash', 'needle') or w['id'].startswith('strip'):
             continue
         if w['x'] >= 1250:
             w['conn'] = 1

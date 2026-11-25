@@ -2967,8 +2967,13 @@ void main() {
 `;
 
 const RNEEDLE = `// Vetro's needle on a layer of its own (over the rev counter's numbers): a soft glow along it, its shadow, the blade
-// with a bright core, the centre cap; the rest see-through. The layer is the dial's square.
+// with a bright core, the centre cap; the rest see-through. The layer is the dial's square. highp where the GPU has
+// it: the blade's squared length (288 px: 82944) is past mediump's range on the car (fp16, 65504), and drew nothing.
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
 precision mediump float;
+#endif
 varying vec2 v_uv;
 uniform vec2 u_size;
 uniform vec4 u_tach;       // centre x, y (in this layer), radius, revs 0..1
