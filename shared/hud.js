@@ -327,6 +327,7 @@ const MAX_CONN = 4;              // connections a layout may ask for ("conn"): 3
 const PIXEL_BYTES = 16 * 1024 * 1024;   // cluster-render's pixel memory for every app's images together (CompositorLimits.pixel_bytes)
 const SHEET_AREA_FRAC = 4;       // the first sheet size limit: 1/4 of the target area (see the header)
 const TICK_MS = 50;              // 20 Hz: shift bar and gauges
+const TACH_MS = 16;              // ~60 Hz: the rev counter's needle / band alone (_tachTick), the display's own frame rate
 const TEXT_MS = 200;             // text re-draws at most 5 times a second (what BMW's own readouts do)
 const TARGET_SIZES = { hud: [800, 480], panel: [1920, 720] };
 const MODE_KEY = { comfort: 'inComfort', sport: 'inSport', eco: 'inEco' };
@@ -1022,6 +1023,7 @@ class HudApp {
         this.started = true;
         this.clients.forEach((c) => c.connect());
         this.tickTimer = setInterval(() => this._guard('tick', () => this._tick()), TICK_MS);
+        this.tachTimer = setInterval(() => this._guard('tach', () => this._tachTick()), TACH_MS);
         // Auto theme: check for sunrise / sunset once a minute; the status line too
         this.themeTimer = setInterval(() => this._guard('theme check', () => {
             if (this._themeName() !== this.themeName || this._nightDim() !== this.nightOn || this._hudHoliday() !== (this.hudHoliday || null) ||
@@ -1163,7 +1165,7 @@ class HudApp {
     }
 
     stop() {
-        clearInterval(this.tickTimer);
+        clearInterval(this.tickTimer); clearInterval(this.tachTimer);
         clearInterval(this.themeTimer);
         clearInterval(this.statusTimer);
         clearInterval(this.dmeTimer);
@@ -2962,9 +2964,39 @@ class HudApp {
         this._status();
     }
 
-    _tick() {
+    /**
+     * The rev counter at the display's frame rate: the rpm filter stepped every frame and the one uniform that
+     * holds a dash's revs sent when it moved, nothing else; the needle glides between the car's samples instead
+     * of stepping at the 20 Hz tick, and a new sample shows within a frame. The rest of the dash stays on _tick.
+     */
+    _tachTick() {
         const now = Date.now();
         this._smoothRpm(now);
+        if (!this.client.ready) return;
+        this.widgets.forEach((x) => {
+            if (x.sheet || !x.ref) return;
+            const u = this._tachUniform(x);
+            if (!u) return;
+            const k = u[1][3];
+            if (k === x.lastTach) return;
+            x.lastTach = k;
+            x.c.uniform(x.ref, u[0], u[1]);
+        });
+    }
+
+    /** A dash effect's rev uniform: [name, vec4 with the revs' fraction of its scale last], or null. */
+    _tachUniform(x) {
+        const w = x.w, rpm = this._raw('rpm'), f = (max) => (isNum(rpm) ? Math.round(Math.min(1, Math.max(0, rpm / max)) * 2000) / 2000 : 0);
+        if (w.type === 'cdash') { const T = w.tach; return ['u_tachA', [T[4], T[5], T[6], f(T[6] * 1000)]]; }
+        if (w.type === 'ldash') { const A = w.arc; return ['u_arcA', [A[4], A[5], A[6], f(A[7] * 1000)]]; }
+        if (w.type === 'adash') { const Sc = w.scale; return ['u_scale', [Sc[0] - w.x, Sc[1] - w.x, Sc[2], f(Sc[2] * 1000)]]; }
+        if (w.type === 'gdash') { const T = w.tach; return ['u_tach', [T[0] - w.x, T[1] - w.y, T[2], f(T[5] * 1000)]]; }
+        if (w.type === 'vdash') { const T = w.tach; return ['u_tachA', [T[4], T[5], T[6], f(VDASH_RPM)]]; }
+        return null;
+    }
+
+    _tick() {
+        const now = Date.now();
         this._readingsCheck(now);
         this._cueTick(now);
         if (now - (this.bumpAt || 0) >= 1000) { this.bumpAt = now; smartTemps.bumpTick(this); }
@@ -3238,11 +3270,11 @@ class HudApp {
             const mv = ms.map((m) => { const v = m && m.signal ? this._raw(m.signal) : null; return isNum(v) ? q((v - m.min) / (m.max - m.min)) : 0; });
             const rv = isNum(rpm) ? q(rpm / (A[7] * 1000)) : 0;
             const sh = this._shiftNow(now);
-            const key = [rv].concat(mv, sh).join('|');
+            const key = [].concat(mv, sh).join('|');
             if (!force && key === x.last) return;
             x.last = key;
             x.c.uniform(x.ref, 'u_shift', sh);
-            x.c.uniform(x.ref, 'u_arcA', [A[4], A[5], A[6], rv]);
+            { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
             const mu = [];
             ms.forEach((m, i) => mu.push(m ? m.x - w.x : 0, m ? m.y - w.y : 0, m ? m.w : 0, mv[i]));
             x.c.uniform(x.ref, 'u_mini', mu, { type: 'vec4' });
@@ -3256,10 +3288,10 @@ class HudApp {
             const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
             const fuel = this._raw('fuel'), fl = isNum(fuel) ? Math.round(Math.min(1, Math.max(0, fuel)) * 100) / 100 : 0;
             const sh = this._shiftNow(now);
-            const key = [rv].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), sh, fl).join('|');
+            const key = [].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), sh, fl).join('|');
             if (!force && key === x.last) return;
             x.last = key;
-            x.c.uniform(x.ref, 'u_scale', [Sc[0] - w.x, Sc[1] - w.x, Sc[2], rv]);
+            { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
             x.c.uniform(x.ref, 'u_shift', sh);
             x.c.uniform(x.ref, 'u_barV', [av[0], av[1], arcs[0] && isNum(arcs[0].red) ? arcs[0].red : 1, arcs[1] && isNum(arcs[1].red) ? arcs[1].red : 1]);
             x.c.uniform(x.ref, 'u_tyre', ts);
@@ -3274,11 +3306,11 @@ class HudApp {
             const low = isNum(w.tyreLow) ? w.tyreLow : 33;
             const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
             const sh = this._shiftNow(now);
-            const key = [rv].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), sh).join('|');
+            const key = [].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), sh).join('|');
             if (!force && key === x.last) return;
             x.last = key;
             x.c.uniform(x.ref, 'u_shift', sh);
-            x.c.uniform(x.ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], rv]);
+            { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
             x.c.uniform(x.ref, 'u_arc0', [av[0], arcs[0] && isNum(arcs[0].red) ? arcs[0].red : 1, 0, 0]);
             x.c.uniform(x.ref, 'u_arc1', [av[1], arcs[1] && isNum(arcs[1].red) ? arcs[1].red : 1, 0, 0]);
             x.c.uniform(x.ref, 'u_tyre', ts);
@@ -3295,12 +3327,12 @@ class HudApp {
                 return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0;
             }) : [0, 0, 0, 0];
             const sh = this._shiftNow(now);
-            const key = [rv].concat(bv, ts, sh).join('|');
+            const key = [].concat(bv, ts, sh).join('|');
             if (!force && key === x.last) return;
             x.last = key;
             x.c.uniform(x.ref, 'u_shift', sh);
             x.c.uniform(x.ref, 'u_tyre', ts);
-            x.c.uniform(x.ref, 'u_tachA', [T[4], T[5], T[6], rv]);
+            { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
             const bu = [];
             bars.forEach((b, i) => bu.push(b ? b.x - w.x : 0, b ? b.y - w.y : 0, b ? b.w : 0, bv[i]));
             x.c.uniform(x.ref, 'u_bar', bu, { type: 'vec4' });
@@ -3312,10 +3344,10 @@ class HudApp {
             const rv = rings.map(frac), bv = bars.map(frac);
             const on = this._mediaOn() ? 1 : 0, e = this._mediaElapsed();
             const pv = on && e !== null && this.media.total > 0 ? q(e / this.media.total) : 0;
-            const key = [isNum(rpm) ? q(rpm / VDASH_RPM) : 0].concat(rv, bv, [on, pv, this.setting('mapUp') ? 1 : 0]).join('|');
+            const key = [].concat(rv, bv, [on, pv, this.setting('mapUp') ? 1 : 0]).join('|');
             if (!force && key === x.last) return;
             x.last = key;
-            x.c.uniform(x.ref, 'u_tachA', [T[4], T[5], T[6], isNum(rpm) ? q(rpm / VDASH_RPM) : 0]);
+            { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
             const ru = [], bu = [];
             rings.forEach((g, i) => ru.push(g ? g.cx - w.x : 0, g ? g.cy - w.y : 0, g ? g.r : 0, rv[i]));
             // the bars sit under the map window: gone while the map shows
