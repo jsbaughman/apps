@@ -44,6 +44,17 @@ An Italian supercar style dash on a dark hex-cell backdrop.
 
 Veloce has no map window; with "Show Waze map inside the theme" on, Waze stays in its usual place. The layout is made by `tools/gen_veloce.py`.
 
+### Vetro
+
+An Italian GT style dash: a round dial under glass standing on a perforated metal floor, with blue glass panels round it.
+
+- **Middle:** the rev counter, 0 at six o'clock clockwise to 8000 rpm at half past one, a ladder of ticks with a dot at each thousand, red from 7200; silver numbers in a wide squared face (Michroma, after Microgramma); a red needle with a glow and a centre cap; a raised metal bezel and a glass sheen. The speed and the gear (AUTO / MANUAL under it) sit in see-through navy boxes in its lower right. It flashes red at the shift point.
+- **Dial colour** (Settings): Black (default), Red (white needle) or Yellow (dark numbers).
+- **Left:** a borderless blue panel fading into the dial with four recessed bars: boost (intake with "Show boost" off), oil temperature, water temperature and oil pressure; the fuel cells and the range under it.
+- **Right:** a glass panel with red lines, the drive mode, and the tyres: the car as a blue x-ray from above, each tyre's pressure and temperature in a box, its wheel green, or red under 33 psi.
+
+Vetro has no map window and no smaller tach for the driver camera. The layout is made by `tools/gen_vetro.py`.
+
 ## Starting with the car
 
 Since 0.22.0 the app starts by itself when the head unit powers up (autostart), without its page, and draws the cluster from then on; opening it from the apps menu shows the page over that same drawing. If the head unit starts a second copy when the page is opened, the older one stops drawing (data/running.json) so the cluster is drawn once.

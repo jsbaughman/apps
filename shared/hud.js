@@ -103,6 +103,11 @@
  *             (with "holeWhen": "mapUp"), "holeFoot" 0..1 how dark its lower part gets (0), "holeFeather" px its edge fades over, inward (0: hard), "holeTop" y where the map picture starts (faded in below it)
  *   adash     effect layer; the whole Aero theme (shaders.js adash, layout made by tools/gen_aero.py): the rev rail, the left
  *             rails ("arcs" picked), frame lines, tyres, fuel column
+ *   rdash     effect layer; the whole Vetro theme (shaders.js rdash, layout made by tools/gen_vetro.py): "tach" [cx, cy, r,
+ *             start deg, sweep deg, thousands], "red" rpm, "left" [end x, top y, bottom y, bow] (the left panel), "right" [top
+ *             y, bottom y, right x at the top, at the bottom], "bars" (4: { x, y, w, signal, min, max, alt, altWhen }: the
+ *             left bars; "alt" the signal shown instead while the setting "altWhen" is off), "fuel" [x, y, w], "car"
+ *             [cx, cy, box dx, wheel dy] (the tyres); the face by the "vetroDial" setting
  *   gdash     effect layer; the whole Circuit theme (shaders.js gdash, layout made by tools/gen_circuit.py): three round dials
  *             ("tach", "left", "right"), the left one's two scales ("arcs", picked like Apex's left gauges), the tyres ("car")
  *   ldash     effect layer; the whole Veloce theme (shaders.js ldash, layout made by tools/gen_veloce.py): "arc" [cx, cy, rx,
@@ -290,7 +295,7 @@ const visible = require('./visible');
 const sun = require('./sun');
 const textRaster = require('./hud_text');
 const { paintIcon } = require('./icons');
-const { paintCarTop } = require('./car_top');
+const { paintCarTop, paintCarXray } = require('./car_top');
 const shaders = require('./shaders');
 const calibration = require('./calibration');
 const Car = require('./kit/car');
@@ -332,7 +337,7 @@ const PRED_AHEAD = 500;          // rpm at most it runs ahead of the last readin
 const PRED_FLOOR = 800;          // falling, never below this (or the reading, if lower): no dip under idle on a lift-off
 const PRED_SLOPE = 30;           // rpm per ms it runs on at most (an M4 free-revving is ~15)
 const PRED_MAX = 9500;           // and never past this
-const SHIFT_DASH = { cdash: 1, ldash: 1, adash: 1, gdash: 1 };   // dashes whose u_shift _tachTick sends
+const SHIFT_DASH = { cdash: 1, ldash: 1, adash: 1, gdash: 1, rdash: 1 };   // dashes whose u_shift _tachTick sends
 const TACH_MS = 16;              // ~60 Hz: the rev counter's needle / band alone (_tachTick), the display's own frame rate
 const TEXT_MS = 200;             // text re-draws at most 5 times a second (what BMW's own readouts do)
 const TARGET_SIZES = { hud: [800, 480], panel: [1920, 720] };
@@ -416,7 +421,7 @@ function mediaText(v) {
 /** Seconds as m:ss. */
 function clockOf(sec) { const t = Math.max(0, Math.floor(sec)); return Math.floor(t / 60) + ':' + ('0' + (t % 60)).slice(-2); }   // its speed scale: 0..200 mph by 20, 0..330 km/h by 30 (linear)
 const ROAD_DASH_M = 12;            // the Sport road: metres per dash and gap (shaders.js sdash u_road)
-const CUE_TYPES = { lights: true, shiftbar: true, revbar: true, revarc: true, ribbon: true, mtach: true, cdash: true, ldash: true, gdash: true, adash: true };
+const CUE_TYPES = { lights: true, shiftbar: true, revbar: true, revarc: true, ribbon: true, mtach: true, cdash: true, ldash: true, gdash: true, adash: true, rdash: true };
 // the shift-light test (page.js Alerts): rpm climbs from TEST_FROM to just past the shift point, then holds
 const TEST_FROM = 1500, TEST_CLIMB_MS = 2500, TEST_HOLD_MS = 1200;
 // night colours (Cluster Themes "nightDim"): after sunset the theme's whites and greys go to this brightness
@@ -666,7 +671,7 @@ class HudApp {
             if (['hudLayout', 'inComfort', 'inSport', 'inEco', 'byMode'].indexOf(key) >= 0 && this.screen.yielded) this.screen.release();
             if (PLACE_KEYS.indexOf(key) >= 0) this._guard('place', () => this._place());
             else if (LIVE_KEYS.indexOf(key) >= 0) this.widgets.forEach((x) => { x.last = null; });
-            else if (LOOK_KEYS.indexOf(key) >= 0) this.widgets.forEach((x) => { if (!x.sheet && /^[clga]dash$/.test(x.w.type)) this._dashLook(x); });
+            else if (LOOK_KEYS.indexOf(key) >= 0) this.widgets.forEach((x) => { if (!x.sheet && /^[clgar]dash$/.test(x.w.type)) this._dashLook(x); });
             else if (key !== 'demo') {
                 let soft = false;
                 try { soft = this._softSwitch(key); } catch (e) { this.log.error('hud soft switch: ' + (e && e.stack || e)); }
@@ -2034,6 +2039,10 @@ class HudApp {
                 const d = this.car.data();
                 return d.stage === 'D' || (!d.stage && isNum(d.gear) && d.gear > 0) ? this._program(d) : '';
             }
+            case 'progWord': {       // in drive AUTO (D, S) or MANUAL (M), else nothing (Vetro's gear box)
+                const d = this.car.data();
+                return d.stage === 'D' || (!d.stage && isNum(d.gear) && d.gear > 0) ? (this._program(d) === 'M' ? 'MANUAL' : 'AUTO') : '';
+            }
             case 'stage': {          // the selector letter alone: P R N, or D / S / M by the shifter programme
                 const d = this.car.data();
                 return d.stage === 'D' || (!d.stage && isNum(d.gear) && d.gear > 0) ? this._program(d) : (d.stage || '-');
@@ -2472,8 +2481,9 @@ class HudApp {
         else if (w.type === 'nav') this._navCreate(x);
         else if (w.type === 'garland') { x.tw = new Garland.Twinkle(w); this._blit(x, null, Garland.paint(w, x.tw.lvl, null)); }
         else if (w.type === 'icon' && w.icon === 'carTop') this._blit(x, null, paintCarTop(w.w, w.h));   // the tyre panel's car (car_top.js)
+        else if (w.type === 'icon' && w.icon === 'carXray') this._blit(x, null, paintCarXray(w.w, w.h));   // Vetro's x-ray car
         else if (w.type === 'icon') this._blit(x, null, paintIcon(w.icon, w.w, w.h, color(t, w.color || 'fg')));
-        if (w.type === 'cdash' || w.type === 'ldash' || w.type === 'gdash' || w.type === 'adash') this._dashLook(x);
+        if (w.type === 'cdash' || w.type === 'ldash' || w.type === 'gdash' || w.type === 'adash' || w.type === 'rdash') this._dashLook(x);
         if (w.type === 'sdash') {
             c.uniform(ref, 'u_size', [w.w, w.h]);
             c.uniform(ref, 'u_geo', w.geo);
@@ -2583,6 +2593,17 @@ class HudApp {
             c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
             c.uniform(ref, 'u_hole', this._hole(w));
             c.uniform(ref, 'u_holeF', [isNum(w.holeFeather) ? w.holeFeather : 0]);
+        } else if (w.type === 'rdash') {
+            // Vetro (tools/gen_vetro.py): see the header; the face by "vetroDial" (black, red, yellow)
+            const T = w.tach, L = w.left, Rg = w.right, F = w.fuel, C = w.car;
+            c.uniform(ref, 'u_size', [w.w, w.h]);
+            c.uniform(ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], 0]);
+            c.uniform(ref, 'u_scale', [T[3], T[4], T[5], (w.red || 7200) / (T[5] * 1000)]);
+            c.uniform(ref, 'u_dial', [{ red: 1, yellow: 2 }[this.setting('vetroDial')] || 0]);
+            c.uniform(ref, 'u_left', [L[0] - w.x, L[1] - w.y, L[2] - w.y, L[3]]);
+            c.uniform(ref, 'u_right', [Rg[0] - w.y, Rg[1] - w.y, Rg[2] - w.x, Rg[3] - w.x]);
+            c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
+            c.uniform(ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], 0]);
         } else if (w.type === 'gdash') {
             // Circuit (tools/gen_circuit.py): "tach" [cx, cy, r, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "left" / "right" [cx, cy, r] (the side dials), "gbox" [cx, cy, half w, half h] (the gear's box), "car"
@@ -2897,10 +2918,14 @@ class HudApp {
     _dashLook(x) {
         x.c.uniform(x.ref, 'u_plain', [this.setting('backdrops') === false ? 1 : 0]);
         if (x.w.type === 'cdash') x.c.uniform(x.ref, 'u_bgStyle', [this.setting('apexBackdrop') === 'carbon' ? 1 : 0]);
+        if (x.w.type === 'rdash') x.c.uniform(x.ref, 'u_dial', [{ red: 1, yellow: 2 }[this.setting('vetroDial')] || 0]);
         if (x.w.type === 'adash') x.c.uniform(x.ref, 'u_bgStyle', [{ carbon: 1, metal: 2 }[this.setting('aeroBackdrop')] || 0]);
     }
 
     _barsOf(w) { return (w.bars || []).map((b) => this._pickOf(b)); }
+
+    /** A Vetro left bar: its own signal, or its "alt" while the setting "altWhen" is off ("Show boost" off: intake). */
+    _vetroBar(b) { return b.alt && this.setting(b.altWhen) === false ? Object.assign({}, b, { signal: b.alt, min: b.altMin, max: b.altMax }) : b; }
 
     /** One bar or scale with its "pick" filled in from the layout's "picks" (else as it is). */
     _pickOf(b) {
@@ -3008,7 +3033,7 @@ class HudApp {
         if (w.type === 'cdash') { const T = w.tach; return ['u_tachA', [T[4], T[5], T[6], f(T[6] * 1000)]]; }
         if (w.type === 'ldash') { const A = w.arc; return ['u_arcA', [A[4], A[5], A[6], f(A[7] * 1000)]]; }
         if (w.type === 'adash') { const Sc = w.scale; return ['u_scale', [Sc[0] - w.x, Sc[1] - w.x, Sc[2], f(Sc[2] * 1000)]]; }
-        if (w.type === 'gdash') { const T = w.tach; return ['u_tach', [T[0] - w.x, T[1] - w.y, T[2], f(T[5] * 1000)]]; }
+        if (w.type === 'gdash' || w.type === 'rdash') { const T = w.tach; return ['u_tach', [T[0] - w.x, T[1] - w.y, T[2], f(T[5] * 1000)]]; }
         if (w.type === 'vdash') { const T = w.tach; return ['u_tachA', [T[4], T[5], T[6], f(VDASH_RPM)]]; }
         return null;
     }
@@ -3335,6 +3360,24 @@ class HudApp {
             x.c.uniform(x.ref, 'u_tyre', ts);
             const F = w.fuel;
             x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2] - w.y, fl]);
+        } else if (w.type === 'rdash') {
+            const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 400) / 400;
+            const bars = (w.bars || []).slice(0, 4).map((b) => this._vetroBar(b));
+            const bv = bars.map((b) => { const v = this._raw(b.signal); return isNum(v) ? q((v - b.min) / (b.max - b.min)) : 0; });
+            const low = isNum(w.tyreLow) ? w.tyreLow : 33;
+            const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
+            const fuel = this._raw('fuel'), fl = isNum(fuel) ? Math.round(Math.min(1, Math.max(0, fuel)) * 100) / 100 : 0;
+            const key = bv.concat(ts, [fl]).join('|');
+            if (!force && key === x.last) return;
+            x.last = key;
+            if (force) { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
+            const bu = [];
+            bars.forEach((b, i) => bu.push(b.x - w.x, b.y - w.y, b.w, bv[i]));
+            while (bu.length < 16) bu.push(0, -999, 1, 0);
+            x.c.uniform(x.ref, 'u_bars', bu, { type: 'vec4' });
+            x.c.uniform(x.ref, 'u_tyre', ts);
+            const F = w.fuel;
+            x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], fl]);
         } else if (w.type === 'gdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
             const rpm = this._raw('rpm');

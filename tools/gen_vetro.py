@@ -1,0 +1,173 @@
+"""gen_vetro.py - writes apps/cluster_themes/hud/layouts/vetro.json
+
+Vetro: an Italian GT style cluster on the 1920x720 panel (Nov 24 2026, after photos of a Ferrari's dash), drawn by one
+rdash effect layer (shaders.js) with text layers over it:
+- the floor: a perforated metal plate seen low, lit in front, black toward the horizon, the dash's shadows and a soft
+  reflection of the dial on it;
+- the rev counter in the middle under glass: 0 at six o'clock, clockwise to 8 at half past one; a ladder of ticks with
+  a dot at each thousand, red past the redline; silver Michroma numbers (a free face after Microgramma) with a soft
+  shadow; a red needle with a glow and a centre cap; the face black, red or yellow (setting "vetroDial"); see-through
+  navy boxes for the speed (mph / km/h) and the gear (AUTO / MANUAL under it) in its lower right;
+- on the left a borderless blue panel fading into the dial: four recessed bars (boost, or intake with "Show boost" off;
+  oil temperature; water temperature; oil pressure) with their readings, the fuel cells and the range under it;
+- on the right a framed glass panel: the drive mode, "Tires", the car as an x-ray from above, each tyre's pressure and
+  temperature in a box, its wheel green or red (under 33 psi).
+Nothing in the strip (covered, BMW's gear letter left clear, as Circuit).
+
+    python3 tools/gen_vetro.py .
+"""
+import json
+import math
+import sys
+
+W, H = 1920, 660
+CX, CY, R = 960, 330, 300
+START, SWEEP, THOUSANDS, RED = 180, 225, 8, 7200
+FAST = 45
+LEFT = [300, CY - 0.56 * R, CY + 0.80 * R, 26]          # the left panel: its end x, top, bottom, bow
+RIGHT = [CY - 0.60 * R, CY + 0.86 * R, 1890, 1846]      # the right panel: top, bottom, right x at the top, at the bottom
+CAR = [1560, 400, 175, 90]                              # the car's centre, the tyre boxes' x offset, the wheels' y offset
+FACES = {                                                # the numbers' colours per face: (0..7, 8)
+    'black': (('num', 'numLow'), ('numRed', 'numRedLow')),
+    'red': (('num', 'numLow'), ('numBlack', 'numBlackLow')),
+    'yellow': (('numDark', 'numDarkLow'), ('numRed', 'numRedLow')),
+}
+# the left bars: icon, value, unit, signal, min, max (+ the boost row's stand-in while "Show boost" is off)
+ROWS = [
+    ('gauge', '{{boost}}', '{{u:boostLc}}', 'vt_small', 'boost', 0, 2.758),
+    ('oilcan', '{{oil}}', '{{u:temp}}', 'vt_deg', 'oil', 50, 150),
+    ('therm', '{{coolant}}', '{{u:temp}}', 'vt_deg', 'coolant', 50, 130),
+    ('oilcan', '{{oilP}}', '{{u:boostLc}}', 'vt_small', 'oilP', 0, 5.516),
+]
+
+
+def build(fonts):
+    cell = lambda f: fonts[f]['cellHeight']
+    base = lambda f: fonts[f]['baseline']
+    widgets = []
+
+    def text(id_, x, baseline, w, t, font, color='fg', align='left', **kw):
+        """A text box w wide whose glyphs sit on baseline; x is its left (align left), right (right) or middle (center)."""
+        x0 = x if align == 'left' else x - w if align == 'right' else x - w / 2.0
+        d = {'id': id_, 'type': 'text', 'z': 5, 'x': int(round(x0)), 'y': int(round(baseline - base(font))), 'w': int(w),
+             'h': cell(font), 'text': t, 'font': font, 'color': color, 'align': align}
+        d.update({k: v for k, v in kw.items() if v is not None})
+        widgets.append(d)
+
+    # bars' boxes: right ends on a curve round the dial, so the stack leans with it
+    bars, rows_y = [], [LEFT[1] + 62 + i * 86 for i in range(4)]
+    for (icon, tok, unit, ufont, sig, mn, mx), by in zip(ROWS, rows_y):
+        xr = CX - math.sqrt((R + 58) ** 2 - (by + 13 - CY) ** 2)
+        b = {'x': round(xr - 250, 1), 'y': by, 'w': 250, 'signal': sig, 'min': mn, 'max': mx}
+        if sig == 'boost':
+            b.update({'alt': 'intake', 'altMin': 0, 'altMax': 100, 'altWhen': 'showBoost'})
+        bars.append(b)
+    F = [360, LEFT[2] + 30, 250]
+    widgets.append({'id': 'dash', 'type': 'rdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
+                    'tach': [CX, CY, R, START, SWEEP, THOUSANDS], 'red': RED, 'left': [round(v, 1) for v in LEFT],
+                    'right': [round(v, 1) for v in RIGHT], 'bars': bars, 'fuel': F, 'car': CAR})
+
+    # --- the rev counter's numbers: a soft shadow under each, the number per face (silver; the redline one red)
+    nr = R - 72
+    for k in range(THOUSANDS + 1):
+        a = math.radians(START + SWEEP * k / float(THOUSANDS))
+        x, y = CX + nr * math.sin(a), CY - nr * math.cos(a)
+        top = y - cell('vt_num') / 2.0 + 2
+        widgets.append({'id': 'n%d_sh' % k, 'type': 'text', 'z': 4, 'x': int(round(x - 50 + 1)), 'y': int(round(top + 4)),
+                        'w': 100, 'h': cell('vt_num'), 'text': str(k), 'font': 'vt_num', 'color': 'shade', 'align': 'center',
+                        'glow': True, 'rate': 60000})
+        for face, (lo, hi) in FACES.items():
+            c1, c2 = hi if k * 1000 >= RED else lo
+            widgets.append({'id': 'n%d_%s' % (k, face), 'type': 'text', 'z': 5, 'x': int(round(x - 50)), 'y': int(round(top)),
+                            'w': 100, 'h': cell('vt_num'), 'text': str(k), 'font': 'vt_num', 'color': c1, 'color2': c2,
+                            'align': 'center', 'toggle': 'vetroDial=' + face, 'rate': 60000})
+    # --- the speed (right-aligned, its unit after it) and the gear (AUTO / MANUAL under it), in their glass boxes
+    text('speed', 1158, 306 + 0.36 * cell('vt_speed'), 220, '{{speed}}', 'vt_speed', 'fg', 'right', rate=FAST, own=True)
+    text('speed_u', 1166, 320 + 7, 80, '{{u:speedLc}}', 'vt_unit', 'dim', 'left')
+    text('gear', CX + 0.30 * R, 428 + 0.36 * cell('vt_gear'), 120, '{{gearnum}}', 'vt_gear', 'fg', 'center', rate=FAST, own=True)
+    text('prog', CX + 0.30 * R - 32, 484, 140, '{{progWord}}', 'vt_word', 'dim', 'left')
+
+    # --- the left bars: the reading over the right end (the number, the unit small after it), the icon before the track
+    for i, ((icon, tok, unit, ufont, sig, mn, mx), b) in enumerate(zip(ROWS, bars)):
+        x0, by = b['x'], b['y']
+        rx = x0 + 250
+        if sig == 'boost':
+            for tg, t2, ic in (('showBoost', tok, 'gauge'), ('!showBoost', '{{intake}}', 'therm')):
+                text('b%d_v%s' % (i, '' if tg == 'showBoost' else 'i'), rx - 44, by - 8, 160, t2, 'vt_val', 'fg', 'right', toggle=tg,
+                     rate=FAST if tg == 'showBoost' else None, own=True)
+                text('b%d_u%s' % (i, '' if tg == 'showBoost' else 'i'), rx - 38, by - 8, 44, unit if tg == 'showBoost' else '{{u:temp}}',
+                     ufont if tg == 'showBoost' else 'vt_deg', 'dim', 'left', toggle=tg)
+                widgets.append({'id': 'b%d_icon%s' % (i, '' if tg == 'showBoost' else 'i'), 'type': 'icon', 'icon': ic, 'z': 5,
+                                'x': int(x0 - 42), 'y': int(by - 2), 'w': 30, 'h': 30, 'color': 'fg', 'toggle': tg})
+            continue
+        text('b%d_v' % i, rx - 44, by - 8, 160, tok, 'vt_val', 'fg', 'right', own=True)
+        text('b%d_u' % i, rx - 38, by - 8, 44, unit, ufont, 'dim', 'left')
+        widgets.append({'id': 'b%d_icon' % i, 'type': 'icon', 'icon': icon, 'z': 5, 'x': int(x0 - 42), 'y': int(by - 2),
+                        'w': 30, 'h': 30, 'color': 'fg'})
+        if sig == 'oilP':
+            text('b%d_p' % i, x0 - 15, by + 7, 14, 'P', 'vt_p', 'fg', 'center')
+    # --- the fuel: the pump icon before the cells, the range in amber after them
+    widgets.append({'id': 'fuel_icon', 'type': 'icon', 'icon': 'fuel', 'z': 5, 'x': F[0] - 38, 'y': F[1] - 6, 'w': 28, 'h': 28,
+                    'color': 'fg'})
+    text('range', F[0] + F[2] + 108, F[1] + 16, 110, '{{range}}', 'vt_range', 'accent', 'right')
+    text('range_u', F[0] + F[2] + 114, F[1] + 16, 50, '{{u:distLc}}', 'vt_small', 'accent', 'left')
+
+    # --- the right panel: the drive mode by its stroke, the heading, the car, the tyres' readings in their boxes
+    band = R + 36
+    tx = CX + math.sqrt((band + 6) ** 2 - (RIGHT[0] + 18 - CY) ** 2) + 10
+    text('mode', tx + 30, RIGHT[0] + 24, 400, '{{mode}}', 'vt_mode', 'accent', 'left')
+    text('tyre_head', tx + 34, RIGHT[0] + 86, 200, 'Tires', 'vt_head', 'head', 'left')
+    widgets.append({'id': 'tyre_car', 'type': 'icon', 'icon': 'carXray', 'z': 5, 'x': CAR[0] - 75, 'y': CAR[1] - 150,
+                    'w': 150, 'h': 300})
+    for pos, sx, sy in (('FL', -1, -1), ('FR', 1, -1), ('RL', -1, 1), ('RR', 1, 1)):
+        bx, y0 = CAR[0] + sx * CAR[2], CAR[1] + sy * CAR[3] - 37
+        text('tp_' + pos, bx + 12, y0 + 40, 100, '{{tyreP:%s}}' % pos, 'vt_tp', 'fg', 'right')
+        text('tpu_' + pos, bx + 17, y0 + 40, 40, '{{u:pressure}}', 'vt_small', 'dim', 'left')
+        text('tt_' + pos, bx, y0 + 64, 110, '{{tyreT:%s}}{{u:temp}}' % pos, 'vt_tt', 'cool', 'center')
+
+    # --- the strip: covered, nothing in it; BMW's gear letter left clear ------------------------------------------------
+    widgets += [
+        {'id': 'strip_cover_l', 'type': 'fill', 'class': 'content', 'z': 0, 'x': 0, 'y': 660, 'w': 1380, 'h': 60,
+         'color': 'bg', 'stripRow': 'l'},
+        {'id': 'strip_cover_r', 'type': 'fill', 'class': 'content', 'z': 0, 'x': 1460, 'y': 660, 'w': 460, 'h': 60,
+         'color': 'bg', 'stripRow': 'r'},
+    ]
+    # connections (8 layers each): the right panel on 1, the left side on 2, the dial and the strip on 0
+    for w in widgets:
+        if w['id'] in ('dash',) or w['id'].startswith('strip'):
+            continue
+        if w['x'] >= 1250:
+            w['conn'] = 1
+        elif w['x'] + w['w'] <= 800:
+            w['conn'] = 2
+    # slow texts checked less often (as Circuit)
+    for w in widgets:
+        if w['type'] == 'text' and 'rate' not in w and not w.get('own'):
+            toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
+            if any(t in ('oil', 'intake', 'oilP', 'mode', 'coolant', 'progWord') for t in toks):
+                continue
+            w['rate'] = 2000 if all(t.startswith('u:') for t in toks) else 1000
+    return {
+        'schemaVersion': 2,
+        'name': 'Vetro',
+        'theme': 'vetro',
+        '_about': 'An Italian GT style cluster, generated by tools/gen_vetro.py (edit that and regenerate): one rdash layer '
+                  'draws a perforated floor, the rev counter under glass (its face black, red or yellow: "vetroDial"), a '
+                  'blue panel with four bars and the fuel on the left and a glass tyre panel on the right; the numbers, '
+                  'speed, gear and readings are text over it. Nothing in the strip.',
+        'widgets': widgets,
+    }
+
+
+if __name__ == '__main__':
+    root = sys.argv[1] if len(sys.argv) > 1 else '.'
+    fdir = root + '/apps/cluster_themes/hud/fonts/'
+    fonts = {}
+    for f in ('vt_num', 'vt_speed', 'vt_gear', 'vt_word', 'vt_unit', 'vt_small', 'vt_val', 'vt_tp', 'vt_range', 'vt_mode',
+              'vt_deg', 'vt_tt', 'vt_head', 'vt_p'):
+        j = json.load(open(fdir + f + '.json'))
+        fonts[f] = {'cellHeight': j['cellHeight'], 'baseline': j['baseline']}
+    path = root + '/apps/cluster_themes/hud/layouts/vetro.json'
+    with open(path, 'w') as f:
+        json.dump(build(fonts), f, indent=2)
+    print('wrote ' + path)

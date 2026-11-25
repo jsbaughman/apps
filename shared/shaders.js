@@ -2626,4 +2626,286 @@ void main() {
 }
 `;
 
-module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gdash: GDASH, adash: ADASH, gtext: GTEXT };
+const RDASH = `// The Vetro theme in one cluster-render "effect" layer (GLSL ES 1.00), layout made by tools/gen_vetro.py: a perforated
+// metal floor seen low (dots on a perspective grid, lit in front, black in the distance) with the dash's shadows, a soft
+// reflection of the dial and the red lines' glow on it; the rev counter in the middle under glass (a raised metal bezel,
+// a ladder of ticks with a dot at each thousand, red past the redline, guide lines, two inner rings, a recessed hub, a
+// red needle with a glow and a centre cap; the face black, red or yellow by the "vetroDial" setting); see-through navy
+// boxes for the speed and the gear; a borderless blue panel on the left, fading into the dial, with four recessed bars;
+// the fuel cells under it; a framed glass panel on the right with red lines, the drive mode's stroke and the tyres'
+// boxes. All numbers and words are text layers over it.
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 v_uv;
+uniform vec2 u_size;
+uniform vec4 u_tach;       // centre x, y, outer radius (to the bezel's inside), revs 0..1
+uniform vec4 u_scale;      // 0 at this angle (deg clockwise from 12 o'clock), sweep deg, thousands, red from 0..1
+uniform vec2 u_shift;      // the shift light: count 0..1, flash 0 / 1
+uniform float u_dial;      // the face: 0 black, 1 red, 2 yellow
+uniform vec4 u_left;       // the left panel: its left end x, top y, bottom y, how far that end bows out
+uniform vec4 u_right;      // the right panel: top y, bottom y, its right end's x at the top, at the bottom
+uniform vec4 u_bars[4];    // the left bars: x, y, width, value 0..1
+uniform vec4 u_fuel;       // the fuel cells: x, y, width, level 0..1
+uniform vec4 u_car;        // the tyres: the car's centre x, y, the boxes' x offset, the wheels' y offset
+uniform vec4 u_tyre;       // FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
+uniform float u_plain;     // 1: no floor (the "Backgrounds" setting off)
+
+float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
+vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
+float rbox(vec2 p, vec2 c, vec2 h, float r) { vec2 q = abs(p - c) - h + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }
+float segd(vec2 p, vec2 a, vec2 b) {
+    vec2 ba = b - a;
+    float h = clamp(dot(p - a, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(p - a - ba * h);
+}
+
+void main() {
+    vec2 p = v_uv * u_size;
+    vec2 C = u_tach.xy;
+    float R = u_tach.z;
+    vec2 q = p - C;
+    float d = length(q);
+    float up = clamp(-q.y / R, -1.0, 1.0);          // 1 at the dial's top, -1 at its foot
+    vec3 BLUE = vec3(0.62, 0.70, 0.82);
+    vec3 RED = vec3(0.92, 0.10, 0.08);
+
+    // --- the floor: a perforated plate, dots on a perspective grid; lit in a pool in front, black toward the horizon
+    float dy = max(p.y - 40.0, 1.0);
+    float z = 700.0 / dy;
+    vec2 g = vec2((p.x - 960.0) * z / 21.0, z * 24.0);
+    vec2 ga = g - floor(g + 0.5), gb = g + 0.5 - floor(g + 1.0);
+    vec2 e = dot(ga, ga) < dot(gb, gb) ? ga : gb;
+    float r = length(e);
+    float foot = max(z / 21.0, 16800.0 / (dy * dy));     // cells per px: past ~0.35 the dots fade to their average
+    float aa = max(foot, 0.02);
+    float dome = clamp((0.30 - r) / aa, 0.0, 1.0);
+    float tone = dome * (0.35 + 0.65 * clamp(1.0 - r * r / 0.09, 0.0, 1.0)) * (0.55 + 0.45 * clamp(-e.y / 0.3, -1.0, 1.0)) + (1.0 - dome) * 0.10;
+    tone *= 1.0 - 0.6 * exp(-pow((r - 0.335) / 0.03, 2.0)) * (1.0 - clamp(foot * 3.0, 0.0, 1.0));
+    tone = mix(tone, 0.2, clamp((foot - 0.2) / 0.3, 0.0, 1.0));
+    float yy = clamp((p.y - 40.0) / 680.0, 0.0, 1.0);
+    float pool = pow(yy, 1.3) * exp(-pow((p.x - 960.0) / 1056.0, 2.0) * 1.2);
+    float lum = tone * (0.045 + 0.38 * pool) * pow(clamp((p.y - 40.0) / 420.0, 0.0, 1.0), 1.6) * 1.25;
+    vec3 c = vec3(0.78, 0.84, 0.95) * lum;
+    // the dial's shadow straight down, and its soft reflection (the bezel mirrored under its foot, fading)
+    float below = p.y - (C.y + R);
+    c *= 1.0 - 0.7 * exp(-max(length(p - C - vec2(0.0, 16.0)) - R, 0.0) / 30.0) * clamp((q.y + 0.3 * R) / (0.6 * R), 0.0, 1.0);
+    float dm = length(vec2(q.x, 2.0 * R - q.y));
+    c += vec3(0.5, 0.52, 0.58) * exp(-pow((dm - R - 3.0) / 4.0, 2.0)) * exp(-max(below, 0.0) / 55.0) * step(0.0, below) * (0.35 + 0.65 * tone * 4.0) * 0.18;
+    c *= 1.0 - u_plain;
+
+    // --- the left panel: borderless, its left end a long bow with round corners; bluish, lighter low on the left
+    float lt = u_left.y, lb = u_left.z, mid = (lt + lb) * 0.5, half_ = (lb - lt) * 0.5;
+    float tt = clamp((p.y - lt) / (lb - lt), 0.0, 1.0);
+    float xl = u_left.x - u_left.w * (1.0 - pow((p.y - mid) / half_, 2.0));
+    float dl = max(max(xl - p.x, max(lt - p.y, p.y - lb)), p.x - C.x);
+    vec2 cn = vec2(u_left.x + 22.0, clamp(p.y, lt + 22.0, lb - 22.0));
+    if (p.x < cn.x && abs(p.y - mid) > half_ - 22.0) dl = max(dl, length(p - cn) - 22.0);
+    // its shadow on the floor, straight down
+    c *= 1.0 - 0.45 * clamp(1.0 - max(dl - 0.0, 0.0) / 12.0, 0.0, 1.0) * step(lb - 4.0, p.y) * step(d, 9999.0) * step(R + 1.0, d);
+    float lin = cov(dl) * step(R + 1.0, d);
+    if (lin > 0.0) {
+        float k = smoothstep(R + 14.0, R + 54.0, d);
+        vec3 pc = mix(vec3(0.085, 0.10, 0.14), vec3(0.13, 0.20, 0.30), clamp(tt / 0.62, 0.0, 1.0));
+        pc = mix(pc, vec3(0.06, 0.085, 0.12), clamp((tt - 0.62) / 0.38, 0.0, 1.0));
+        pc += vec3(0.03, 0.07, 0.12) * exp(-(pow((p.x - u_left.x - 110.0) / 260.0, 2.0) + pow((p.y - C.y - 0.3 * R) / 150.0, 2.0)));
+        pc *= 1.0 - 0.45 * clamp((p.x - xl) / 460.0, 0.0, 1.0);
+        c = put(c, pc, lin * (0.35 + 0.6 * k));
+        // the dark ring it ends against at the dial, a fine line at its edge
+        c = put(c, vec3(0.012, 0.018, 0.03), lin * clamp(1.0 - (d - R - 34.0) / 16.0, 0.0, 1.0) * 0.92);
+        c = put(c, vec3(0.45, 0.52, 0.62), lin * cov(abs(d - R - 40.0) - 0.6) * 0.35);
+        // light borders in places: down the bowed end (brightest a little low), along the top and the foot from the left
+        float wl = (0.25 + 0.75 * exp(-pow((tt - 0.6) / 0.3, 2.0))) * step(p.x, u_left.x + 30.0);
+        float wt = max(cov(abs(p.y - lt) - 0.8) * clamp(1.0 - (p.x - u_left.x) / 300.0, 0.0, 1.0) * 0.55,
+                       cov(abs(p.y - lb) - 0.8) * clamp(1.0 - (p.x - u_left.x) / 460.0, 0.0, 1.0) * 0.75);
+        c = put(c, BLUE, max(cov(abs(dl + 0.8) - 0.7) * wl, wt) * 0.85);
+        // --- the bars: recessed tracks (an inset shadow along their top and left, a light lip along the foot and the
+        //     right end), a crisp light fill from the left, a blue start, a small red mark at the end
+        for (int i = 0; i < 4; i++) {
+            vec4 B = u_bars[i];
+            vec2 bh = vec2(B.z * 0.5, 13.0), bc = B.xy + bh;
+            float bd = rbox(p, bc, bh, 4.0);
+            if (bd > 3.0) continue;
+            float m = cov(bd);
+            vec3 bcol = vec3(0.008, 0.012, 0.02);
+            float pos = (p.x - B.x) / B.z;
+            float fl = step(pos, B.w) * step(B.y + 4.0, p.y) * step(p.y, B.y + 23.0) * step(B.x + 3.0, p.x);
+            bcol = mix(bcol, vec3(0.86, 0.91, 1.0) * (0.95 - 0.2 * clamp((B.y + 9.0 - p.y) / 5.0, 0.0, 1.0)) * clamp(1.0 - (B.w - pos) * 1.2, 0.82, 1.0), fl);
+            bcol = mix(bcol, vec3(0.30, 0.50, 1.0), clamp(1.0 - (p.x - B.x) / 40.0, 0.0, 1.0) * 0.55);
+            bcol = mix(bcol, vec3(0.85, 0.12, 0.10), step(B.x + B.z - 18.0, p.x) * step(p.x, B.x + B.z - 4.0) * step(B.y + 19.0, p.y) * step(p.y, B.y + 22.0));
+            bcol *= 1.0 - 0.75 * clamp(1.0 - min(p.y - B.y - 3.0, p.x - B.x - 2.0) / 4.0, 0.0, 1.0);
+            c = put(c, bcol, m);
+            c = put(c, BLUE * 0.85, cov(abs(p.y - B.y - 26.0) - 0.7) * step(B.x + 4.0, p.x) * step(p.x, B.x + B.z - 4.0) * 0.75);
+            c = put(c, BLUE * 0.85, cov(abs(p.x - B.x - B.z) - 0.6) * step(B.y + 4.0, p.y) * step(p.y, B.y + 22.0) * 0.4);
+            c = put(c, vec3(0.0), cov(abs(p.y - B.y) - 0.7) * step(B.x + 4.0, p.x) * step(p.x, B.x + B.z - 4.0) * 0.7);
+        }
+    }
+
+    // --- the fuel: slanted cells filled amber (a yellow lower edge), a dark track, a slanted yellow stroke at its end
+    vec4 F = u_fuel;
+    float fy = (p.y - F.y) / 16.0;
+    if (fy > -0.6 && fy < 1.6 && p.x > F.x - 10.0 && p.x < F.x + F.z + 30.0) {
+        float rel = p.x - F.x - 5.0 * (1.0 - fy);
+        float inT = step(0.0, rel) * step(rel, F.z) * step(0.0, fy) * step(fy, 1.0);
+        c = put(c, vec3(0.10, 0.14, 0.21), inT * 0.9);
+        c = put(c, vec3(0.45, 0.52, 0.64), inT * (1.0 - step(1.3, rel) * step(rel, F.z - 1.3) * step(1.3 / 16.0, fy) * step(fy, 1.0 - 1.3 / 16.0)) * 0.7);
+        float cell = inT * step(2.4, mod(rel, F.z / 10.0)) * step(rel, F.w * F.z) * step(2.0 / 16.0, fy) * step(fy, 14.0 / 16.0);
+        vec3 amb = F.w < 0.12 ? vec3(0.95, 0.16, 0.10) : vec3(0.98, 0.42 + 0.30 * fy, 0.05 + 0.05 * fy);
+        c = put(c, amb, cell);
+        c = put(c, vec3(1.0, 0.85, 0.2), cell * step(12.0 / 16.0, fy) * 0.8);
+        float sx = p.x - (F.x + F.z + 10.0) - 0.55 * (p.y - F.y + 6.0);
+        c = put(c, vec3(1.0, 0.86, 0.15), cov(abs(sx) - 1.3) * step(-6.0, p.y - F.y) * step(p.y - F.y, 22.0));
+    }
+
+    // --- the right panel: navy glass framed by fine light lines, a darker ring band round the dial, red lines along the
+    //     top (from the dial out, fading) and the foot (round the corner and up the right end), the mode's slanted stroke
+    float rt = u_right.x, rb = u_right.y;
+    float xr = mix(u_right.z, u_right.w, (p.y - rt) / (rb - rt));
+    float BAND = R + 36.0;
+    if (p.x > C.x && p.y > rt - 20.0 && p.y < rb + 40.0) {
+        float inP = step(rt, p.y) * step(p.y, rb) * step(BAND, d) * step(p.x, xr);
+        c *= 1.0 - 0.5 * exp(-max(p.y - rb, 0.0) / 10.0) * step(rb, p.y) * step(BAND, d) * step(p.x, xr);
+        float tr = clamp((p.y - rt) / (rb - rt), 0.0, 1.0);
+        vec3 gc = vec3(0.035 + 0.03 * (1.0 - tr), 0.06 + 0.045 * (1.0 - tr), 0.10 + 0.07 * (1.0 - tr));
+        c = put(c, gc, inP * 0.82);
+        float inB = step(R + 2.0, d) * step(d, BAND) * step(rt, p.y) * step(p.y, rb) * step(C.x + 0.25 * R, p.x);
+        c = put(c, vec3(0.02, 0.035, 0.06), inB * 0.7);
+        float ok = step(rt, p.y) * step(p.y, rb) * step(C.x + 0.25 * R, p.x);
+        c = put(c, vec3(0.55, 0.62, 0.72), (cov(abs(d - BAND) - 0.8) * 0.55 + cov(abs(d - R - 6.0) - 0.8) * 0.25) * ok);
+        c = put(c, vec3(0.55, 0.62, 0.72), cov(abs(p.x - xr) - 0.8) * step(rt, p.y) * step(p.y, rb) * 0.45);
+        c = put(c, vec3(0.70, 0.76, 0.86), cov(abs(p.y - rt) - 0.7) * step(BAND, d) * step(p.x, xr) * 0.6);
+        float yl = rt + 34.0;
+        float m = cov(abs(p.y - yl) - 1.1) * step(R + 4.0, d) * clamp((1760.0 - p.x) / 420.0, 0.0, 1.0);
+        float m2 = max(cov(abs(p.y - rb + 2.0) - 1.3) * step(R + 4.0, d) * step(p.x, xr - 6.0) * clamp((p.x - C.x - 0.5 * R) / 300.0, 0.0, 1.0),
+                       cov(abs(p.x - xr + 4.0) - 1.3) * step(rb - 200.0, p.y) * step(p.y, rb - 2.0) * clamp((p.y - rb + 200.0) / 160.0, 0.0, 1.0));
+        c = put(c, RED, max(m, m2));
+        c += RED * 0.5 * (exp(-pow((p.y - yl) / 3.5, 2.0)) * step(R + 4.0, d) * clamp((1760.0 - p.x) / 420.0, 0.0, 1.0) * 0.4
+                          + exp(-max(p.y - rb, 0.0) / 14.0) * step(rb, p.y) * step(p.x, xr) * clamp((p.x - C.x - 0.5 * R) / 300.0, 0.0, 1.0) * 0.35);
+        float tx = C.x + sqrt(max(pow(BAND + 6.0, 2.0) - pow(rt + 18.0 - C.y, 2.0), 0.0)) + 10.0;
+        c = put(c, vec3(1.0, 0.70, 0.17), cov(abs((p.x - tx - 2.5) - 0.48 * (p.y - rt - 6.0)) - 2.0) * step(rt + 6.0, p.y) * step(p.y, yl - 6.0));
+        // the tyres: a box each out to the side (a bright edge toward the car), a leader to its wheel, the wheel outlined
+        // green (fine) or red (low) beside the body
+        for (int i = 0; i < 4; i++) {
+            float sx_ = (i == 0 || i == 2) ? -1.0 : 1.0, sy_ = i < 2 ? -1.0 : 1.0;
+            float st = i == 0 ? u_tyre.x : i == 1 ? u_tyre.y : i == 2 ? u_tyre.z : u_tyre.w;
+            vec2 wc = u_car.xy + vec2(sx_ * 69.0, sy_ * u_car.w);
+            vec2 bc = vec2(u_car.x + sx_ * u_car.z, wc.y);
+            float bd = rbox(p, bc, vec2(68.0, 37.0), 6.0);
+            c = put(c, vec3(0.03, 0.063, 0.118), cov(bd));
+            c = put(c, vec3(0.27, 0.35, 0.47), cov(abs(bd) - 0.6));
+            float bx = bc.x - sx_ * 67.0;
+            c = put(c, vec3(0.78, 0.82, 0.88), cov(abs(p.x - bx) - 0.8) * step(abs(p.y - bc.y), 29.0));
+            c = put(c, vec3(0.47, 0.59, 0.75), cov(abs(p.y - wc.y) - 0.6) * step(min(bx, wc.x - sx_ * 12.0), p.x) * step(p.x, max(bx, wc.x - sx_ * 12.0)));
+            vec3 wcol = st > 1.5 ? vec3(0.92, 0.2, 0.16) : st > 0.5 ? vec3(0.31, 0.86, 0.47) : vec3(0.35, 0.38, 0.44);
+            c = put(c, wcol, cov(abs(rbox(p, wc, vec2(9.0, 22.0), 5.0)) - 1.0));
+        }
+    }
+
+    // --- the dial
+    if (d < R + 10.0) {
+        float a = degrees(atan(q.x, -q.y));
+        float k = mod(a - u_scale.x + 720.0, 360.0) / u_scale.y * u_scale.z;      // thousands round the scale
+        bool onScale = k <= u_scale.z + 0.02;
+        float redK = u_scale.w * u_scale.z;
+        float pxk = R * radians(u_scale.y) / u_scale.z;                            // px per thousand at the rim
+        // the face: black, faintly lighter toward the rim; red or yellow from the inner ring out, lit from above
+        float fv = 0.018 + 0.05 * pow(clamp((d / R - 0.5) / 0.5, 0.0, 1.0), 2.0);
+        vec3 fc = vec3(fv, fv, fv * 1.08);
+        vec3 FC = u_dial > 1.5 ? vec3(0.96, 0.74, 0.04) : vec3(0.62, 0.04, 0.03);
+        fc = mix(fc, FC * (0.78 + 0.28 * up - 0.18 * clamp((d / R - 0.75) / 0.25, 0.0, 1.0)), step(0.5, u_dial) * clamp(d - 0.5 * R + 0.5, 0.0, 1.0));
+        // the shift light: the face warms red over the count-in and glows while it flashes
+        fc = mix(fc, vec3(0.75, 0.05, 0.04), (0.18 * u_shift.x * (1.0 - u_shift.y) + 0.5 * u_shift.y) * clamp((d - 0.5 * R) / (0.4 * R), 0.0, 1.0));
+        vec3 col = fc;
+        // the hub: dark charcoal, recessed (a shadow inside its edge, deepest under its top), a fine grey edge
+        float HUB = 0.43 * R;
+        col = mix(col, vec3(0.040, 0.043, 0.052), cov(d - HUB));
+        col *= 1.0 - pow(clamp(1.0 - (HUB - d) / 34.0, 0.0, 1.0), 1.6) * step(d, HUB) * (0.55 + 0.35 * clamp(up / 0.43, 0.0, 1.0));
+        vec3 ink = u_dial > 1.5 ? vec3(0.59, 0.44, 0.04) : u_dial > 0.5 ? vec3(0.37, 0.04, 0.03) : vec3(0.20, 0.21, 0.235);
+        col += vec3(0.18 + 0.2 * clamp(up, 0.0, 1.0)) * cov(abs(d - HUB) - 0.6);
+        col += vec3(0.9, 0.93, 1.0) * (0.16 + 0.14 * clamp(up, 0.0, 1.0)) * cov(abs(d - 0.5 * R) - 0.6);
+        // the guide lines, level and upright through the centre, between the inner ring and the ticks
+        float gld = min(abs(q.y), abs(q.x));
+        col = mix(col, ink, cov(gld - 0.6) * step(HUB + 2.0, d) * step(d, R - 27.0) * step(-0.5, -q.x * 0.0 + 1.0));
+        // the ticks: two fine rings with rungs every 100 rpm between them, a dot on the inner one at each thousand
+        vec3 tick = u_dial > 1.5 ? vec3(0.16) : vec3(0.77, 0.78, 0.82);
+        vec3 tickR = u_dial > 0.5 && u_dial < 1.5 ? vec3(0.08, 0.016, 0.016) : vec3(0.92, 0.14, 0.12);
+        vec3 tc = k >= redK ? tickR : tick;
+        float ro = R - 7.0, ri = R - 21.0;
+        float rng = min(abs(d - ro) - 0.85, abs(d - ri) - 0.75);
+        float rung = abs(fract(k * 10.0 + 0.5) - 0.5) / 10.0 * pxk * (d / R) - 0.75;
+        float lad = onScale ? min(rng, max(rung, max(ri - d, d - ro))) : 99.0;
+        col = mix(col, tc, cov(lad));
+        // past the redline the ladder fills with a red glow
+        col = mix(col, tickR, step(redK, k) * float(onScale) * step(ri, d) * step(d, ro) * 0.45);
+        float kk = floor(k + 0.5);
+        float ak = radians(u_scale.x + u_scale.y * kk / u_scale.z);
+        vec2 dot_ = C + ri * vec2(sin(ak), -cos(ak));
+        col = mix(col, kk >= redK - 0.01 ? tickR : (u_dial > 1.5 ? vec3(0.1) : vec3(0.94, 0.95, 0.97)), cov(length(p - dot_) - 2.6) * step(kk, u_scale.z + 0.01));
+        // the shift light on the ladder: the ticks glow red while it flashes
+        col = mix(col, vec3(1.0, 0.2, 0.15), cov(lad) * u_shift.y);
+        // the needle: a soft red glow along it, its shadow, the blade (a bright core), the centre cap
+        float an = radians(u_scale.x + u_scale.y * u_tach.w);
+        vec2 un = vec2(sin(an), -cos(an));
+        vec2 n0 = C + un * 0.04 * R, n1 = C + un * (R - 12.0);
+        vec3 nc = u_dial > 0.5 && u_dial < 1.5 ? vec3(0.94, 0.95, 0.96) : vec3(0.92, 0.11, 0.086);
+        float sd = segd(p - vec2(4.0), n0, n1);
+        col *= 1.0 - 0.6 * cov(sd - 3.0) * step(36.0, d);
+        float t = clamp(dot(p - n0, un) / (R - 12.0 - 0.04 * R), 0.0, 1.0);
+        float nd = segd(p, n0, n1) - mix(3.5, 1.2, t);
+        col += nc * exp(-pow(max(nd, 0.0) / 6.0, 2.0)) * 0.35;
+        col = mix(col, nc, cov(nd));
+        col = mix(col, mix(nc, vec3(1.0), 0.45), cov(segd(p, n0 + un * 6.0, n1 - un * 8.0) - 0.4) * 0.8);
+        // the cap
+        col *= 1.0 - 0.6 * cov(length(p - C - vec2(0.0, 5.0)) - 26.0) * step(22.0, d);
+        float cd = d - 22.0;
+        vec3 capc = vec3(0.07 + 0.12 * clamp(1.0 - length(p - C + vec2(0.0, 6.0)) / 22.0, 0.0, 1.0));
+        col = mix(col, capc, cov(cd));
+        col = mix(col, vec3(0.47, 0.49, 0.53), cov(abs(cd) - 0.7));
+        col = mix(col, vec3(0.78, 0.12, 0.09), cov(abs(d - 11.0) - 1.0));
+        col = mix(col, vec3(0.03), cov(d - 5.0));
+        // the speed and gear boxes: navy glass (the face through it), round corners at the left, a bright border along
+        // the curved right end, dim on the top and left
+        for (int i = 0; i < 2; i++) {
+            float y0 = C.y + (i == 0 ? -0.27 : 0.115) * R, y1 = C.y + (i == 0 ? 0.085 : 0.62) * R;
+            float rr = R - (i == 0 ? 25.0 : 34.0);
+            float bd = max(max(C.x - 1.0 - p.x, max(y0 - p.y, p.y - y1)), d - rr);
+            vec2 cc = vec2(C.x + 8.0, clamp(p.y, y0 + 9.0, y1 - 9.0));
+            if (p.x < cc.x && (p.y < y0 + 9.0 || p.y > y1 - 9.0)) bd = max(bd, length(p - cc) - 9.0);
+            float bt = clamp((p.y - y0) / (y1 - y0), 0.0, 1.0);
+            vec3 tint = mix(i == 0 ? vec3(0.06, 0.10, 0.17) : vec3(0.075, 0.11, 0.17), vec3(0.03, 0.055, 0.10), bt);
+            tint += vec3(0.6, 0.85, 1.0) * 0.045 * exp(-pow(((p.x - C.x) * 0.35 + (p.y - y0)) / (y1 - y0) - 0.55, 2.0) / 0.048);
+            col = mix(col, tint, cov(bd) * 0.72);
+            float edgeR = cov(abs(d - rr + 1.5) - 1.3) * step(y0 + 2.0, p.y) * step(p.y, y1 - 2.0) * (0.35 + 0.65 * clamp(min(p.y - y0, y1 - p.y) / 14.0, 0.0, 1.0));
+            col = mix(col, vec3(0.80, 0.84, 0.90), edgeR * (i == 0 ? 0.95 : 0.9));
+            float dim = max(cov(abs(p.y - y0 - 0.6) - 0.6) * 0.55, cov(abs(p.x - C.x + 0.4) - 0.6) * 0.35) * cov(bd);
+            col = mix(col, vec3(0.35, 0.42, 0.52), dim * 0.5 * (1.0 - edgeR));
+        }
+        // the glass over it all: a faint diagonal sheen from the top left, a soft arc under the bezel's top, the lower
+        // right a touch darker
+        float u_ = (q.x + q.y) / R;
+        col *= 1.0 - clamp(u_, 0.0, 1.4) * 0.12;
+        col += vec3(0.85, 0.9, 1.0) * (exp(-pow((u_ + 0.55) / 0.22, 2.0)) * 0.055 + exp(-pow((u_ + 0.95) / 0.08, 2.0)) * 0.03
+                                      + exp(-pow((d - R + 30.0) / 14.0, 2.0)) * clamp(up - 0.2, 0.0, 1.0) * 0.06);
+        // the bezel's shadow inside, deepest under its top
+        col *= 1.0 - pow(clamp(1.0 - (R - 4.0 - d) / 16.0, 0.0, 1.0), 2.0) * (0.35 + 0.45 * clamp(up, 0.0, 1.0));
+        c = mix(c, col, cov(d - R + 4.0));
+        // the bezel: a rounded metal ring lit from above, a bright lip outside, dark inside; red while the light flashes
+        float qb = clamp((d - R + 4.0) / 10.0, 0.0, 1.0);
+        float crown = sin(qb * 3.14159);
+        vec3 metal = vec3(0.92, 0.94, 1.0) * (0.10 + 0.20 * crown + 0.30 * clamp(up, 0.0, 1.0) * crown + 0.06 * up);
+        metal = mix(metal, vec3(0.95, 0.15, 0.1) * (0.4 + 0.6 * crown), u_shift.y * 0.8);
+        c = mix(c, metal, cov(abs(d - R - 1.0) - 5.0));
+        c += vec3(0.10 + 0.35 * clamp(up, 0.0, 1.0)) * cov(abs(d - R - 5.2) - 0.5);
+        c *= 1.0 - 0.6 * cov(abs(d - R + 3.4) - 0.5);
+    }
+
+    // a fine grain, strongest in the darks (as a real screen: no visible banding in the gradients)
+    float lumc = dot(c, vec3(0.333));
+    c += (fract(sin(dot(floor(p), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * (0.024 + 0.02 * (1.0 - clamp(lumc / 0.5, 0.0, 1.0)));
+    gl_FragColor = vec4(clamp(c, 0.0, 0.965), 1.0);
+}
+`;
+
+module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gdash: GDASH, adash: ADASH, gtext: GTEXT, rdash: RDASH };

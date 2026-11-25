@@ -62,16 +62,16 @@ mgu.run({
         if (!hud) return;
         new Page(ctx, hud, {
             title: ctx.spec.title, what: 'cluster',
-            look: { name: 'Themes', style: 'hero', tags: { apex: 'needle dash · G-meter', veloce: 'arc · hex', circuit: 'three dials · red band', aero: 'rev rail · navy' } },
+            look: { name: 'Themes', style: 'hero', tags: { apex: 'needle dash · G-meter', veloce: 'arc · hex', circuit: 'three dials · red band', aero: 'rev rail · navy', vetro: 'dial under glass · floor' } },
             tabs: ['look', 'map', 'alerts', 'gmeter', 'settings'],
             smartTemps: false,    // no theme here hides temperatures (smart_temps.js works on readout slots only)
             // the Settings tab lists only the settings of the theme on the cluster (shared/page.js); not listed: all themes
             settingThemes: {
-                showBoost: ['apex', 'circuit', 'aero'], leftTop: ['apex', 'circuit', 'aero'], leftBottom: ['apex', 'circuit', 'aero'],
-                circuitColor: ['circuit'], aeroBackdrop: ['aero'], apexBackdrop: ['apex'], gearStyle: ['apex', 'veloce'], tachSpeed: ['apex'], dialGlow: ['apex'], leftStyle: ['apex'],
+                showBoost: ['apex', 'circuit', 'aero', 'vetro'], leftTop: ['apex', 'circuit', 'aero'], leftBottom: ['apex', 'circuit', 'aero'],
+                circuitColor: ['circuit'], vetroDial: ['vetro'], aeroBackdrop: ['aero'], apexBackdrop: ['apex'], gearStyle: ['apex', 'veloce'], tachSpeed: ['apex'], dialGlow: ['apex'], leftStyle: ['apex'],
                 gaugeFill: ['apex'], rightPanel: ['apex'], cameraNotch: ['apex', 'circuit'],
             },   // no theme here has shift lights: Alerts shows the warnings alone
-            settings: ['units', 'tempUnits', 'pressureUnits', 'showBoost', 'shiftLight', 'redline', 'shiftBefore', 'coldGuard', 'nightDim', 'backdrops', 'circuitColor', 'aeroBackdrop', 'apexBackdrop', 'tachResponse', 'gearStyle', 'gearSource', 'tachSpeed', 'readingsCheck', 'dialGlow', 'leftStyle', 'leftTop', 'leftBottom', 'gaugeFill', 'rightPanel', 'cameraNotch', 'keepStrip', 'holiday', 'demo'],
+            settings: ['units', 'tempUnits', 'pressureUnits', 'showBoost', 'shiftLight', 'redline', 'shiftBefore', 'coldGuard', 'nightDim', 'backdrops', 'circuitColor', 'vetroDial', 'aeroBackdrop', 'apexBackdrop', 'tachResponse', 'gearStyle', 'gearSource', 'tachSpeed', 'readingsCheck', 'dialGlow', 'leftStyle', 'leftTop', 'leftBottom', 'gaugeFill', 'rightPanel', 'cameraNotch', 'keepStrip', 'holiday', 'demo'],
             // the drive mode check's candidates this app's app.json listens to (issue #8; shared/hud.js modeDiagLines)
             modeCheck: ['HMI', 'MDrive', 'Engine', 'Sport2'],
         }).start();
