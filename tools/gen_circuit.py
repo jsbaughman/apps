@@ -27,6 +27,7 @@ RIGHT = [1582, 362, SIDE_R]
 K = TACH[2] / 322.0                    # the mockup's sizes were for a 322 px dial
 KS = SIDE_R / 278.0                    # and 278 for the side ones
 FAST = 45
+MAP_R = 244                            # the map's square round the right dial's face (its window is the face)
 
 # the left dial's choices: heading, value, unit, the scale (signal, min, max, red from 0..1), five labels per unit system
 CHOICES = [
@@ -77,6 +78,8 @@ def build(cells):
         widgets.append({'id': 'dash' + sfx, 'type': 'gdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                         'tach': [cx, cy, R, START, SWEEP, THOUSANDS], 'zones': ZONES, 'left': LEFT, 'right': RIGHT,
                         'gbox': [round(v, 1) for v in gbox], 'car': car, 'toggle': tg,
+                        # the Waze map in the right dial's face ("Show Waze map inside the theme"), the tyres hidden meanwhile
+                        'hole': [RIGHT[0] - MAP_R, RIGHT[1] - MAP_R, 2 * MAP_R, 2 * MAP_R], 'holeWhen': 'mapUp', 'holeInset': 0,
                         'arcs': [{'pick': 'left0', 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
                                  {'pick': 'left1', 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8}]})
         # --- the rev counter's numbers on the red band; its labels, the speed, the gear --------------------------------
@@ -118,16 +121,16 @@ def build(cells):
     # --- the right dial: the car (an image over the shader's tyres), each tyre's pressure and temperature ---------------
     rx, ry, rr = RIGHT
     widgets.append({'id': 'tyre_car', 'type': 'icon', 'icon': 'carTop', 'z': 5, 'x': car[0] - round(car[2] * 1.16),
-                    'y': car[1] - car[3], 'w': 2 * round(car[2] * 1.16), 'h': 2 * car[3]})
+                    'y': car[1] - car[3], 'w': 2 * round(car[2] * 1.16), 'h': 2 * car[3], 'toggle': '!mapUp'})
     widgets += [
-        centred('tyre_head', rx, ry - 202 * KS, 200, cells['ci_head'], 'Tires', 'ci_head', 'fg'),
-        centred('tyre_u', rx, ry + 199 * KS, 120, cells['ci_head'], '{{u:pressure}}', 'ci_head', 'fg'),
+        centred('tyre_head', rx, ry - 202 * KS, 200, cells['ci_head'], 'Tires', 'ci_head', 'fg', toggle='!mapUp'),
+        centred('tyre_u', rx, ry + 199 * KS, 120, cells['ci_head'], '{{u:pressure}}', 'ci_head', 'fg', toggle='!mapUp'),
     ]
     for pos, sx, sy in (('FL', -1, -1), ('FR', 1, -1), ('RL', -1, 1), ('RR', 1, 1)):
         x, y = rx + sx * 142 * KS, car[1] + sy * car[3] * 0.6
         widgets += [
-            centred('tp_' + pos, x, y - 17 * KS, 110, cells['ci_tp'], '{{tyreP:%s}}' % pos, 'ci_tp', 'fg'),
-            centred('tt_' + pos, x, y + 29 * KS, 110, cells['ci_tt'], '{{tyreT:%s}}{{u:temp}}' % pos, 'ci_tt', 'cool'),
+            centred('tp_' + pos, x, y - 17 * KS, 110, cells['ci_tp'], '{{tyreP:%s}}' % pos, 'ci_tp', 'fg', toggle='!mapUp'),
+            centred('tt_' + pos, x, y + 29 * KS, 110, cells['ci_tt'], '{{tyreT:%s}}{{u:temp}}' % pos, 'ci_tt', 'cool', toggle='!mapUp'),
         ]
     # --- the strip: covered, nothing in it; BMW's gear letter left clear ------------------------------------------------
     widgets += [

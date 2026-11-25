@@ -2204,6 +2204,7 @@ uniform vec4 u_car;        // the right dial's car: centre x, y, half width, hal
 uniform vec4 u_tyre;       // its tyres FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
 uniform float u_plain;     // 1: no backdrop, plain black (the "Backgrounds" setting off)
 uniform vec3 u_bandCol;   // the number bands' colour (setting "circuitColor": red, yellow, blue)
+uniform vec4 u_hole;       // the Waze map's window (w > 0 while it shows): the right dial's face, see-through
 uniform vec2 u_shift;      // the shift light: x the count towards the shift point 0..1, y 1 while it flashes on (hud.js _shiftNow)
 
 const vec3 CREAM = vec3(0.96, 0.91, 0.75);
@@ -2382,10 +2383,14 @@ void main() {
             float st = k == 0 ? u_tyre.x : k == 1 ? u_tyre.y : k == 2 ? u_tyre.z : u_tyre.w;
             vec2 tc2 = u_car.xy + vec2(sx * (u_car.z + 3.6), sy * u_car.w * 0.6);
             vec3 col = st > 1.5 ? vec3(0.86, 0.16, 0.16) : st > 0.5 ? vec3(0.24, 0.75, 0.36) : vec3(0.3, 0.3, 0.33);
-            c = put(c, col, cov(rboxd(p, tc2, vec2(9.6, 26.4), 7.0)));
+            c = put(c, col, cov(rboxd(p, tc2, vec2(9.6, 26.4), 7.0)) * step(u_hole.z, 0.0));
         }
     }
-    gl_FragColor = vec4(c, 1.0);
+    // the map in the right dial's face while it shows: see-through inside the inner ring (the map is a layer under this
+    // one), its edge feathered over 14 px, its lower part a little darker
+    float ma = u_hole.z > 0.0 ? clamp((inr - 3.0 - rr) / 14.0, 0.0, 1.0) * (1.0 - 0.35 * clamp(dr.y / inr, 0.0, 1.0)) : 0.0;
+    float al = 1.0 - ma;
+    gl_FragColor = vec4(c * (1.0 - ma) / max(al, 0.001), al);
 }
 `;
 

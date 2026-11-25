@@ -2631,6 +2631,7 @@ class HudApp {
             c.uniform(ref, 'u_gbox', [G[0] - w.x, G[1] - w.y, G[2], G[3]]);
             c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
             c.uniform(ref, 'u_bandCol', (CIRCUIT_COLORS[this.setting('circuitColor')] || CIRCUIT_COLORS.red).band);
+            c.uniform(ref, 'u_hole', this._hole(w));
         } else if (w.type === 'cdash') {
             // Apex (tools/gen_apex.py): "tach" [cx, cy, outer r, band, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "panels" [left inner x, right inner x, glow top y, bottom y], "bars" (up to 4: {x, y, w, signal, min, max, red}),
