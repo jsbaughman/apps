@@ -2,7 +2,7 @@
   "id": "cluster_themes",
   "title": "Cluster Themes",
   "description": "Redraws the instrument cluster as Apex, a needle rev counter with boost, oil temperature, a G-meter, coolant and fuel; Veloce, a wide arc of lit tiles over a hex backdrop with a big hollow gear and four side scales; or Off for BMW's own cluster",
-  "version": "0.25.11",
+  "version": "0.25.12",
   "autostart": true,
   "vendor": "custom",
   "loggingId": "OAC1",
@@ -887,8 +887,12 @@
       "key": "tachResponse",
       "label": "Tach response",
       "type": "choice",
-      "default": "quick",
+      "default": "predict",
       "options": [
+        [
+          "predict",
+          "Predictive (ahead of the car's readings)"
+        ],
         [
           "quick",
           "Quick"
@@ -896,10 +900,6 @@
         [
           "instant",
           "Instant (may flicker at idle)"
-        ],
-        [
-          "predict",
-          "Predictive (ahead of the car's readings)"
         ],
         [
           "smooth",

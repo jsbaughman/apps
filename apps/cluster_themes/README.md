@@ -22,7 +22,7 @@ A needle dash in a mid-engine supercar style, on a carbon backdrop with a muted 
 - **Left:** boost (0 to 40 psi, red from 30) and oil temperature, each a value over a line bar with a marker, its range and a red end zone.
 - **Right:** a G-meter under a Performance heading, with the side and fore-aft g under it.
 - **Background** (Settings): the red glow at the sides (default), or carbon twill lit from the tach out to the sides, with a deeper drop shadow round the tach.
-- **Tach response** (Settings): Quick (default), Instant, Smooth like BMW's own tach, or Predictive: the car sends the revs about 10 times a second, and between readings the needle carries on at the rate the last two showed (at most 120 ms and 500 rpm ahead), so it keeps up with the engine instead of trailing a reading behind.
+- **Tach response** (Settings): Predictive (default), Quick, Instant, or Smooth like BMW's own tach. Predictive: the car sends the revs about 10 times a second, and between readings the needle carries on at the rate the last two showed (at most 120 ms and 500 rpm ahead), so it keeps up with the engine instead of trailing a reading behind.
 - **Left side** (Settings): Bars (default), or Gauges: the heading and value on one row over a slanted gauge with a tick scale and a red needle; Gauge fill makes it striped (default) or solid.
 - **Gear** (Settings): the gear outlined (default) or solid, in red.
 - **Gear display** (Settings): from the gearbox (BMW's signal, default), or Quick: worked out from speed and revs once the app has learnt your gears over a few minutes of driving, so it changes the moment you shift.

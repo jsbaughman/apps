@@ -332,6 +332,7 @@ const PRED_AHEAD = 500;          // rpm at most it runs ahead of the last readin
 const PRED_FLOOR = 800;          // falling, never below this (or the reading, if lower): no dip under idle on a lift-off
 const PRED_SLOPE = 30;           // rpm per ms it runs on at most (an M4 free-revving is ~15)
 const PRED_MAX = 9500;           // and never past this
+const SHIFT_DASH = { cdash: 1, ldash: 1, adash: 1, gdash: 1 };   // dashes whose u_shift _tachTick sends
 const TACH_MS = 16;              // ~60 Hz: the rev counter's needle / band alone (_tachTick), the display's own frame rate
 const TEXT_MS = 200;             // text re-draws at most 5 times a second (what BMW's own readouts do)
 const TARGET_SIZES = { hud: [800, 480], panel: [1920, 720] };
@@ -654,6 +655,12 @@ class HudApp {
         this.slotBumps = {};             // { slot id: sensor id }: a hot temperature shown there for now (smart_temps.js)
         this._setupVehicleData();
         this.layouts.onChange(() => this._rebuild());
+        // 0.25.12: Predictive became the tach's default; a car still on the old default (Quick, saved with the other
+        // settings whether picked or not) moves to it once, before anything listens; any other choice is kept
+        if (ctx.settings.item('tachResponse') && ctx.settings.get('_tachPredict') !== 1) {
+            if (ctx.settings.get('tachResponse') === 'quick') ctx.settings.values.tachResponse = 'predict';
+            ctx.settings.set('_tachPredict', 1);
+        }
         ctx.settings.onChange((key) => {
             // a theme or layout picked anywhere (the page asks first, the kit's All settings list doesn't): no longer stepping aside
             if (['hudLayout', 'inComfort', 'inSport', 'inEco', 'byMode'].indexOf(key) >= 0 && this.screen.yielded) this.screen.release();
@@ -2977,15 +2984,21 @@ class HudApp {
     _tachTick() {
         const now = Date.now();
         this._smoothRpm(now);
+        this._cueTick(now);              // the shift cue on every frame too: the flash starts within a frame of the revs
         if (!this.client.ready) return;
+        let sh = null;
         this.widgets.forEach((x) => {
             if (x.sheet || !x.ref) return;
             const u = this._tachUniform(x);
             if (!u) return;
             const k = u[1][3];
-            if (k === x.lastTach) return;
-            x.lastTach = k;
-            x.c.uniform(x.ref, u[0], u[1]);
+            if (k !== x.lastTach) { x.lastTach = k; x.c.uniform(x.ref, u[0], u[1]); }
+            // the shift light (the tach flashing red) of the dashes that have one
+            if (SHIFT_DASH[x.w.type]) {
+                sh = sh || this._shiftNow(now);
+                const sk = sh.join(',');
+                if (sk !== x.lastShift) { x.lastShift = sk; x.c.uniform(x.ref, 'u_shift', sh); }
+            }
         });
     }
 
@@ -3003,7 +3016,6 @@ class HudApp {
     _tick() {
         const now = Date.now();
         this._readingsCheck(now);
-        this._cueTick(now);
         if (now - (this.bumpAt || 0) >= 1000) { this.bumpAt = now; smartTemps.bumpTick(this); }
         // the 0-60 timer only on the car's own data (the demo drive would set a best time)
         if (!this.car.data().demo) this.runs.update(this.car.data().speed, now, this.setting('units') === 'us' ? 'us' : 'metric');
@@ -3296,10 +3308,10 @@ class HudApp {
             const mv = ms.map((m) => { const v = m && m.signal ? this._raw(m.signal) : null; return isNum(v) ? q((v - m.min) / (m.max - m.min)) : 0; });
             const rv = isNum(rpm) ? q(rpm / (A[7] * 1000)) : 0;
             const sh = this._shiftNow(now);
-            const key = [].concat(mv, sh).join('|');
+            const key = [].concat(mv).join('|');
             if (!force && key === x.last) return;
             x.last = key;
-            x.c.uniform(x.ref, 'u_shift', sh);
+            x.lastShift = sh.join(','); x.c.uniform(x.ref, 'u_shift', sh);
             { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
             const mu = [];
             ms.forEach((m, i) => mu.push(m ? m.x - w.x : 0, m ? m.y - w.y : 0, m ? m.w : 0, mv[i]));
@@ -3314,11 +3326,11 @@ class HudApp {
             const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
             const fuel = this._raw('fuel'), fl = isNum(fuel) ? Math.round(Math.min(1, Math.max(0, fuel)) * 100) / 100 : 0;
             const sh = this._shiftNow(now);
-            const key = [].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), sh, fl).join('|');
+            const key = [].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), fl).join('|');
             if (!force && key === x.last) return;
             x.last = key;
             { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
-            x.c.uniform(x.ref, 'u_shift', sh);
+            x.lastShift = sh.join(','); x.c.uniform(x.ref, 'u_shift', sh);
             x.c.uniform(x.ref, 'u_barV', [av[0], av[1], arcs[0] && isNum(arcs[0].red) ? arcs[0].red : 1, arcs[1] && isNum(arcs[1].red) ? arcs[1].red : 1]);
             x.c.uniform(x.ref, 'u_tyre', ts);
             const F = w.fuel;
@@ -3332,10 +3344,10 @@ class HudApp {
             const low = isNum(w.tyreLow) ? w.tyreLow : 33;
             const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
             const sh = this._shiftNow(now);
-            const key = [].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), sh).join('|');
+            const key = [].concat(av, ts, arcs.map((b) => (b ? b.red : 1))).join('|');
             if (!force && key === x.last) return;
             x.last = key;
-            x.c.uniform(x.ref, 'u_shift', sh);
+            x.lastShift = sh.join(','); x.c.uniform(x.ref, 'u_shift', sh);
             { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
             x.c.uniform(x.ref, 'u_arc0', [av[0], arcs[0] && isNum(arcs[0].red) ? arcs[0].red : 1, 0, 0]);
             x.c.uniform(x.ref, 'u_arc1', [av[1], arcs[1] && isNum(arcs[1].red) ? arcs[1].red : 1, 0, 0]);
@@ -3353,10 +3365,10 @@ class HudApp {
                 return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0;
             }) : [0, 0, 0, 0];
             const sh = this._shiftNow(now);
-            const key = [].concat(bv, ts, sh).join('|');
+            const key = [].concat(bv, ts).join('|');
             if (!force && key === x.last) return;
             x.last = key;
-            x.c.uniform(x.ref, 'u_shift', sh);
+            x.lastShift = sh.join(','); x.c.uniform(x.ref, 'u_shift', sh);
             x.c.uniform(x.ref, 'u_tyre', ts);
             { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
             const bu = [];
