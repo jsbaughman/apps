@@ -24,9 +24,11 @@ W, H = 1920, 660
 CX, CY, R = 960, 330, 300
 START, SWEEP, THOUSANDS, RED = 180, 225, 8, 7200
 FAST = 45
-LEFT = [300, CY - 0.56 * R, CY + 0.80 * R, 26]          # the left panel: its end x, top, bottom, bow
+LEFT = [200, CY - 0.56 * R, CY + 0.80 * R, 26]          # the left panel: its end x, top, bottom, bow
 RIGHT = [CY - 0.60 * R, CY + 0.86 * R, 1890, 1846]      # the right panel: top, bottom, right x at the top, at the bottom
-CAR = [1560, 400, 175, 90]                              # the car's centre, the tyre boxes' x offset, the wheels' y offset
+CAR = [1560, 400, 175, 90]
+BAR_R, BAR_W = 602, 320                                # the left bars: one column, its right edge clear of the dial
+HV = [98, 220, 300]                                     # the HV battery gauge (vetroHv): x, y, height (30 wide)                              # the car's centre, the tyre boxes' x offset, the wheels' y offset
 FACES = {                                                # the numbers' colours per face: (0..7, 8)
     'black': (('num', 'numLow'), ('numRed', 'numRedLow')),
     'red': (('num', 'numLow'), ('numBlack', 'numBlackLow')),
@@ -57,15 +59,14 @@ def build(fonts):
     # bars' boxes: right ends on a curve round the dial, so the stack leans with it
     bars, rows_y = [], [LEFT[1] + 62 + i * 86 for i in range(4)]
     for (icon, tok, unit, ufont, sig, mn, mx), by in zip(ROWS, rows_y):
-        xr = CX - math.sqrt((R + 58) ** 2 - (by + 13 - CY) ** 2)
-        b = {'x': round(xr - 250, 1), 'y': by, 'w': 250, 'signal': sig, 'min': mn, 'max': mx}
+        b = {'x': BAR_R - BAR_W, 'y': by, 'w': BAR_W, 'signal': sig, 'min': mn, 'max': mx}
         if sig == 'boost':
             b.update({'alt': 'intake', 'altMin': 0, 'altMax': 100, 'altWhen': 'showBoost'})
         bars.append(b)
-    F = [360, LEFT[2] + 30, 250]
+    F = [BAR_R - BAR_W, LEFT[2] + 30, 250]
     widgets.append({'id': 'dash', 'type': 'rdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                     'tach': [CX, CY, R, START, SWEEP, THOUSANDS], 'red': RED, 'left': [round(v, 1) for v in LEFT],
-                    'right': [round(v, 1) for v in RIGHT], 'bars': bars, 'fuel': F, 'car': CAR})
+                    'right': [round(v, 1) for v in RIGHT], 'bars': bars, 'fuel': F, 'hv': HV, 'car': CAR})
 
     # --- the rev counter's numbers: a soft shadow under each, the number per face (silver; the redline one red)
     nr = R - 72
@@ -90,7 +91,7 @@ def build(fonts):
     # --- the left bars: the reading over the right end (the number, the unit small after it), the icon before the track
     for i, ((icon, tok, unit, ufont, sig, mn, mx), b) in enumerate(zip(ROWS, bars)):
         x0, by = b['x'], b['y']
-        rx = x0 + 250
+        rx = x0 + BAR_W
         if sig == 'boost':
             for tg, t2, ic in (('showBoost', tok, 'gauge'), ('!showBoost', '{{intake}}', 'therm')):
                 text('b%d_v%s' % (i, '' if tg == 'showBoost' else 'i'), rx - 44, by - 8, 160, t2, 'vt_val', 'fg', 'right', toggle=tg,
@@ -106,6 +107,13 @@ def build(fonts):
                         'w': 30, 'h': 30, 'color': 'fg'})
         if sig == 'oilP':
             text('b%d_p' % i, x0 - 15, by + 7, 14, 'P', 'vt_p', 'fg', 'center')
+    # --- the HV battery (setting "vetroHv"): the charge over the gauge, HV under its battery
+    hx = HV[0] + 15
+    text('hv_v', hx + 8, HV[1] - 14, 100, '{{hvSoc}}', 'vt_val', 'fg', 'right', toggle='vetroHv')
+    text('hv_u', hx + 11, HV[1] - 14, 30, '%', 'vt_small', 'dim', 'left', toggle='vetroHv')
+    widgets.append({'id': 'hv_icon', 'type': 'icon', 'icon': 'battery', 'z': 5, 'x': hx - 15, 'y': HV[1] + HV[2] + 8, 'w': 30,
+                    'h': 30, 'color': 'fg', 'toggle': 'vetroHv'})
+    text('hv_l', hx, HV[1] + HV[2] + 60, 60, 'HV', 'vt_word', 'cool', 'center', toggle='vetroHv')
     # --- the fuel: the pump icon before the cells, the range in amber after them
     widgets.append({'id': 'fuel_icon', 'type': 'icon', 'icon': 'fuel', 'z': 5, 'x': F[0] - 38, 'y': F[1] - 6, 'w': 28, 'h': 28,
                     'color': 'fg'})
@@ -144,7 +152,7 @@ def build(fonts):
     for w in widgets:
         if w['type'] == 'text' and 'rate' not in w and not w.get('own'):
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
-            if any(t in ('oil', 'intake', 'oilP', 'mode', 'coolant', 'progWord') for t in toks):
+            if any(t in ('oil', 'intake', 'oilP', 'mode', 'coolant', 'progWord', 'hvSoc') for t in toks):
                 continue
             w['rate'] = 2000 if all(t.startswith('u:') for t in toks) else 1000
     return {

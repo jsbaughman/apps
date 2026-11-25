@@ -106,7 +106,8 @@
  *   rdash     effect layer; the whole Vetro theme (shaders.js rdash, layout made by tools/gen_vetro.py): "tach" [cx, cy, r,
  *             start deg, sweep deg, thousands], "red" rpm, "left" [end x, top y, bottom y, bow] (the left panel), "right" [top
  *             y, bottom y, right x at the top, at the bottom], "bars" (4: { x, y, w, signal, min, max, alt, altWhen }: the
- *             left bars; "alt" the signal shown instead while the setting "altWhen" is off), "fuel" [x, y, w], "car"
+ *             left bars; "alt" the signal shown instead while the setting "altWhen" is off), "fuel" [x, y, w], "hv" [x, y,
+ *             height] (the HV battery gauge, shown with the setting "vetroHv"), "car"
  *             [cx, cy, box dx, wheel dy] (the tyres); the face by the "vetroDial" setting
  *   gdash     effect layer; the whole Circuit theme (shaders.js gdash, layout made by tools/gen_circuit.py): three round dials
  *             ("tach", "left", "right"), the left one's two scales ("arcs", picked like Apex's left gauges), the tyres ("car")
@@ -2604,6 +2605,7 @@ class HudApp {
             c.uniform(ref, 'u_right', [Rg[0] - w.y, Rg[1] - w.y, Rg[2] - w.x, Rg[3] - w.x]);
             c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
             c.uniform(ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], 0]);
+            c.uniform(ref, 'u_hv', w.hv && this.setting('vetroHv') === true ? [w.hv[0] - w.x, w.hv[1] - w.y, w.hv[2], 0] : [-1, 0, 1, 0]);
         } else if (w.type === 'gdash') {
             // Circuit (tools/gen_circuit.py): "tach" [cx, cy, r, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "left" / "right" [cx, cy, r] (the side dials), "gbox" [cx, cy, half w, half h] (the gear's box), "car"
@@ -3367,7 +3369,8 @@ class HudApp {
             const low = isNum(w.tyreLow) ? w.tyreLow : 33;
             const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
             const fuel = this._raw('fuel'), fl = isNum(fuel) ? Math.round(Math.min(1, Math.max(0, fuel)) * 100) / 100 : 0;
-            const key = bv.concat(ts, [fl]).join('|');
+            const hv = this._raw('hvSoc'), hvF = isNum(hv) ? Math.round(Math.min(1, Math.max(0, hv / 100)) * 200) / 200 : 0;
+            const key = bv.concat(ts, [fl, hvF]).join('|');
             if (!force && key === x.last) return;
             x.last = key;
             if (force) { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
@@ -3378,6 +3381,7 @@ class HudApp {
             x.c.uniform(x.ref, 'u_tyre', ts);
             const F = w.fuel;
             x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], fl]);
+            if (w.hv && this.setting('vetroHv') === true) x.c.uniform(x.ref, 'u_hv', [w.hv[0] - w.x, w.hv[1] - w.y, w.hv[2], hvF]);
         } else if (w.type === 'gdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
             const rpm = this._raw('rpm');
