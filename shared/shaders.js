@@ -2923,14 +2923,12 @@ void main() {
     // a fine grain, strongest in the darks (as a real screen: no visible banding in the gradients)
     float lumc = dot(c, vec3(0.333));
     c += (fract(sin(dot(floor(p), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * (0.024 + 0.02 * (1.0 - clamp(lumc / 0.5, 0.0, 1.0)));
-    // the map's window: see-through in the left panel (the map is a layer under this one), round at its left corners,
+    // the map's window: see-through in the left panel (the map is a layer under this one), its left end bowed and round,
     // fading out toward the dial; its lower part a little darker
     float ma = 0.0, mf = 1.0;
     if (u_hole.z > 0.0) {
-        vec2 hc = u_hole.xy + u_hole.zw * 0.5;
-        float hd = rbox(p, hc, u_hole.zw * 0.5, 0.0);
-        vec2 cr = vec2(u_hole.x + 18.0, clamp(p.y, u_hole.y + 18.0, u_hole.y + u_hole.w - 18.0));
-        if (p.x < cr.x) hd = max(hd, length(p - cr) - 18.0);
+        // its left end follows the panel's bow, 12 px in (so it keeps the panel's round corners), top and bottom straight
+        float hd = max(abs(p.y - u_hole.y - u_hole.w * 0.5) - u_hole.w * 0.5, dl + 12.0);
         ma = cov(hd) * cov(dl) * pow(clamp((d - R - 20.0) / 90.0, 0.0, 1.0), 1.2);
         mf = 1.0 - 0.45 * clamp((p.y - u_hole.y - 0.55 * u_hole.w) / (0.45 * u_hole.w), 0.0, 1.0);
     }

@@ -33,7 +33,7 @@ BAR_R, BAR_W = 602, 320                                # the left bars: one colu
 HV = [98, 220, 300]
 # the Waze map in the left panel (setting "Show Waze map inside the theme"): the window, and the right panel meanwhile:
 # the car a bit smaller and higher, two of the bars (boost or intake, oil) side by side under it
-MAP = [196, LEFT[1] + 16, CX - 40 - 196, LEFT[2] - 16 - (LEFT[1] + 16)]
+MAP = [178, LEFT[1] + 14, CX - 40 - 178, LEFT[2] - 14 - (LEFT[1] + 14)]   # its left end is cut along the panel's bow
 MAP_CAR = [1566, 346, 160, 74]
 MAP_BARS = [{'of': 0, 'x': 1370, 'y': 506, 'w': 200}, {'of': 1, 'x': 1626, 'y': 506, 'w': 200}]                                     # the HV battery gauge (vetroHv): x, y, height (30 wide)                              # the car's centre, the tyre boxes' x offset, the wheels' y offset
 FACES = {                                                # the numbers' colours per face: (0..7, 8)
