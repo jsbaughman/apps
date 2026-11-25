@@ -35,6 +35,7 @@ const TYPES = {
     ldash: ['arc'],
     gdash: ['tach', 'left', 'right', 'gbox', 'car'],
     rdash: ['tach', 'left', 'right', 'bars', 'fuel', 'car'],
+    rneedle: ['tach'],
     adash: ['rail', 'scale', 'car', 'fuel'],
     mtach: ['side', 'y0', 'y8', 'ym', 'xm', 'kTop', 'kBot', 'wBot', 'wTop'],
     icon: ['icon'],

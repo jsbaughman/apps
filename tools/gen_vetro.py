@@ -35,6 +35,8 @@ HV = [98, 220, 300]
 # the car a bit smaller and higher, two of the bars (boost or intake, oil) side by side under it
 MAP = [178, LEFT[1] + 14, CX - 40 - 178, LEFT[2] - 14 - (LEFT[1] + 14)]   # its left end is cut along the panel's bow
 MAP_CAR = [1566, 346, 160, 74]
+# Waze's arrow sits a little right of its map's centre: the map's centre at 26 % across the window puts the arrow in the
+# middle of the part that shows (the window runs on under the dial, where it fades out)
 MAP_BARS = [{'of': 0, 'x': 1370, 'y': 506, 'w': 200}, {'of': 1, 'x': 1626, 'y': 506, 'w': 200}]                                     # the HV battery gauge (vetroHv): x, y, height (30 wide)                              # the car's centre, the tyre boxes' x offset, the wheels' y offset
 FACES = {                                                # the numbers' colours per face: (0..7, 8)
     'black': (('num', 'numLow'), ('numRed', 'numRedLow')),
@@ -74,9 +76,12 @@ def build(fonts):
     widgets.append({'id': 'dash', 'type': 'rdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                     'tach': [CX, CY, R, START, SWEEP, THOUSANDS], 'red': RED, 'left': [round(v, 1) for v in LEFT],
                     'right': [round(v, 1) for v in RIGHT], 'bars': bars, 'fuel': F, 'hv': HV, 'car': CAR,
-                    'tbox': [68, 37, 69, 1], 'hole': MAP, 'holeWhen': 'mapUp', 'holeInset': 0, 'mapCar': MAP_CAR,
+                    'tbox': [68, 37, 69, 1], 'hole': MAP, 'holeWhen': 'mapUp', 'holeInset': 0, 'holeAim': [0.26, 0.5], 'mapCar': MAP_CAR,
                     'mapTbox': [58, 31, 56, 0.8], 'mapBars': MAP_BARS})
 
+    # --- the needle and its cap on a layer of their own, over the numbers (z 6)
+    widgets.append({'id': 'needle', 'type': 'rneedle', 'class': 'content', 'z': 6, 'x': CX - R, 'y': CY - R, 'w': 2 * R, 'h': 2 * R,
+                    'tach': [CX, CY, R, START, SWEEP, THOUSANDS], 'conn': 1})
     # --- the rev counter's numbers: a soft shadow under each, the number per face (silver; the redline one red)
     nr = R - 72
     for k in range(THOUSANDS + 1):
@@ -112,14 +117,14 @@ def build(fonts):
                 text('b%d_u%s%s' % (i, k, sfx), rx - 38, by - 8, 44, unit if tg == 'showBoost' else '{{u:temp}}',
                      ufont if tg == 'showBoost' else 'vt_deg', 'dim', 'left', toggle=tg + '&' + mt)
                 widgets.append({'id': 'b%d_icon%s%s' % (i, k, sfx), 'type': 'icon', 'icon': ic, 'z': 5,
-                                'x': int(x0 - 42), 'y': int(by - 2), 'w': 30, 'h': 30, 'color': 'fg', 'toggle': tg + '&' + mt})
+                                'x': int(x0 - 45), 'y': int(by - 5), 'w': 35, 'h': 35, 'color': 'fg', 'toggle': tg + '&' + mt})
             continue
         text('b%d_v%s' % (i, sfx), rx - 44, by - 8, 160, tok, 'vt_val', 'fg', 'right', own=True, toggle=mt)
         text('b%d_u%s' % (i, sfx), rx - 38, by - 8, 44, unit, ufont, 'dim', 'left', toggle=mt)
-        widgets.append({'id': 'b%d_icon%s' % (i, sfx), 'type': 'icon', 'icon': icon, 'z': 5, 'x': int(x0 - 42), 'y': int(by - 2),
-                        'w': 30, 'h': 30, 'color': 'fg', 'toggle': mt})
+        widgets.append({'id': 'b%d_icon%s' % (i, sfx), 'type': 'icon', 'icon': icon, 'z': 5, 'x': int(x0 - 45), 'y': int(by - 5),
+                        'w': 35, 'h': 35, 'color': 'fg', 'toggle': mt})
         if sig == 'oilP':
-            text('b%d_p%s' % (i, sfx), x0 - 15, by + 7, 14, 'P', 'vt_p', 'fg', 'center', toggle=mt)
+            text('b%d_p%s' % (i, sfx), x0 - 14, by + 5, 14, 'P', 'vt_p', 'fg', 'center', toggle=mt)
     # --- the peak boost (setting "vetroPeak"): PEAK and its reading in amber over the boost bar's left end (the marker on
     #     the bar is the shader's); in the left panel, or under the car while the map shows
     for x0, by, mt, sfx in ((bars[0]['x'], bars[0]['y'], '!mapUp', ''), (MAP_BARS[0]['x'], MAP_BARS[0]['y'], 'mapUp', 'm')):
@@ -130,14 +135,14 @@ def build(fonts):
     hx = HV[0] + 15
     text('hv_v', hx + 8, HV[1] - 14, 100, '{{hvSoc}}', 'vt_val', 'fg', 'right', toggle='vetroHv')
     text('hv_u', hx + 11, HV[1] - 14, 30, '%', 'vt_small', 'dim', 'left', toggle='vetroHv')
-    widgets.append({'id': 'hv_icon', 'type': 'icon', 'icon': 'battery', 'z': 5, 'x': hx - 15, 'y': HV[1] + HV[2] + 8, 'w': 30,
-                    'h': 30, 'color': 'fg', 'toggle': 'vetroHv'})
+    widgets.append({'id': 'hv_icon', 'type': 'icon', 'icon': 'battery', 'z': 5, 'x': hx - 17, 'y': HV[1] + HV[2] + 6, 'w': 35,
+                    'h': 35, 'color': 'fg', 'toggle': 'vetroHv'})
     text('hv_l', hx, HV[1] + HV[2] + 60, 60, 'HV', 'vt_word', 'cool', 'center', toggle='vetroHv')
     # --- the fuel: the pump icon before the cells, the range in amber after them
-    widgets.append({'id': 'fuel_icon', 'type': 'icon', 'icon': 'fuel', 'z': 5, 'x': F[0] - 38, 'y': F[1] - 6, 'w': 28, 'h': 28,
+    widgets.append({'id': 'fuel_icon', 'type': 'icon', 'icon': 'fuel', 'z': 5, 'x': F[0] - 42, 'y': F[1] - 4, 'w': 32, 'h': 32,
                     'color': 'fg'})
-    text('range', F[0] + F[2] + 108, F[1] + 16, 110, '{{range}}', 'vt_range', 'accent', 'right')
-    text('range_u', F[0] + F[2] + 114, F[1] + 16, 50, '{{u:distLc}}', 'vt_small', 'accent', 'left')
+    text('range', F[0] + F[2] + 114, F[1] + 22, 110, '{{range}}', 'vt_range', 'accent', 'right')
+    text('range_u', F[0] + F[2] + 120, F[1] + 22, 50, '{{u:distLc}}', 'vt_small', 'accent', 'left')
 
     # --- the right panel: the drive mode by its stroke, the heading, the car, the tyres' readings in their boxes
     band = R + 36

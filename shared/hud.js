@@ -111,6 +111,7 @@
  *             wheel scale]; the Waze map in the left panel ("hole", "holeWhen" mapUp) with "mapCar", "mapTbox" and "mapBars"
  *             ({ of: bar index, x, y, w }) for the right panel meanwhile; "car"
  *             [cx, cy, box dx, wheel dy] (the tyres); the face by the "vetroDial" setting
+ *   rneedle   effect layer; Vetro's needle and cap over the rev counter's numbers (shaders.js rneedle): "tach" as rdash's
  *   gdash     effect layer; the whole Circuit theme (shaders.js gdash, layout made by tools/gen_circuit.py): three round dials
  *             ("tach", "left", "right"), the left one's two scales ("arcs", picked like Apex's left gauges), the tyres ("car")
  *   ldash     effect layer; the whole Veloce theme (shaders.js ldash, layout made by tools/gen_veloce.py): "arc" [cx, cy, rx,
@@ -1083,9 +1084,11 @@ class HudApp {
         if (w) {
             const h = w.hole, a = h[2] / h[3];
             const MW = 1088, MH = 480;
-            let sw = MH * a, sh = MH;
-            if (sw > MW) { sw = MW; sh = MW / a; }
-            m = { x: h[0], y: h[1], w: h[2], h: h[3], src_x: (MW - sw) / 2, src_y: (MH - sh) / 2, src_w: sw, src_h: sh };
+            // "holeAim" [fx, fy]: where in the window the map's centre (the car's arrow) goes (0.5, 0.5: the middle); the
+            // biggest part of the map of the window's shape with its centre there that stays inside the map
+            const ax = Array.isArray(w.holeAim) ? w.holeAim[0] : 0.5, ay = Array.isArray(w.holeAim) ? w.holeAim[1] : 0.5;
+            let sw = Math.min(MW / 2 / Math.max(ax, 1 - ax), MH / 2 / Math.max(ay, 1 - ay) * a), sh = sw / a;
+            m = { x: h[0], y: h[1], w: h[2], h: h[3], src_x: MW / 2 - ax * sw, src_y: MH / 2 - ay * sh, src_w: sw, src_h: sh };
         }
         const key = m ? ci + ' ' + JSON.stringify(m) : '';
         if (key === this.mapHostKey) return;
@@ -2601,6 +2604,13 @@ class HudApp {
             c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
             c.uniform(ref, 'u_hole', this._hole(w));
             c.uniform(ref, 'u_holeF', [isNum(w.holeFeather) ? w.holeFeather : 0]);
+        } else if (w.type === 'rneedle') {
+            // Vetro's needle over the numbers (tools/gen_vetro.py): "tach" as the dash's; white on the red face
+            const T = w.tach;
+            c.uniform(ref, 'u_size', [w.w, w.h]);
+            c.uniform(ref, 'u_tach', [T[0] - w.x, T[1] - w.y, T[2], 0]);
+            c.uniform(ref, 'u_sweep', [T[3], T[4]]);
+            c.uniform(ref, 'u_col', this.setting('vetroDial') === 'red' ? [0.94, 0.95, 0.96] : [0.92, 0.11, 0.086]);
         } else if (w.type === 'rdash') {
             // Vetro (tools/gen_vetro.py): see the header; the face by "vetroDial" (black, red, yellow)
             const T = w.tach, L = w.left, Rg = w.right, F = w.fuel, C = w.car;
@@ -3049,7 +3059,7 @@ class HudApp {
         if (w.type === 'cdash') { const T = w.tach; return ['u_tachA', [T[4], T[5], T[6], f(T[6] * 1000)]]; }
         if (w.type === 'ldash') { const A = w.arc; return ['u_arcA', [A[4], A[5], A[6], f(A[7] * 1000)]]; }
         if (w.type === 'adash') { const Sc = w.scale; return ['u_scale', [Sc[0] - w.x, Sc[1] - w.x, Sc[2], f(Sc[2] * 1000)]]; }
-        if (w.type === 'gdash' || w.type === 'rdash') { const T = w.tach; return ['u_tach', [T[0] - w.x, T[1] - w.y, T[2], f(T[5] * 1000)]]; }
+        if (w.type === 'gdash' || w.type === 'rdash' || w.type === 'rneedle') { const T = w.tach; return ['u_tach', [T[0] - w.x, T[1] - w.y, T[2], f(T[5] * 1000)]]; }
         if (w.type === 'vdash') { const T = w.tach; return ['u_tachA', [T[4], T[5], T[6], f(VDASH_RPM)]]; }
         return null;
     }

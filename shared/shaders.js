@@ -2743,18 +2743,18 @@ void main() {
 
     // --- the fuel: slanted cells filled amber (a yellow lower edge), a dark track, a slanted yellow stroke at its end
     vec4 F = u_fuel;
-    float fy = (p.y - F.y) / 16.0;
-    if (fy > -0.6 && fy < 1.6 && p.x > F.x - 10.0 && p.x < F.x + F.z + 30.0) {
-        float rel = p.x - F.x - 5.0 * (1.0 - fy);
+    float fy = (p.y - F.y) / 24.0;                      // the track 24 px tall
+    if (fy > -0.4 && fy < 1.4 && p.x > F.x - 10.0 && p.x < F.x + F.z + 34.0) {
+        float rel = p.x - F.x - 7.0 * (1.0 - fy);
         float inT = step(0.0, rel) * step(rel, F.z) * step(0.0, fy) * step(fy, 1.0);
         c = put(c, vec3(0.10, 0.14, 0.21), inT * 0.9);
-        c = put(c, vec3(0.45, 0.52, 0.64), inT * (1.0 - step(1.3, rel) * step(rel, F.z - 1.3) * step(1.3 / 16.0, fy) * step(fy, 1.0 - 1.3 / 16.0)) * 0.7);
-        float cell = inT * step(2.4, mod(rel, F.z / 10.0)) * step(rel, F.w * F.z) * step(2.0 / 16.0, fy) * step(fy, 14.0 / 16.0);
+        c = put(c, vec3(0.45, 0.52, 0.64), inT * (1.0 - step(1.3, rel) * step(rel, F.z - 1.3) * step(1.3 / 24.0, fy) * step(fy, 1.0 - 1.3 / 24.0)) * 0.7);
+        float cell = inT * step(2.6, mod(rel, F.z / 10.0)) * step(rel, F.w * F.z) * step(2.5 / 24.0, fy) * step(fy, 21.5 / 24.0);
         vec3 amb = F.w < 0.12 ? vec3(0.95, 0.16, 0.10) : vec3(0.98, 0.42 + 0.30 * fy, 0.05 + 0.05 * fy);
         c = put(c, amb, cell);
-        c = put(c, vec3(1.0, 0.85, 0.2), cell * step(12.0 / 16.0, fy) * 0.8);
-        float sx = p.x - (F.x + F.z + 10.0) - 0.55 * (p.y - F.y + 6.0);
-        c = put(c, vec3(1.0, 0.86, 0.15), cov(abs(sx) - 1.3) * step(-6.0, p.y - F.y) * step(p.y - F.y, 22.0));
+        c = put(c, vec3(1.0, 0.85, 0.2), cell * step(18.0 / 24.0, fy) * 0.8);
+        float sx = p.x - (F.x + F.z + 12.0) - 0.55 * (p.y - F.y + 6.0);
+        c = put(c, vec3(1.0, 0.86, 0.15), cov(abs(sx) - 1.3) * step(-6.0, p.y - F.y) * step(p.y - F.y, 30.0));
     }
 
     // --- the HV battery (a plug-in hybrid's charge): a tall recessed track left of the panel, filled from the foot in
@@ -2885,26 +2885,7 @@ void main() {
         col = mix(col, kk >= redK - 0.01 ? tickR : (u_dial > 1.5 ? vec3(0.1) : vec3(0.94, 0.95, 0.97)), cov(length(p - dot_) - 2.6) * step(kk, u_scale.z + 0.01));
         // the shift light on the ladder: the ticks glow red while it flashes
         col = mix(col, vec3(1.0, 0.2, 0.15), cov(lad) * u_shift.y);
-        // the needle: a soft red glow along it, its shadow, the blade (a bright core), the centre cap
-        float an = radians(u_scale.x + u_scale.y * u_tach.w);
-        vec2 un = vec2(sin(an), -cos(an));
-        vec2 n0 = C + un * 0.04 * R, n1 = C + un * (R - 12.0);
-        vec3 nc = u_dial > 0.5 && u_dial < 1.5 ? vec3(0.94, 0.95, 0.96) : vec3(0.92, 0.11, 0.086);
-        float sd = segd(p - vec2(4.0), n0, n1);
-        col *= 1.0 - 0.6 * cov(sd - 3.0) * step(36.0, d);
-        float t = clamp(dot(p - n0, un) / (R - 12.0 - 0.04 * R), 0.0, 1.0);
-        float nd = segd(p, n0, n1) - mix(3.5, 1.2, t);
-        col += nc * exp(-pow(max(nd, 0.0) / 6.0, 2.0)) * 0.35;
-        col = mix(col, nc, cov(nd));
-        col = mix(col, mix(nc, vec3(1.0), 0.45), cov(segd(p, n0 + un * 6.0, n1 - un * 8.0) - 0.4) * 0.8);
-        // the cap
-        col *= 1.0 - 0.6 * cov(length(p - C - vec2(0.0, 5.0)) - 26.0) * step(22.0, d);
-        float cd = d - 22.0;
-        vec3 capc = vec3(0.07 + 0.12 * clamp(1.0 - length(p - C + vec2(0.0, 6.0)) / 22.0, 0.0, 1.0));
-        col = mix(col, capc, cov(cd));
-        col = mix(col, vec3(0.47, 0.49, 0.53), cov(abs(cd) - 0.7));
-        col = mix(col, vec3(0.78, 0.12, 0.09), cov(abs(d - 11.0) - 1.0));
-        col = mix(col, vec3(0.03), cov(d - 5.0));
+        // (the needle and its cap are a layer of their own over the numbers: rneedle)
         // the speed and gear boxes: navy glass (the face through it), round corners at the left, a bright border along
         // the curved right end, dim on the top and left
         for (int i = 0; i < 2; i++) {
@@ -2958,4 +2939,40 @@ void main() {
 }
 `;
 
-module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gdash: GDASH, adash: ADASH, gtext: GTEXT, rdash: RDASH };
+const RNEEDLE = `// Vetro's needle on a layer of its own (over the rev counter's numbers): a soft glow along it, its shadow, the blade
+// with a bright core, the centre cap; the rest see-through. The layer is the dial's square.
+precision mediump float;
+varying vec2 v_uv;
+uniform vec2 u_size;
+uniform vec4 u_tach;       // centre x, y (in this layer), radius, revs 0..1
+uniform vec2 u_sweep;      // 0 at this angle (deg clockwise from 12 o'clock), sweep deg
+uniform vec3 u_col;        // the blade's colour (red; white on the red face)
+float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
+float segd(vec2 p, vec2 a, vec2 b) { vec2 ba = b - a; float h = clamp(dot(p - a, ba) / dot(ba, ba), 0.0, 1.0); return length(p - a - ba * h); }
+void main() {
+    vec2 p = v_uv * u_size, C = u_tach.xy;
+    float R = u_tach.z, d = length(p - C);
+    float an = radians(u_sweep.x + u_sweep.y * u_tach.w);
+    vec2 un = vec2(sin(an), -cos(an));
+    vec2 n0 = C + un * 0.04 * R, n1 = C + un * (R - 12.0);
+    float t = clamp(dot(p - n0, un) / (R - 12.0 - 0.04 * R), 0.0, 1.0);
+    float nd = segd(p, n0, n1) - mix(3.5, 1.2, t);
+    float sd = segd(p - vec2(4.0), n0, n1) - 3.0;
+    // shadow, glow, blade, core
+    vec4 o = vec4(0.0, 0.0, 0.0, 0.6 * cov(sd) * step(36.0, d));
+    float g = exp(-pow(max(nd, 0.0) / 6.0, 2.0)) * 0.45 * (1.0 - cov(nd));
+    o = vec4(mix(o.rgb, u_col, g / max(o.a + g, 0.001)), max(o.a, g));
+    o = mix(o, vec4(u_col, 1.0), cov(nd));
+    o = mix(o, vec4(mix(u_col, vec3(1.0), 0.45), 1.0), cov(segd(p, n0 + un * 6.0, n1 - un * 8.0) - 0.4) * 0.8);
+    // the cap: its shadow, a dark disc lit at the top, a grey edge, a red ring, a dark centre
+    o = mix(o, vec4(0.0, 0.0, 0.0, 1.0), 0.6 * cov(length(p - C - vec2(0.0, 5.0)) - 26.0) * step(22.0, d) * (1.0 - o.a));
+    float cd = d - 22.0;
+    o = mix(o, vec4(vec3(0.07 + 0.12 * clamp(1.0 - length(p - C + vec2(0.0, 6.0)) / 22.0, 0.0, 1.0)), 1.0), cov(cd));
+    o = mix(o, vec4(0.47, 0.49, 0.53, 1.0), cov(abs(cd) - 0.7));
+    o = mix(o, vec4(0.78, 0.12, 0.09, 1.0), cov(abs(d - 11.0) - 1.0));
+    o = mix(o, vec4(0.03, 0.03, 0.03, 1.0), cov(d - 5.0));
+    gl_FragColor = o;
+}
+`;
+
+module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gdash: GDASH, adash: ADASH, gtext: GTEXT, rdash: RDASH, rneedle: RNEEDLE };
