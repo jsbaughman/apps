@@ -643,8 +643,9 @@ class Page {
         // the page's room depends on the screen (bottom 512 without extra room below it): compact rows (46 high,
         // 52 apart) when the full ones, the drive mode check and the status line don't all fit, tight ones (40, 46)
         // when even those don't (Cluster Themes' 14 rows with the check on)
-        const fits = (h, pitch) => 84 + (per - 1) * pitch + h <= bottom - 24 &&
-            84 + (keys.length - per) * pitch + 10 + 20 * diag.length <= bottom - 24;
+        const foot = this.hud.setting && this.hud.setting('readingsCheck') === true ? 46 : 24;   // the readings line too
+        const fits = (h, pitch) => 84 + (per - 1) * pitch + h <= bottom - foot &&
+            84 + (keys.length - per) * pitch + 10 + 20 * diag.length <= bottom - foot;
         const [h, pitch] = fits(56, 64) ? [56, 64] : fits(46, 52) ? [46, 52] : [40, 46];
         keys.forEach((k, i) => {
             const x = CX + (i < per ? 0 : colW + 24), y = 84 + (i % per) * pitch;
@@ -656,7 +657,10 @@ class Page {
             else this.pickRow(cv, x, y, colW, name, k, null, h);
         });
         // what the engine says it is doing (layers, pixel memory, why nothing shows): for checking on the car
-        cv.text(this.hud.lastStatus || '', CX, bottom - 6, 15, C.label, { literal: true });
+        // the readings check on a line of its own over it (on the end of the status line it ran off the screen)
+        const stl = (this.hud.lastStatus || '').split('; readings a second: ');
+        cv.text(stl[0], CX, bottom - 6, 15, C.label, { literal: true });
+        if (stl[1]) cv.text('Readings a second: ' + stl[1], CX, bottom - 28, 15, C.text, { literal: true });
         const dy = 84 + (keys.length - per) * pitch + 10;
         diag.forEach((t, i) => {
             if (dy + 20 * i > bottom - 24) return;
