@@ -120,6 +120,12 @@ def build(fonts):
                         'w': 30, 'h': 30, 'color': 'fg', 'toggle': mt})
         if sig == 'oilP':
             text('b%d_p%s' % (i, sfx), x0 - 15, by + 7, 14, 'P', 'vt_p', 'fg', 'center', toggle=mt)
+    # --- the peak boost (setting "vetroPeak"): PEAK and its reading in amber over the boost bar's left end (the marker on
+    #     the bar is the shader's); in the left panel, or under the car while the map shows
+    for x0, by, mt, sfx in ((bars[0]['x'], bars[0]['y'], '!mapUp', ''), (MAP_BARS[0]['x'], MAP_BARS[0]['y'], 'mapUp', 'm')):
+        tg = 'vetroPeak&showBoost&' + mt
+        text('pk_l' + sfx, x0, by - 9, 44, '{{pullPeakLabel}}', 'vt_tiny', 'accent', 'left', toggle=tg)
+        text('pk_v' + sfx, x0 + 48, by - 9, 80, '{{pullPeak}}', 'vt_pk', 'accent', 'left', toggle=tg)
     # --- the HV battery (setting "vetroHv"): the charge over the gauge, HV under its battery
     hx = HV[0] + 15
     text('hv_v', hx + 8, HV[1] - 14, 100, '{{hvSoc}}', 'vt_val', 'fg', 'right', toggle='vetroHv')
@@ -168,7 +174,7 @@ def build(fonts):
     for w in widgets:
         if w['type'] == 'text' and 'rate' not in w and not w.get('own'):
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
-            if any(t in ('oil', 'intake', 'oilP', 'mode', 'coolant', 'progWord', 'hvSoc') for t in toks):
+            if any(t in ('oil', 'intake', 'oilP', 'mode', 'coolant', 'progWord', 'hvSoc', 'pullPeak', 'pullPeakLabel') for t in toks):
                 continue
             w['rate'] = 2000 if all(t.startswith('u:') for t in toks) else 1000
     return {
@@ -188,7 +194,7 @@ if __name__ == '__main__':
     fdir = root + '/apps/cluster_themes/hud/fonts/'
     fonts = {}
     for f in ('vt_num', 'vt_speed', 'vt_gear', 'vt_word', 'vt_unit', 'vt_small', 'vt_val', 'vt_tp', 'vt_range', 'vt_mode',
-              'vt_deg', 'vt_tt', 'vt_head', 'vt_p'):
+              'vt_deg', 'vt_tt', 'vt_head', 'vt_p', 'vt_tiny', 'vt_pk'):
         j = json.load(open(fdir + f + '.json'))
         fonts[f] = {'cellHeight': j['cellHeight'], 'baseline': j['baseline']}
     path = root + '/apps/cluster_themes/hud/layouts/vetro.json'

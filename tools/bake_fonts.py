@@ -69,6 +69,8 @@ CLUSTER_FONTS = [
     ('ae_num', 'Oxanium-Medium.woff', 62, DIGITS),
     ('ae_bnum', 'Oxanium-Medium.woff', 26, DIGITS + '.'),
     ('ae_tiny', 'Oxanium-SemiBold.woff', 16, 'RPMx' + DIGITS),
+    ('ae_pk', 'Oxanium-SemiBold.woff', 15, 'PEAK'),
+    ('ae_pkv', 'Oxanium-Medium.woff', 24, DIGITS + '.-'),
     ('ae_gear', 'Saira-SemiBold.woff', 260, DIGITS + 'PRNDSM-'),
     ('ae_prog', 'Saira-SemiBold.woff', 54, 'DSM'),
     ('ae_gear_m', 'Saira-SemiBold.woff', 130, DIGITS + 'PRNDSM-'),   # the gear with the map up
@@ -118,6 +120,8 @@ CLUSTER_FONTS = [
     ('vt_tt', 'Barlow-Medium.ttf', 20, DIGITS + '°FC-'),
     ('vt_head', 'Barlow-Medium.ttf', 28, UPPER + LOWER + ' '),
     ('vt_p', 'BarlowSemiCondensed-SemiBold.ttf', 15, 'P'),
+    ('vt_tiny', 'Michroma-Regular.ttf', 11, 'PEAK'),
+    ('vt_pk', 'Michroma-Regular.ttf', 17, DIGITS + '.-'),
     # the smaller tach for cars with the driver camera ("Leave room for the driver camera"), 0.81 of the above
     ('a_gear_c', 'Outfit[wght].ttf', 162, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 5),
     ('a_gear_s_c', 'Outfit[wght].ttf', 162, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2),

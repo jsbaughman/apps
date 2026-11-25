@@ -122,6 +122,13 @@ def build(cells):
                      toggle=pick, rate=FAST if key == 'boost' else None, own=True),
                 text('b%d%s_u' % (spot, key), bx + bw - 38, by - 40 - 20, 60, cells['ae_unit'], unit, 'ae_unit', 'sub', 'left', toggle=pick),
             ]
+            if key == 'boost':      # the pull's peak boost (setting "vetroPeak"), between the label and the value
+                widgets += [
+                    text('b%dpk_l' % spot, bx + 106, by - 42 - 20, 44, cells['ae_pk'], '{{pullPeakLabel}}', 'ae_pk', 'accent', 'left',
+                         toggle=pick + '&vetroPeak'),
+                    text('b%dpk_v' % spot, bx + 150, by - 42 - 27, 80, cells['ae_pkv'], '{{pullPeak}}', 'ae_pkv', 'accent', 'left',
+                         toggle=pick + '&vetroPeak'),
+                ]
             for j in range(5):
                 x = bx + bw * j / 4.0
                 redj = j / 4.0 >= _sc['red'] - 1e-6 and _sc['red'] < 0.999
@@ -157,7 +164,7 @@ def build(cells):
     for w in widgets:
         if w['type'] == 'text' and 'rate' not in w:
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
-            if any(t in ('oil', 'intake', 'oilP', 'coolant', 'mode', 'boost') for t in toks):
+            if any(t in ('oil', 'intake', 'oilP', 'coolant', 'mode', 'boost', 'pullPeak', 'pullPeakLabel') for t in toks):
                 continue
             w['rate'] = 2000 if all(t.startswith('u:') for t in toks) else 1000
     # connections: the right panel on 1, the left rails' text on 2 (each connection has 8 layers: smaller sheets)
@@ -181,7 +188,7 @@ if __name__ == '__main__':
     root = sys.argv[1] if len(sys.argv) > 1 else '.'
     fonts = root + '/apps/cluster_themes/hud/fonts/'
     cells = {}
-    for f in ('ae_gear_m', 'ae_prog_m', 'ae_speed_m', 'ae_num', 'ae_bnum', 'ae_tiny', 'ae_gear', 'ae_prog', 'ae_speed', 'ae_lab', 'ae_unit', 'ae_psi', 'ae_val', 'ae_tp',
+    for f in ('ae_pk', 'ae_pkv', 'ae_gear_m', 'ae_prog_m', 'ae_speed_m', 'ae_num', 'ae_bnum', 'ae_tiny', 'ae_gear', 'ae_prog', 'ae_speed', 'ae_lab', 'ae_unit', 'ae_psi', 'ae_val', 'ae_tp',
               'ae_tt', 'ae_mode', 'ae_pct', 'ae_pctu', 'ae_strip'):
         cells[f] = json.load(open(fonts + f + '.json'))['cellHeight']
     path = root + '/apps/cluster_themes/hud/layouts/aero.json'

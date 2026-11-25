@@ -341,6 +341,7 @@ const PRED_FLOOR = 800;          // falling, never below this (or the reading, i
 const PRED_SLOPE = 30;           // rpm per ms it runs on at most (an M4 free-revving is ~15)
 const PRED_MAX = 9500;           // and never past this
 const SHIFT_DASH = { cdash: 1, ldash: 1, adash: 1, gdash: 1, rdash: 1 };   // dashes whose u_shift _tachTick sends
+const PULL_LOW = 0.2, PULL_RESET_MS = 4000, PULL_SHOW = 0.3;   // Vetro's peak boost: bar under which a pull ends, ms, bar to show from
 const TACH_MS = 16;              // ~60 Hz: the rev counter's needle / band alone (_tachTick), the display's own frame rate
 const TEXT_MS = 200;             // text re-draws at most 5 times a second (what BMW's own readouts do)
 const TARGET_SIZES = { hud: [800, 480], panel: [1920, 720] };
@@ -1949,6 +1950,8 @@ class HudApp {
         switch (tok) {
             case 'u:pressure': return usP ? 'psi' : 'bar';
             case 'intake': { const v = this._raw('intake'); return fix(isNum(v) ? (usT ? v * 9 / 5 + 32 : v) : v, 0); }
+            case 'pullPeak': { const v = this._pullShown(); return v === null ? '' : usP ? fix(v * 14.5038, 1) : fix(v, 2); }
+            case 'pullPeakLabel': return this._pullShown() === null ? '' : 'PEAK';
             case 'boostPeak': { const v = this.boostPeak; return usP ? fix(isNum(v) ? v * 14.5038 : v, 1) : fix(v, 2); }
             case 'run': { const v = this.runs.shown(Date.now()); return isNum(v) ? v.toFixed(this.runs.state === 'run' ? 1 : 2) : '0.00'; }
             case 'runBest': { const v = this.runs.best[us ? 'us' : 'metric']; return v > 0 ? v.toFixed(2) : '-.--'; }
@@ -3058,6 +3061,7 @@ class HudApp {
         this._gTick(now);
         const b = this._boost();
         if (isNum(b) && (!isNum(this.boostPeak) || b > this.boostPeak)) this.boostPeak = b;
+        this._pullPeak(b, now);
         if (!this.client.ready) return;
         // shift light: blink the whole bar at 8 Hz once the rpm reaches the redline
         const rpm = this._raw('rpm');
@@ -3067,6 +3071,23 @@ class HudApp {
         if (!flashing && this._countIn() && this.cue.now.shift) this.flash = this.cue.blink(now);
         this.widgets.forEach((x) => this._guard('widget ' + x.w.id, () => this._update(x, now, false)));
     }
+
+    /**
+     * Vetro's peak boost (setting "vetroPeak"): the highest boost of this pull, held while boost stays up; once it has
+     * been under PULL_LOW bar for PULL_RESET_MS the pull is over and the peak goes (the next pull starts afresh).
+     * Shown only from PULL_SHOW bar up ({{pullPeak}}, {{pullPeakLabel}}, the bar's marker).
+     */
+    _pullPeak(b, now) {
+        if (!isNum(b)) return;
+        if (!isNum(this.pullPeak) || b > this.pullPeak) this.pullPeak = b;
+        if (b < PULL_LOW) {
+            if (!this.pullLowAt) this.pullLowAt = now;
+            else if (now - this.pullLowAt > PULL_RESET_MS) this.pullPeak = null;
+        } else this.pullLowAt = 0;
+    }
+
+    /** bar, the pull's peak to show, or null (under PULL_SHOW, or the setting off). */
+    _pullShown() { return this.setting('vetroPeak') !== false && isNum(this.pullPeak) && this.pullPeak >= PULL_SHOW ? this.pullPeak : null; }
 
     /** This drive's distance and moving time (the car's own data only; standing still doesn't count). */
     _trip(now) {
@@ -3361,12 +3382,15 @@ class HudApp {
             const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
             const fuel = this._raw('fuel'), fl = isNum(fuel) ? Math.round(Math.min(1, Math.max(0, fuel)) * 100) / 100 : 0;
             const sh = this._shiftNow(now);
-            const key = [].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), fl).join('|');
+            const key = [].concat(av, ts, arcs.map((b) => (b ? b.red : 1)), fl, [this._pullShown()]).join('|');
             if (!force && key === x.last) return;
             x.last = key;
             { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
             x.lastShift = sh.join(','); x.c.uniform(x.ref, 'u_shift', sh);
             x.c.uniform(x.ref, 'u_barV', [av[0], av[1], arcs[0] && isNum(arcs[0].red) ? arcs[0].red : 1, arcs[1] && isNum(arcs[1].red) ? arcs[1].red : 1]);
+            // the peak boost pointer on the rail showing boost (setting "vetroPeak")
+            const pk = this._pullShown(), ri = arcs.findIndex((b) => b && b.signal === 'boost');
+            x.c.uniform(x.ref, 'u_peakA', pk !== null && ri >= 0 ? [ri, q((pk - arcs[ri].min) / (arcs[ri].max - arcs[ri].min))] : [0, -1]);
             x.c.uniform(x.ref, 'u_tyre', ts);
             const F = w.fuel;
             x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2] - w.y, fl]);
@@ -3380,7 +3404,10 @@ class HudApp {
             const ts = ['FL', 'FR', 'RL', 'RR'].map((k) => { const v = this._tyre('p', k); return isNum(v) ? (Math.round(v * 14.5038) < low ? 2 : 1) : 0; });
             const fuel = this._raw('fuel'), fl = isNum(fuel) ? Math.round(Math.min(1, Math.max(0, fuel)) * 100) / 100 : 0;
             const hv = this._raw('hvSoc'), hvF = isNum(hv) ? Math.round(Math.min(1, Math.max(0, hv / 100)) * 200) / 200 : 0;
-            const key = bv.concat(ts, [fl, hvF]).join('|');
+            // the peak boost marker on the first bar while it shows boost (setting "vetroPeak")
+            const pk = this._pullShown(), b0 = bars[0];
+            const pkF = pk !== null && b0 && b0.signal === 'boost' ? Math.round(Math.min(1, Math.max(0, (pk - b0.min) / (b0.max - b0.min))) * 400) / 400 : -1;
+            const key = bv.concat(ts, [fl, hvF, pkF]).join('|');
             if (!force && key === x.last) return;
             x.last = key;
             if (force) { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
@@ -3391,6 +3418,7 @@ class HudApp {
             x.c.uniform(x.ref, 'u_tyre', ts);
             const F = w.fuel;
             x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], fl]);
+            x.c.uniform(x.ref, 'u_peak', [pkF]);
             if (w.hv && this.setting('vetroHv') === true) x.c.uniform(x.ref, 'u_hv', [w.hv[0] - w.x, w.hv[1] - w.y, w.hv[2], hvF]);
         } else if (w.type === 'gdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;

@@ -2415,6 +2415,7 @@ uniform float u_plain;     // 1: no backdrop (the "Backgrounds" setting off)
 uniform vec4 u_hole;       // the Waze map window x, y, w, h (w 0 = none): see-through, its edge feathered over u_holeF px
 uniform float u_holeF;
 uniform float u_bgStyle;   // the backdrop (setting "aeroBackdrop"): 0 deep navy, 1 carbon, 2 brushed anthracite
+uniform vec2 u_peakA;      // the peak boost (setting "vetroPeak"): its rail (0 / 1), its place 0..1 (< 0: none)
 
 float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
 vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
@@ -2554,6 +2555,14 @@ void main() {
             if (j == 0) c *= 1.0 - 0.5 * smoothstep(5.0, -2.0, d);
             else c = put(c, mix(vec3(0.886, 0.898, 0.922), vec3(0.5, 0.51, 0.55), 0.5 * smoothstep(-2.0, 4.0, q.x)), cov(d));
         }
+        // the peak boost: a hollow orange blade at the pull's peak (the same shape), a glow on the rail under it
+        if (u_peakA.y >= 0.0 && abs(u_peakA.x - float(i)) < 0.5) {
+            vec2 q = vec2(bx - B.z * u_peakA.y, bs);
+            float t = clamp((q.y + 9.0) / (B.w + 24.0), 0.0, 1.0);
+            float d = q.y < -9.0 ? length(q - vec2(0.0, -9.0)) - 5.5 : max(abs(q.x) - mix(5.5, 0.6, t), q.y - B.w - 15.0);
+            c += vec3(1.0, 0.45, 0.1) * exp(-q.x * q.x / 20.0) * step(0.0, bs) * step(bs, B.w) * 0.35;
+            c = put(c, vec3(1.0, 0.48, 0.1), cov(abs(d + 0.9) - 0.9));
+        }
     }
 
     // --- the frame lines: a straight run, a bend, a slant; faint at the outer end, brightest from the bend on; a drop
@@ -2654,6 +2663,7 @@ uniform vec4 u_tyre;       // FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
 uniform float u_plain;     // 1: no floor (the "Backgrounds" setting off)
 uniform vec4 u_hole;       // the Waze map's window in the left panel while it shows: x, y, w, h (w 0: none)
 uniform vec4 u_tbox;       // the tyre boxes' half width, half height, the wheels' x offset, the wheels' scale
+uniform float u_peak;      // the peak boost on the first bar, 0..1 (< 0: none; setting "vetroPeak")
 uniform vec4 u_hv;         // the HV battery gauge (setting "vetroHv"): x, y, height, charge 0..1; x < 0: none
 
 float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
@@ -2820,6 +2830,12 @@ void main() {
         c = put(c, BLUE * 0.85, cov(abs(p.y - B.y - 26.0) - 0.7) * step(B.x + 4.0, p.x) * step(p.x, B.x + B.z - 4.0) * 0.75);
         c = put(c, BLUE * 0.85, cov(abs(p.x - B.x - B.z) - 0.6) * step(B.y + 4.0, p.y) * step(p.y, B.y + 22.0) * 0.4);
         c = put(c, vec3(0.0), cov(abs(p.y - B.y) - 0.7) * step(B.x + 4.0, p.x) * step(p.x, B.x + B.z - 4.0) * 0.7);
+        // the peak: an amber line across the first bar with a soft glow and a small arrow over it
+        if (i == 0 && u_peak >= 0.0) {
+            float px = p.x - B.x - u_peak * B.z, py = p.y - B.y;
+            c += vec3(1.0, 0.6, 0.15) * exp(-px * px / 18.0) * step(abs(py - 13.0), 12.0) * 0.4;
+            c = put(c, vec3(1.0, 0.73, 0.24), cov(abs(px) - 1.2) * step(abs(py - 13.0), 11.0) + cov(max(abs(px) - (py + 6.0), abs(py + 3.5) - 2.5)));
+        }
     }
 
     // --- the dial
