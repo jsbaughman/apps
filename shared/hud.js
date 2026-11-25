@@ -372,7 +372,7 @@ function cachedText(w, h, s, o) {
 }
 // settings that always rebuild (they pick another layout, change the theme's colours or what is placed where); every
 // other setting first tries _softSwitch, which swaps text in the layers already on the cluster
-const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme'];
+const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
@@ -806,6 +806,8 @@ class HudApp {
     setting(key) {
         // "mapUp": not saved, the Waze map is showing inside the theme now (the setting on, waze.js says so)
         if (key === 'mapUp') return !!(this.waze && this.waze.up && this.ctx.settings.get('mapInTheme') === true);
+        // "mapHere": not saved, the map is up and this layout has a window for it now (a window with "holeIf" may be off)
+        if (key === 'mapHere') return !!this.mapLayout && this.setting('mapUp');
         // "uTemp" / "uPress": not saved, 'us' or 'metric' for temperatures / pressures as the readings show them (the
         // Temperature and Pressure settings, "Match speed" following Units): the gauges' scale numbers toggle on these
         if (key === 'uTemp') return this._us('temp') ? 'us' : 'metric';
@@ -2234,7 +2236,7 @@ class HudApp {
         }
         this.problem = null;
         this.mapWin = layout.widgets.find((w) => w.holeWhen === 'mapUp' && Array.isArray(w.hole) && w.hole[2] >= 64 && w.hole[3] >= 32
-            && !(w.toggle && !this._toggleOn(w.toggle))) || null;   // the one shown (Apex has a second dash for camera cars)
+            && !(w.toggle && !this._toggleOn(w.toggle)) && !(w.holeIf && !this._toggleOn(w.holeIf))) || null;   // the one shown (Apex has a second dash for camera cars)
         this.mapLayout = !!this.mapWin;
         // "mapLive" holds only while nothing else changes with the map (a widget toggled on mapUp needs the rebuild)
         this.mapLive = layout.mapLive === true && !layout.widgets.some((w) => typeof w.toggle === 'string' && w.toggle.indexOf('mapUp') >= 0);
@@ -2913,7 +2915,7 @@ class HudApp {
 
     /** A widget's map hole in layer px, inset by "holeInset" (6) a side, while "holeWhen" is on; else no hole. */
     _hole(w) {
-        const on = w.holeWhen === true || (w.holeWhen && this.setting(w.holeWhen) === true);   // true: always cut
+        const on = (w.holeWhen === true || (w.holeWhen && this.setting(w.holeWhen) === true)) && !(w.holeIf && !this._toggleOn(w.holeIf));   // true: always cut; "holeIf": only while that setting allows
         const h = w.hole && on ? w.hole : null;
         if (!h) return [0, 0, 0, 0];
         const inset = isNum(w.holeInset) ? w.holeInset : 6;

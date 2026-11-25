@@ -122,6 +122,7 @@
       ],
       "holeWhen": "mapUp",
       "holeInset": 0,
+      "holeIf": "circuitMap=map",
       "arcs": [
         {
           "pick": "left0",
@@ -402,6 +403,7 @@
       ],
       "holeWhen": "mapUp",
       "holeInset": 0,
+      "holeIf": "circuitMap=map",
       "arcs": [
         {
           "pick": "left0",
@@ -2591,7 +2593,7 @@
       "y": 238,
       "w": 132,
       "h": 258,
-      "toggle": "!mapUp"
+      "toggle": "!mapHere"
     },
     {
       "id": "tyre_head",
@@ -2605,7 +2607,7 @@
       "font": "ci_head",
       "color": "fg",
       "align": "center",
-      "toggle": "!mapUp",
+      "toggle": "!mapHere",
       "rate": 2000
     },
     {
@@ -2620,7 +2622,7 @@
       "font": "ci_head",
       "color": "fg",
       "align": "center",
-      "toggle": "!mapUp",
+      "toggle": "!mapHere",
       "rate": 2000
     },
     {
@@ -2635,7 +2637,7 @@
       "font": "ci_tp",
       "color": "fg",
       "align": "center",
-      "toggle": "!mapUp",
+      "toggle": "!mapHere",
       "rate": 1000
     },
     {
@@ -2650,7 +2652,7 @@
       "font": "ci_tt",
       "color": "cool",
       "align": "center",
-      "toggle": "!mapUp",
+      "toggle": "!mapHere",
       "rate": 1000
     },
     {
@@ -2665,7 +2667,7 @@
       "font": "ci_tp",
       "color": "fg",
       "align": "center",
-      "toggle": "!mapUp",
+      "toggle": "!mapHere",
       "rate": 1000
     },
     {
@@ -2680,7 +2682,7 @@
       "font": "ci_tt",
       "color": "cool",
       "align": "center",
-      "toggle": "!mapUp",
+      "toggle": "!mapHere",
       "rate": 1000
     },
     {
@@ -2695,7 +2697,7 @@
       "font": "ci_tp",
       "color": "fg",
       "align": "center",
-      "toggle": "!mapUp",
+      "toggle": "!mapHere",
       "rate": 1000
     },
     {
@@ -2710,7 +2712,7 @@
       "font": "ci_tt",
       "color": "cool",
       "align": "center",
-      "toggle": "!mapUp",
+      "toggle": "!mapHere",
       "rate": 1000
     },
     {
@@ -2725,7 +2727,7 @@
       "font": "ci_tp",
       "color": "fg",
       "align": "center",
-      "toggle": "!mapUp",
+      "toggle": "!mapHere",
       "rate": 1000
     },
     {
@@ -2740,7 +2742,7 @@
       "font": "ci_tt",
       "color": "cool",
       "align": "center",
-      "toggle": "!mapUp",
+      "toggle": "!mapHere",
       "rate": 1000
     },
     {
