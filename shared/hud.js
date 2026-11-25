@@ -327,6 +327,11 @@ const MAX_CONN = 4;              // connections a layout may ask for ("conn"): 3
 const PIXEL_BYTES = 16 * 1024 * 1024;   // cluster-render's pixel memory for every app's images together (CompositorLimits.pixel_bytes)
 const SHEET_AREA_FRAC = 4;       // the first sheet size limit: 1/4 of the target area (see the header)
 const TICK_MS = 50;              // 20 Hz: shift bar and gauges
+const PRED_LEAD = 120;           // "Predictive" tach: ms at most it runs on past the last reading (the car sends ~10 a second)
+const PRED_AHEAD = 500;          // rpm at most it runs ahead of the last reading (so a sudden turn overshoots little)
+const PRED_FLOOR = 800;          // falling, never below this (or the reading, if lower): no dip under idle on a lift-off
+const PRED_SLOPE = 30;           // rpm per ms it runs on at most (an M4 free-revving is ~15)
+const PRED_MAX = 9500;           // and never past this
 const TACH_MS = 16;              // ~60 Hz: the rev counter's needle / band alone (_tachTick), the display's own frame rate
 const TEXT_MS = 200;             // text re-draws at most 5 times a second (what BMW's own readouts do)
 const TARGET_SIZES = { hud: [800, 480], panel: [1920, 720] };
@@ -3053,6 +3058,27 @@ class HudApp {
         const dt = this.lastTickT ? Math.min(500, now - this.lastTickT) : 0;
         this.lastTickT = now;
         if (!isNum(raw)) { this.rpmF = null; this.rpmShown = null; return; }
+        // "predict": the car sends the revs about 10 times a second; between readings the needle goes on at the rate
+        // the last two showed, up to when the next is due, so it keeps up with the engine instead of trailing a
+        // reading behind (a short 20 ms filter takes the correction when the revs turn)
+        if (this.setting('tachResponse') === 'predict' && !isNum(test)) {
+            const d = this.car.data(), P = this.pred || (this.pred = { mark: null, raw: null, t: 0, slope: 0, gap: PRED_LEAD });
+            const mark = ((this.car.counts && this.car.counts.rpm) || 0) + (d.demo ? '|' + raw : '');
+            if (mark !== P.mark) {
+                const gap = now - P.t;
+                // a change under 30 rpm (idle wobble) or after a long gap predicts nothing
+                P.slope = isNum(P.raw) && gap > 0 && gap < 400 && Math.abs(raw - P.raw) >= 30
+                    ? Math.max(-PRED_SLOPE, Math.min(PRED_SLOPE, (raw - P.raw) / Math.max(gap, 40))) : 0;
+                P.gap = Math.min(Math.max(gap, 40), PRED_LEAD);
+                P.mark = mark; P.raw = raw; P.t = now;
+            }
+            const ahead = Math.max(-PRED_AHEAD, Math.min(PRED_AHEAD, P.slope * Math.min(now - P.t, P.gap)));
+            const target = Math.min(PRED_MAX, Math.max(Math.min(P.raw, PRED_FLOOR), P.raw + ahead));
+            const kp = dt ? 1 - Math.exp(-dt / 20) : 1;
+            this.rpmF = isNum(this.rpmF) ? this.rpmF + (target - this.rpmF) * kp : target;
+            if (!isNum(this.rpmShown) || Math.abs(this.rpmF - this.rpmShown) >= 40) this.rpmShown = Math.max(0, Math.round(this.rpmF / 50) * 50);
+            return;
+        }
         // the "tachResponse" setting: smooth (120 ms, as BMW's), quick (40 ms) or instant (no filter)
         const tau = { smooth: 120, quick: 40, instant: 0 }[this.setting('tachResponse')];
         const k = tau === 0 ? 1 : 1 - Math.exp(-dt / (isNum(tau) ? tau : 120));
