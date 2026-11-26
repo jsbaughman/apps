@@ -2668,10 +2668,8 @@ uniform vec4 u_tyre;       // FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
 uniform float u_plain;     // 1: no floor (the "Backgrounds" setting off)
 uniform vec4 u_hole;       // the Waze map's window in the left panel while it shows: x, y, w, h (w 0: none)
 uniform vec4 u_tbox;       // the tyre boxes' half width, half height, the wheels' x offset, the wheels' scale
-uniform vec4 u_tune;       // the Tuning panel ("vetroRight" tuning): its first tile x, y, w, h (w 0: the tyres instead)
-uniform vec4 u_tuneV;      // AFR 0..1, its target 0..1 (< 0: none), HPFP 0..1, timing 0..1
-uniform vec4 u_kc0;        // knock per cylinder 1..4: -1 no reading, 0 calm, 1 some retard, 2 more
-uniform vec2 u_kc1;        // cylinders 5, 6
+uniform float u_tune;      // 1: the Tuning panel ("vetroRight"): the tyre boxes are its tiles (u_car / u_tbox), each with a track
+uniform vec4 u_tuneV;      // the tiles' tracks: AFR, HPFP, timing, knock retard, 0..1
 uniform float u_bright;    // "vetroBright": 1 the brighter look (a lifted face, more sheen, lighter panels, full white)
 uniform vec3 u_rev;        // "vetroRev": x 1 the lit ladder (no needle), 0 the needle; y the revs' peak 0..1, z its fade 1..0
 uniform float u_peak;      // the peak boost on the first bar, 0..1 (< 0: none; setting "vetroPeak")
@@ -2720,11 +2718,8 @@ void main() {
     float pool = pow(yy, 1.3) * exp(-pow((p.x - 960.0) / 1056.0, 2.0) * 1.2);
     float lum = tone * (0.045 + 0.38 * pool) * pow(clamp((p.y - 40.0) / 420.0, 0.0, 1.0), 1.6) * 1.25;
     vec3 c = vec3(0.78, 0.84, 0.95) * lum;
-    // the dial's shadow straight down, and its soft reflection (the bezel mirrored under its foot, fading)
-    float below = p.y - (C.y + R);
+    // the dial's shadow straight down
     c *= 1.0 - 0.7 * exp(-max(length(p - C - vec2(0.0, 16.0)) - R, 0.0) / 30.0) * clamp((q.y + 0.3 * R) / (0.6 * R), 0.0, 1.0);
-    float dm = length(vec2(q.x, 2.0 * R - q.y));
-    c += vec3(0.5, 0.52, 0.58) * exp(-pow((dm - R - 3.0) / 4.0, 2.0)) * exp(-max(below, 0.0) / 55.0) * step(0.0, below) * (0.35 + 0.65 * tone * 4.0) * 0.18;
     c *= 1.0 - u_plain;
 
     // --- the left panel: borderless, its left end a long bow with round corners; bluish, lighter low on the left
@@ -2811,31 +2806,9 @@ void main() {
                           + exp(-max(p.y - rb, 0.0) / 14.0) * step(rb, p.y) * step(p.x, xr) * clamp((p.x - C.x - 0.5 * R) / 300.0, 0.0, 1.0) * 0.35);
         float tx = C.x + sqrt(max(pow(BAND + 6.0, 2.0) - pow(rt + 18.0 - C.y, 2.0), 0.0)) + 10.0;
         c = put(c, vec3(1.0, 0.70, 0.17), cov(abs((p.x - tx - 2.5) - 0.48 * (p.y - rt - 6.0)) - 2.0) * step(rt + 6.0, p.y) * step(p.y, yl - 6.0));
-        // the Tuning panel: four tiles (AFR, HPFP, timing, knock), navy glass, a dark track filled to its value; AFR's
-        // target marked; knock as six cells, one per cylinder
-        for (int i = 0; i < 4; i++) {
-            if (u_tune.z <= 0.0) break;
-            vec2 o = u_tune.xy + vec2(mod(float(i), 2.0) * (u_tune.z + 22.0), floor(float(i) * 0.5) * (u_tune.w + 18.0));
-            float bd = rbox(p, o + u_tune.zw * 0.5, u_tune.zw * 0.5, 6.0);
-            if (bd > 2.0) continue;
-            c = put(c, vec3(0.03, 0.063, 0.118), cov(bd) * 0.92);
-            c = put(c, vec3(0.27, 0.35, 0.47), cov(abs(bd) - 0.6));
-            vec2 q = (p - o - vec2(18.0, u_tune.w - 36.0)) / vec2(u_tune.z - 36.0, 16.0);
-            float f = i == 0 ? u_tuneV.x : i == 1 ? u_tuneV.z : u_tuneV.w;
-            vec3 tc = mix(vec3(0.01, 0.015, 0.025), vec3(0.86, 0.91, 1.0), step(q.x, f) * step(0.2, q.y) * step(q.y, 0.8));
-            if (i == 3) {
-                float cl = floor(q.x * 6.0);
-                float st = cl < 0.5 ? u_kc0.x : cl < 1.5 ? u_kc0.y : cl < 2.5 ? u_kc0.z : cl < 3.5 ? u_kc0.w : cl < 4.5 ? u_kc1.x : u_kc1.y;
-                tc = st > 1.5 ? vec3(0.92, 0.18, 0.14) : st > 0.5 ? vec3(1.0, 0.68, 0.18) : st > -0.5 ? vec3(0.25, 0.75, 0.45) : vec3(0.22, 0.25, 0.3);
-                tc = mix(vec3(0.01, 0.015, 0.025), tc, step(0.08, fract(q.x * 6.0)) * step(fract(q.x * 6.0), 0.92) * step(0.2, q.y) * step(q.y, 0.8));
-            }
-            c = put(c, tc, step(0.0, q.x) * step(q.x, 1.0) * step(0.0, q.y) * step(q.y, 1.0));
-            if (i == 0) c = put(c, vec3(1.0, 0.73, 0.24), cov(abs(q.x - u_tuneV.y) * (u_tune.z - 36.0) - 1.3) * step(abs(q.y - 0.5), 0.7));
-        }
         // the tyres: a box each out to the side (a bright edge toward the car), a leader to its wheel, the wheel outlined
         // green (fine) or red (low) beside the body
         for (int i = 0; i < 4; i++) {
-            if (u_tune.z > 0.0) break;
             float sx_ = (i == 0 || i == 2) ? -1.0 : 1.0, sy_ = i < 2 ? -1.0 : 1.0;
             float st = i == 0 ? u_tyre.x : i == 1 ? u_tyre.y : i == 2 ? u_tyre.z : u_tyre.w;
             vec2 wc = u_car.xy + vec2(sx_ * u_tbox.z, sy_ * u_car.w);
@@ -2845,6 +2818,13 @@ void main() {
             c = put(c, vec3(0.27, 0.35, 0.47), cov(abs(bd) - 0.6));
             float bx = bc.x - sx_ * (u_tbox.x - 1.0);
             c = put(c, vec3(0.78, 0.82, 0.88), cov(abs(p.x - bx) - 0.8) * step(abs(p.y - bc.y), u_tbox.y - 8.0));
+            if (u_tune > 0.5) {                   // the Tuning tiles: a dark track filled to its value, no wheel
+                float f = i == 0 ? u_tuneV.x : i == 1 ? u_tuneV.y : i == 2 ? u_tuneV.z : u_tuneV.w;
+                vec2 q = (p - bc + vec2(u_tbox.x - 18.0, -u_tbox.y + 36.0)) / vec2(2.0 * u_tbox.x - 36.0, 16.0);
+                float inT = step(0.0, q.x) * step(q.x, 1.0) * step(0.0, q.y) * step(q.y, 1.0);
+                c = put(c, mix(vec3(0.01, 0.015, 0.025), i == 3 ? vec3(1.0, 0.55, 0.2) : vec3(0.86, 0.91, 1.0), step(q.x, f) * step(0.2, q.y) * step(q.y, 0.8)), inT);
+                continue;
+            }
             c = put(c, vec3(0.47, 0.59, 0.75), cov(abs(p.y - wc.y) - 0.6) * step(min(bx, wc.x - sx_ * 12.0), p.x) * step(p.x, max(bx, wc.x - sx_ * 12.0)));
             vec3 wcol = st > 1.5 ? vec3(0.92, 0.2, 0.16) : st > 0.5 ? vec3(0.31, 0.86, 0.47) : vec3(0.35, 0.38, 0.44);
             c = put(c, wcol, cov(abs(rbox(p, wc, vec2(9.0, 22.0) * u_tbox.w, 5.0)) - 1.0));
@@ -2953,7 +2933,6 @@ void main() {
             // with the lit ladder, the right edges take the revs' colour as they climb
             vec3 ec = mix(vec3(0.80, 0.84, 0.90), revCol(u_tach.w), u_rev.x * smoothstep(0.45, 0.8, u_tach.w));
             col = mix(col, ec, edgeR * (i == 0 ? 0.95 : 0.9));
-            col += revCol(u_tach.w) * exp(-pow((d - rr + 1.5) / 5.0, 2.0)) * step(y0 + 2.0, p.y) * step(p.y, y1 - 2.0) * step(C.x + 0.3 * R, p.x) * u_rev.x * smoothstep(0.55, 0.85, u_tach.w) * 0.35;
             float dim = max(cov(abs(p.y - y0 - 0.6) - 0.6) * 0.55, cov(abs(p.x - C.x + 0.4) - 0.6) * 0.35) * cov(bd);
             col = mix(col, vec3(0.35, 0.42, 0.52), dim * 0.5 * (1.0 - edgeR));
         }
@@ -2961,8 +2940,7 @@ void main() {
         // right a touch darker
         float u_ = (q.x + q.y) / R;
         col *= 1.0 - clamp(u_, 0.0, 1.4) * 0.12;
-        col += vec3(0.85, 0.9, 1.0) * (1.0 + 1.2 * u_bright) * (exp(-pow((u_ + 0.55) / 0.22, 2.0)) * 0.055 + exp(-pow((u_ + 0.95) / 0.08, 2.0)) * 0.03
-                                      + exp(-pow((d - R + 30.0) / 14.0, 2.0)) * clamp(up - 0.2, 0.0, 1.0) * 0.06);
+        col += vec3(0.85, 0.9, 1.0) * (1.0 + 1.2 * u_bright) * (exp(-pow((u_ + 0.55) / 0.22, 2.0)) * 0.055 + exp(-pow((u_ + 0.95) / 0.08, 2.0)) * 0.03);
         // the bezel's shadow inside, deepest under its top
         col *= 1.0 - pow(clamp(1.0 - (R - 4.0 - d) / 16.0, 0.0, 1.0), 2.0) * (0.35 + 0.45 * clamp(up, 0.0, 1.0));
         c = mix(c, col, cov(d - R + 4.0));
@@ -2976,9 +2954,6 @@ void main() {
         c *= 1.0 - 0.6 * cov(abs(d - R + 3.4) - 0.5);
     }
 
-    // a fine grain, strongest in the darks (as a real screen: no visible banding in the gradients)
-    float lumc = dot(c, vec3(0.333));
-    c += (fract(sin(dot(floor(p), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * (0.024 + 0.02 * (1.0 - clamp(lumc / 0.5, 0.0, 1.0)));
     // the map's window: see-through in the left panel (the map is a layer under this one), its left end bowed and round,
     // fading out toward the dial; its lower part a little darker
     float ma = 0.0, mf = 1.0;

@@ -2,7 +2,7 @@
   "id": "cluster_themes",
   "title": "Cluster Themes",
   "description": "Redraws the instrument cluster as Apex, a needle rev counter with boost, oil temperature, a G-meter, coolant and fuel; Veloce, a wide arc of lit tiles over a hex backdrop with a big hollow gear and four side scales; or Off for BMW's own cluster",
-  "version": "0.27.0",
+  "version": "0.27.1",
   "autostart": true,
   "vendor": "custom",
   "loggingId": "OAC1",
@@ -1697,68 +1697,6 @@
             "min": -20,
             "max": 20,
             "note": "MITTELW_ZYLIND_ZWSPAET_KR knock control retard, mean, deg"
-          }
-        ],
-        "cyl": [
-          {
-            "did": "4A49",
-            "bytes": 2,
-            "at": 0,
-            "signed": true,
-            "factor": 0.1,
-            "min": -40,
-            "max": 60,
-            "note": "ignition angle, cylinder 1"
-          },
-          {
-            "did": "4A4A",
-            "bytes": 2,
-            "at": 0,
-            "signed": true,
-            "factor": 0.1,
-            "min": -40,
-            "max": 60,
-            "note": "ignition angle, cylinder 2"
-          },
-          {
-            "did": "4A4C",
-            "bytes": 2,
-            "at": 0,
-            "signed": true,
-            "factor": 0.1,
-            "min": -40,
-            "max": 60,
-            "note": "ignition angle, cylinder 3"
-          },
-          {
-            "did": "4A4D",
-            "bytes": 2,
-            "at": 0,
-            "signed": true,
-            "factor": 0.1,
-            "min": -40,
-            "max": 60,
-            "note": "ignition angle, cylinder 4"
-          },
-          {
-            "did": "4A4E",
-            "bytes": 2,
-            "at": 0,
-            "signed": true,
-            "factor": 0.1,
-            "min": -40,
-            "max": 60,
-            "note": "ignition angle, cylinder 5"
-          },
-          {
-            "did": "4A4F",
-            "bytes": 2,
-            "at": 0,
-            "signed": true,
-            "factor": 0.1,
-            "min": -40,
-            "max": 60,
-            "note": "ignition angle, cylinder 6"
           }
         ]
       }

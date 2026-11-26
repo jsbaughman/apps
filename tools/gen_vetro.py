@@ -165,9 +165,7 @@ def build(fonts):
         text('tu%d_u' % n, xr, y0 + 82, 40, unit, ufont, 'dim', 'right', toggle=tg)
         gap = {':1': 20, '°': 16}.get(unit, 40)            # the reading ends just before its unit
         text('tu%d_v' % n, xr - gap, y0 + 82, 170, tok, 'vt_tv', 'accent' if n == 0 else 'fg', 'right', toggle=tg, own=True)
-        if name == 'KNOCK':
-            for c in range(6):
-                text('tu_c%d' % c, x0 + 18 + (c + 0.5) * (TUNE[2] - 36) / 6, y0 + TUNE[3] - 6, 20, str(c + 1), 'vt_sub', 'dim', 'center', toggle=tg)
+
     # the car and the tyres' readings: full size, or a bit smaller while the map shows
     for mt, sfx, (cx_, cy_, dx_, dy_), cw, bh, pf, py, ty in (('!mapUp&!vetroRight=tuning', '', CAR, 150, 37, 'vt_tp', 40, 64),
                                                              ('mapUp', '_m', MAP_CAR, 124, 31, 'vt_val', 33, 54)):

@@ -1125,7 +1125,7 @@ class HudApp {
         const hasIntake = !!(dme && Array.isArray(dme.intake) && dme.intake.length);
         const hasOilP = !!(dme && Array.isArray(dme.oilP) && dme.oilP.length);
         let rd = null, busy = false, baro = 101.3, baroAt = 0, intakeAsk = 0, oilAsk = 0, oilMiss = 0, hvAsk = 0, hvMiss = 0, fuelAsk = 0, fuelMiss = 0;
-        let tuneAsk = 0, cylAsk = 0;
+        let tuneAsk = 0;
         try {
             // the kit's read-only link: anything but a read (22 / OBD 01) is refused before it leaves the head unit.
             // silentAfter Infinity: never skip a unit that stopped answering; the retry timers below pace that.
@@ -1143,10 +1143,8 @@ class HudApp {
             const wantOilP = hasOilP && this.needsOilP && now - oilAsk >= (oilMiss >= 3 ? 30000 : 500);
             const wantHv = this.needsHv && now - hvAsk >= (hvMiss >= 3 ? HV_RETRY_MS : HV_EVERY_MS);
             const wantFuel = this.needsFuel && now - fuelAsk >= (fuelMiss >= 3 ? FUEL_RETRY_MS : FUEL_EVERY_MS);
-            // Vetro's Tuning tiles: lambda, its target, the rail pressure, timing and knock retard, about 3 times a second;
-            // the six cylinders' ignition angles every 2 s
+            // Vetro's Tuning tiles: lambda, its target, the rail pressure, timing and knock retard, about 3 times a second
             const wantTune = !!(dme && dme.tune) && this.needsTune && now - tuneAsk >= 250;
-            const wantCyl = wantTune && now - cylAsk >= 2000;
             if (busy || this.car.data().demo || (!wantBoost && !wantIntake && !wantOilP && !wantHv && !wantFuel && !wantTune)) return;
             busy = true;
             (async () => {
@@ -1176,12 +1174,6 @@ class HudApp {
                     for (const k of ['lambda', 'lambdaT', 'rail', 'ign', 'kr']) {
                         const v = await rd.value('tune_' + k, dme.tune[k]);
                         if (isNum(v)) { T[k] = v; T[k + 'At'] = Date.now(); }
-                    }
-                    if (wantCyl && Array.isArray(dme.tune.cyl)) {
-                        cylAsk = now;
-                        const cyl = [];
-                        for (const c of dme.tune.cyl) cyl.push(await rd.read(c));
-                        if (cyl.every(isNum)) { T.cyl = cyl; T.cylAt = Date.now(); }
                     }
                 }
                 if (wantIntake) {
@@ -2653,7 +2645,7 @@ class HudApp {
             c.uniform(ref, 'u_dial', [{ red: 1, yellow: 2 }[this.setting('vetroDial')] || 0]);
             c.uniform(ref, 'u_rev', [this.setting('vetroRev') === 'ladder' ? 1 : 0, 0, 0]);
             c.uniform(ref, 'u_bright', [this.setting('vetroBright') === true ? 1 : 0]);
-            c.uniform(ref, 'u_tune', this._tuneOn(w) ? [w.tune[0] - w.x, w.tune[1] - w.y, w.tune[2], w.tune[3]] : [0, 0, 0, 0]);
+            c.uniform(ref, 'u_tune', [this._tuneOn(w) ? 1 : 0]);
             c.uniform(ref, 'u_left', [L[0] - w.x, L[1] - w.y, L[2] - w.y, L[3]]);
             c.uniform(ref, 'u_right', [Rg[0] - w.y, Rg[1] - w.y, Rg[2] - w.x, Rg[3] - w.x]);
             // while the map shows in the left panel ("hole", "holeWhen" mapUp), the tyres smaller ("mapCar", "mapTbox") and
@@ -2662,6 +2654,12 @@ class HudApp {
             const C2 = mapOn && w.mapCar ? w.mapCar : C;
             c.uniform(ref, 'u_car', [C2[0] - w.x, C2[1] - w.y, C2[2], C2[3]]);
             c.uniform(ref, 'u_tbox', (mapOn && w.mapTbox) || w.tbox || [68, 37, 69, 1]);
+            // the Tuning panel: the tyre boxes become its four tiles ("tune" [first x, y, w, h], 22 / 18 px apart)
+            if (this._tuneOn(w)) {
+                const U = w.tune, hw = U[2] / 2, hh = U[3] / 2;
+                c.uniform(ref, 'u_car', [U[0] + U[2] + 11 - w.x, U[1] + U[3] + 9 - w.y, hw + 11, hh + 9]);
+                c.uniform(ref, 'u_tbox', [hw, hh, 60, 1]);
+            }
             c.uniform(ref, 'u_hole', this._hole(w));
             c.uniform(ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], 0]);
             c.uniform(ref, 'u_hv', w.hv && this.setting('vetroHv') === true ? [w.hv[0] - w.x, w.hv[1] - w.y, w.hv[2], 0] : [-1, 0, 1, 0]);
@@ -2989,21 +2987,12 @@ class HudApp {
     /** Vetro's right panel shows the Tuning tiles now: the layout has them, the setting asks for them, the map isn't up. */
     _tuneOn(w) { return !!(w.tune && this.setting('vetroRight') === 'tuning' && !this.setting('mapHere')); }
 
-    /**
-     * The Tuning tiles' bars: AFR on 10..16 (and its target), HPFP on 0..TUNE_RAIL_MAX MPa, timing on 0..40 deg; knock per
-     * cylinder from its ignition angle against the six's mean: under 1 deg behind calm, under 3 some, past that more.
-     */
+    /** The Tuning tiles' tracks, 0..1: AFR on 10..16, HPFP on 0..TUNE_RAIL_MAX MPa, timing on 0..40 deg, knock retard on 0..6 deg. */
     _tuneVals() {
         const t = this.tune || {}, fresh = (k) => isNum(t[k]) && Date.now() - (t[k + 'At'] || 0) < TUNE_STALE_MS;
         const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 200) / 200;
-        const v = [fresh('lambda') ? q((t.lambda * 14.7 - 10) / 6) : 0, fresh('lambdaT') ? q((t.lambdaT * 14.7 - 10) / 6) : -1,
-            fresh('rail') ? q(t.rail / TUNE_RAIL_MAX) : 0, fresh('ign') ? q(t.ign / 40) : 0];
-        let kc = [-1, -1, -1, -1, -1, -1];
-        if (Array.isArray(t.cyl) && Date.now() - (t.cylAt || 0) < TUNE_STALE_MS * 4 && t.cyl.every(isNum)) {
-            const mean = t.cyl.reduce((a, b) => a + b, 0) / 6;
-            kc = t.cyl.map((a) => (mean - a < 1 ? 0 : mean - a < 3 ? 1 : 2));
-        }
-        return { v, kc };
+        return [fresh('lambda') ? q((t.lambda * 14.7 - 10) / 6) : 0, fresh('rail') ? q(t.rail / TUNE_RAIL_MAX) : 0,
+            fresh('ign') ? q(t.ign / 40) : 0, fresh('kr') ? q(t.kr / 6) : 0];
     }
 
     /** A Vetro left bar: its own signal, or its "alt" while the setting "altWhen" is off ("Show boost" off: intake). */
@@ -3492,7 +3481,7 @@ class HudApp {
             // the peak boost marker on the first bar while it shows boost (setting "vetroPeak")
             const pk = this._pullShown(), b0 = bars[0];
             const pkF = pk !== null && b0 && b0.signal === 'boost' ? Math.round(Math.min(1, Math.max(0, (pk - b0.min) / (b0.max - b0.min))) * 400) / 400 : -1;
-            const key = bv.concat(ts, [fl, hvF, pkF], this._tuneOn(w) ? [JSON.stringify(this._tuneVals())] : []).join('|');
+            const key = bv.concat(ts, [fl, hvF, pkF], this._tuneOn(w) ? this._tuneVals() : []).join('|');
             if (!force && key === x.last) return;
             x.last = key;
             if (force) { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
@@ -3504,12 +3493,7 @@ class HudApp {
             const F = w.fuel;
             x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], fl]);
             x.c.uniform(x.ref, 'u_peak', [pkF]);
-            if (this._tuneOn(w)) {
-                const T = this._tuneVals();
-                x.c.uniform(x.ref, 'u_tuneV', T.v);
-                x.c.uniform(x.ref, 'u_kc0', T.kc.slice(0, 4));
-                x.c.uniform(x.ref, 'u_kc1', T.kc.slice(4, 6));
-            }
+            if (this._tuneOn(w)) x.c.uniform(x.ref, 'u_tuneV', this._tuneVals());
             if (w.hv && this.setting('vetroHv') === true) x.c.uniform(x.ref, 'u_hv', [w.hv[0] - w.x, w.hv[1] - w.y, w.hv[2], hvF]);
         } else if (w.type === 'gdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
