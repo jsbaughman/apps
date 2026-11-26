@@ -344,7 +344,7 @@ const PRED_MAX = 9500;           // and never past this
 const SHIFT_DASH = { cdash: 1, ldash: 1, adash: 1, gdash: 1, rdash: 1 };   // dashes whose u_shift _tachTick sends
 const PULL_LOW = 0.2, PULL_RESET_MS = 4000, PULL_SHOW = 0.3;   // Vetro's peak boost: bar under which a pull ends, ms, bar to show from
 const REV_PEAK_DROP = 0.06, REV_PEAK_HOLD = 400, REV_PEAK_FADE = 1000, REV_PEAK_MIN = 0.45;   // Vetro's lit ladder: its peak mark
-const TUNE_STALE_MS = 3000, TUNE_RAIL_MAX = 35;   // Vetro's Tuning tiles: a reading older than this shows none; the rail's scale, MPa
+const TUNE_STALE_MS = 6000, TUNE_RAIL_MAX = 35, TUNE_TIMEOUT_MS = 600, TUNE_RETRY_MS = 5000;   // Vetro's Tuning tiles: a reading older than this shows none; the rail's scale, MPa
 const TACH_MS = 16;              // ~60 Hz: the rev counter's needle / band alone (_tachTick), the display's own frame rate
 const TEXT_MS = 200;             // text re-draws at most 5 times a second (what BMW's own readouts do)
 const TARGET_SIZES = { hud: [800, 480], panel: [1920, 720] };
@@ -1125,13 +1125,15 @@ class HudApp {
         const hasIntake = !!(dme && Array.isArray(dme.intake) && dme.intake.length);
         const hasOilP = !!(dme && Array.isArray(dme.oilP) && dme.oilP.length);
         let rd = null, busy = false, baro = 101.3, baroAt = 0, intakeAsk = 0, oilAsk = 0, oilMiss = 0, hvAsk = 0, hvMiss = 0, fuelAsk = 0, fuelMiss = 0;
-        let tuneAsk = 0;
+        let tuneAsk = 0, tuneLink = null;
+        const tunePick = {}, tuneTry = {};      // per Tuning value: the candidate that answers; when the next one was tried
         try {
             // the kit's read-only link: anything but a read (22 / OBD 01) is refused before it leaves the head unit.
             // silentAfter Infinity: never skip a unit that stopped answering; the retry timers below pace that.
             const { ReadOnlyDiag } = require('./kit/readonly-diag');
             const { DidReader } = require('./kit/dids');
             const link = new ReadOnlyDiag(this.ctx.signals, this.log, { silentAfter: Infinity });
+            tuneLink = link;
             Promise.resolve().then(() => link.init()).catch((e) => this.log.info('engine unit link not available: ' + (e && e.message || e)));
             rd = new DidReader(link, { ecu: (dme && dme.ecu) || 18 });
         } catch (e) { this.log.info('engine unit boost off: ' + (e && e.message || e)); return; }
@@ -1170,11 +1172,7 @@ class HudApp {
                 }
                 if (wantTune) {
                     tuneAsk = now;
-                    const T = this.tune || (this.tune = {});
-                    for (const k of ['lambda', 'lambdaT', 'rail', 'ign', 'kr']) {
-                        const v = await rd.value('tune_' + k, dme.tune[k]);
-                        if (isNum(v)) { T[k] = v; T[k + 'At'] = Date.now(); }
-                    }
+                    await this._tuneRead(dme.tune, rd, tuneLink, tunePick, tuneTry);
                 }
                 if (wantIntake) {
                     intakeAsk = now;
@@ -2993,6 +2991,59 @@ class HudApp {
         const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 200) / 200;
         return [fresh('lambda') ? q((t.lambda * 14.7 - 10) / 6) : 0, fresh('rail') ? q(t.rail / TUNE_RAIL_MAX) : 0,
             fresh('ign') ? q(t.ign / 40) : 0, fresh('kr') ? q(t.kr / 6) : 0];
+    }
+
+    /**
+     * The Tuning tiles' readings in ONE request: every value whose answering candidate is a BMW identifier goes in a single
+     * 22 request (the unit answers the ones it has, each after its identifier); a value an OBD PID answers is asked on its
+     * own. A value nothing answered yet (or that dropped out of the reply) tries its next candidate, at most every
+     * TUNE_RETRY_MS, with a short timeout: a candidate the unit ignores can't stall the rest.
+     */
+    async _tuneRead(cfg, rd, link, pick, tried) {
+        const T = this.tune || (this.tune = {}), now = Date.now(), keys = ['lambda', 'lambdaT', 'rail', 'ign', 'kr'];
+        const cand = (k) => (cfg[k] || [])[pick[k] || 0];
+        const put = (k, c, bytes) => {
+            let raw = 0;
+            for (let i = 0; i < c.bytes; i++) raw = raw * 256 + bytes[i];
+            if (c.signed && raw >= Math.pow(2, 8 * c.bytes - 1)) raw -= Math.pow(2, 8 * c.bytes);
+            const v = raw * (c.factor == null ? 1 : c.factor) + (c.offset || 0);
+            if ((c.min != null && v < c.min) || (c.max != null && v > c.max)) return false;
+            T[k] = v; T[k + 'At'] = Date.now();
+            return true;
+        };
+        const got = {};
+        const multi = keys.filter((k) => cand(k) && cand(k).did);
+        if (multi.length && link && link.readMany) {
+            const ecu = cfg.ecu || 0x12;
+            const u = await link.readMany(ecu, multi.map((k) => parseInt(cand(k).did, 16)), TUNE_TIMEOUT_MS).catch(() => null);
+            if (u && u[0] === 0x62) {
+                for (let i = 1; i + 2 <= u.length;) {
+                    const did = (u[i] << 8) | u[i + 1], k = multi.find((x) => parseInt(cand(x).did, 16) === did);
+                    if (!k || i + 2 + cand(k).bytes > u.length) break;
+                    got[k] = put(k, cand(k), u.slice(i + 2, i + 2 + cand(k).bytes));
+                    i += 2 + cand(k).bytes;
+                }
+            }
+        }
+        for (const k of keys) {
+            const c = cand(k);
+            if (c && c.obd && !got[k]) {
+                const v = await rd.read(Object.assign({ timeoutMs: TUNE_TIMEOUT_MS }, c)).catch(() => null);
+                if (isNum(v)) { T[k] = v; T[k + 'At'] = Date.now(); got[k] = true; }
+            }
+            if (got[k] || !(cfg[k] || []).length || now - (tried[k] || 0) < TUNE_RETRY_MS) continue;
+            // nothing from this one: try its next candidate on its own
+            tried[k] = now;
+            const n = cfg[k].length, j = ((pick[k] || 0) + 1) % n, c2 = cfg[k][j];
+            const v = await rd.read(Object.assign({ timeoutMs: TUNE_TIMEOUT_MS }, c2)).catch(() => null);
+            if (isNum(v)) {
+                pick[k] = j; T[k] = v; T[k + 'At'] = Date.now();
+                this.log.info('tuning: ' + k + ' from ' + (c2.did || 'OBD ' + c2.obd) + ' (' + (c2.note || '') + ')');
+            } else if (!tried[k + 'Logged'] || j === 0) {
+                tried[k + 'Logged'] = true;
+                this.log.info('tuning: ' + k + ': ' + (c2.did || 'OBD ' + c2.obd) + ' gives nothing (' + ((rd.raws[rd.key(c2)] || {}).why || '?') + ')');
+            }
+        }
     }
 
     /** A Vetro left bar: its own signal, or its "alt" while the setting "altWhen" is off ("Show boost" off: intake). */
