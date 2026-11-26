@@ -344,6 +344,7 @@ const PRED_MAX = 9500;           // and never past this
 const SHIFT_DASH = { cdash: 1, ldash: 1, adash: 1, gdash: 1, rdash: 1 };   // dashes whose u_shift _tachTick sends
 const PULL_LOW = 0.2, PULL_RESET_MS = 4000, PULL_SHOW = 0.3;   // Vetro's peak boost: bar under which a pull ends, ms, bar to show from
 const REV_PEAK_DROP = 0.06, REV_PEAK_HOLD = 400, REV_PEAK_FADE = 1000, REV_PEAK_MIN = 0.45;   // Vetro's lit ladder: its peak mark
+const TUNE_STALE_MS = 3000, TUNE_RAIL_MAX = 35;   // Vetro's Tuning tiles: a reading older than this shows none; the rail's scale, MPa
 const TACH_MS = 16;              // ~60 Hz: the rev counter's needle / band alone (_tachTick), the display's own frame rate
 const TEXT_MS = 200;             // text re-draws at most 5 times a second (what BMW's own readouts do)
 const TARGET_SIZES = { hud: [800, 480], panel: [1920, 720] };
@@ -374,7 +375,7 @@ function cachedText(w, h, s, o) {
 }
 // settings that always rebuild (they pick another layout, change the theme's colours or what is placed where); every
 // other setting first tries _softSwitch, which swaps text in the layers already on the cluster
-const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap', 'vetroRev', 'vetroBright'];
+const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap', 'vetroRev', 'vetroBright', 'vetroRight'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
@@ -730,6 +731,7 @@ class HudApp {
         this.needsOilP = /oilP/.test(j);
         this.needsHv = /hvSoc/.test(j);
         this.needsFuel = /fuel/i.test(j);
+        this.needsTune = /\{\{(afr|hpfp|timing|knockR)/.test(j);
     }
     /** A sensor's value now, as its slot shows it ('--' without one). */
     sensorValue(sn) { return sn ? this._token(sn.tok) : '--'; }
@@ -1123,6 +1125,7 @@ class HudApp {
         const hasIntake = !!(dme && Array.isArray(dme.intake) && dme.intake.length);
         const hasOilP = !!(dme && Array.isArray(dme.oilP) && dme.oilP.length);
         let rd = null, busy = false, baro = 101.3, baroAt = 0, intakeAsk = 0, oilAsk = 0, oilMiss = 0, hvAsk = 0, hvMiss = 0, fuelAsk = 0, fuelMiss = 0;
+        let tuneAsk = 0, cylAsk = 0;
         try {
             // the kit's read-only link: anything but a read (22 / OBD 01) is refused before it leaves the head unit.
             // silentAfter Infinity: never skip a unit that stopped answering; the retry timers below pace that.
@@ -1140,7 +1143,11 @@ class HudApp {
             const wantOilP = hasOilP && this.needsOilP && now - oilAsk >= (oilMiss >= 3 ? 30000 : 500);
             const wantHv = this.needsHv && now - hvAsk >= (hvMiss >= 3 ? HV_RETRY_MS : HV_EVERY_MS);
             const wantFuel = this.needsFuel && now - fuelAsk >= (fuelMiss >= 3 ? FUEL_RETRY_MS : FUEL_EVERY_MS);
-            if (busy || this.car.data().demo || (!wantBoost && !wantIntake && !wantOilP && !wantHv && !wantFuel)) return;
+            // Vetro's Tuning tiles: lambda, its target, the rail pressure, timing and knock retard, about 3 times a second;
+            // the six cylinders' ignition angles every 2 s
+            const wantTune = !!(dme && dme.tune) && this.needsTune && now - tuneAsk >= 250;
+            const wantCyl = wantTune && now - cylAsk >= 2000;
+            if (busy || this.car.data().demo || (!wantBoost && !wantIntake && !wantOilP && !wantHv && !wantFuel && !wantTune)) return;
             busy = true;
             (async () => {
                 if (wantFuel) {
@@ -1161,6 +1168,20 @@ class HudApp {
                         this.hvSoc = v; this.hvSocAt = Date.now(); hvMiss = 0;
                     } else if (++hvMiss === 3) {
                         this.log.info('hybrid battery: no answer from the battery unit (' + ((rd.raws[rd.key(HV_SOC)] || {}).why || '?') + '); asked once a minute');
+                    }
+                }
+                if (wantTune) {
+                    tuneAsk = now;
+                    const T = this.tune || (this.tune = {});
+                    for (const k of ['lambda', 'lambdaT', 'rail', 'ign', 'kr']) {
+                        const v = await rd.value('tune_' + k, dme.tune[k]);
+                        if (isNum(v)) { T[k] = v; T[k + 'At'] = Date.now(); }
+                    }
+                    if (wantCyl && Array.isArray(dme.tune.cyl)) {
+                        cylAsk = now;
+                        const cyl = [];
+                        for (const c of dme.tune.cyl) cyl.push(await rd.read(c));
+                        if (cyl.every(isNum)) { T.cyl = cyl; T.cylAt = Date.now(); }
                     }
                 }
                 if (wantIntake) {
@@ -1956,6 +1977,12 @@ class HudApp {
         switch (tok) {
             case 'u:pressure': return usP ? 'psi' : 'bar';
             case 'intake': { const v = this._raw('intake'); return fix(isNum(v) ? (usT ? v * 9 / 5 + 32 : v) : v, 0); }
+            case 'afr': case 'afrT': { const t = this.tune || {}, k = tok === 'afr' ? 'lambda' : 'lambdaT';
+                return isNum(t[k]) && Date.now() - (t[k + 'At'] || 0) < TUNE_STALE_MS ? fix(t[k] * 14.7, 1) : '--'; }
+            case 'hpfp': { const t = this.tune || {}; if (!(isNum(t.rail) && Date.now() - (t.railAt || 0) < TUNE_STALE_MS)) return '--';
+                return usP ? fix(t.rail * 145.038, 0) : fix(t.rail * 10, 0); }     // MPa: psi, or bar
+            case 'timing': case 'knockR': { const t = this.tune || {}, k = tok === 'timing' ? 'ign' : 'kr';
+                return isNum(t[k]) && Date.now() - (t[k + 'At'] || 0) < TUNE_STALE_MS ? fix(t[k], 1) : '--'; }
             case 'pullPeak': { const v = this._pullShown(); return v === null ? '' : usP ? fix(v * 14.5038, 1) : fix(v, 2); }
             case 'pullPeakLabel': return this._pullShown() === null ? '' : 'PEAK';
             case 'boostPeak': { const v = this.boostPeak; return usP ? fix(isNum(v) ? v * 14.5038 : v, 1) : fix(v, 2); }
@@ -2626,6 +2653,7 @@ class HudApp {
             c.uniform(ref, 'u_dial', [{ red: 1, yellow: 2 }[this.setting('vetroDial')] || 0]);
             c.uniform(ref, 'u_rev', [this.setting('vetroRev') === 'ladder' ? 1 : 0, 0, 0]);
             c.uniform(ref, 'u_bright', [this.setting('vetroBright') === true ? 1 : 0]);
+            c.uniform(ref, 'u_tune', this._tuneOn(w) ? [w.tune[0] - w.x, w.tune[1] - w.y, w.tune[2], w.tune[3]] : [0, 0, 0, 0]);
             c.uniform(ref, 'u_left', [L[0] - w.x, L[1] - w.y, L[2] - w.y, L[3]]);
             c.uniform(ref, 'u_right', [Rg[0] - w.y, Rg[1] - w.y, Rg[2] - w.x, Rg[3] - w.x]);
             // while the map shows in the left panel ("hole", "holeWhen" mapUp), the tyres smaller ("mapCar", "mapTbox") and
@@ -2957,6 +2985,26 @@ class HudApp {
     }
 
     _barsOf(w) { return (w.bars || []).map((b) => this._pickOf(b)); }
+
+    /** Vetro's right panel shows the Tuning tiles now: the layout has them, the setting asks for them, the map isn't up. */
+    _tuneOn(w) { return !!(w.tune && this.setting('vetroRight') === 'tuning' && !this.setting('mapHere')); }
+
+    /**
+     * The Tuning tiles' bars: AFR on 10..16 (and its target), HPFP on 0..TUNE_RAIL_MAX MPa, timing on 0..40 deg; knock per
+     * cylinder from its ignition angle against the six's mean: under 1 deg behind calm, under 3 some, past that more.
+     */
+    _tuneVals() {
+        const t = this.tune || {}, fresh = (k) => isNum(t[k]) && Date.now() - (t[k + 'At'] || 0) < TUNE_STALE_MS;
+        const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 200) / 200;
+        const v = [fresh('lambda') ? q((t.lambda * 14.7 - 10) / 6) : 0, fresh('lambdaT') ? q((t.lambdaT * 14.7 - 10) / 6) : -1,
+            fresh('rail') ? q(t.rail / TUNE_RAIL_MAX) : 0, fresh('ign') ? q(t.ign / 40) : 0];
+        let kc = [-1, -1, -1, -1, -1, -1];
+        if (Array.isArray(t.cyl) && Date.now() - (t.cylAt || 0) < TUNE_STALE_MS * 4 && t.cyl.every(isNum)) {
+            const mean = t.cyl.reduce((a, b) => a + b, 0) / 6;
+            kc = t.cyl.map((a) => (mean - a < 1 ? 0 : mean - a < 3 ? 1 : 2));
+        }
+        return { v, kc };
+    }
 
     /** A Vetro left bar: its own signal, or its "alt" while the setting "altWhen" is off ("Show boost" off: intake). */
     _vetroBar(b) { return b.alt && this.setting(b.altWhen) === false ? Object.assign({}, b, { signal: b.alt, min: b.altMin, max: b.altMax }) : b; }
@@ -3444,7 +3492,7 @@ class HudApp {
             // the peak boost marker on the first bar while it shows boost (setting "vetroPeak")
             const pk = this._pullShown(), b0 = bars[0];
             const pkF = pk !== null && b0 && b0.signal === 'boost' ? Math.round(Math.min(1, Math.max(0, (pk - b0.min) / (b0.max - b0.min))) * 400) / 400 : -1;
-            const key = bv.concat(ts, [fl, hvF, pkF]).join('|');
+            const key = bv.concat(ts, [fl, hvF, pkF], this._tuneOn(w) ? [JSON.stringify(this._tuneVals())] : []).join('|');
             if (!force && key === x.last) return;
             x.last = key;
             if (force) { const tu = this._tachUniform(x); x.lastTach = tu[1][3]; x.c.uniform(x.ref, tu[0], tu[1]); }
@@ -3456,6 +3504,12 @@ class HudApp {
             const F = w.fuel;
             x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], fl]);
             x.c.uniform(x.ref, 'u_peak', [pkF]);
+            if (this._tuneOn(w)) {
+                const T = this._tuneVals();
+                x.c.uniform(x.ref, 'u_tuneV', T.v);
+                x.c.uniform(x.ref, 'u_kc0', T.kc.slice(0, 4));
+                x.c.uniform(x.ref, 'u_kc1', T.kc.slice(4, 6));
+            }
             if (w.hv && this.setting('vetroHv') === true) x.c.uniform(x.ref, 'u_hv', [w.hv[0] - w.x, w.hv[1] - w.y, w.hv[2], hvF]);
         } else if (w.type === 'gdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;

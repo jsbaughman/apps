@@ -121,6 +121,9 @@ CLUSTER_FONTS = [
     ('vt_head', 'Barlow-Medium.ttf', 28, UPPER + LOWER + ' '),
     ('vt_p', 'BarlowSemiCondensed-SemiBold.ttf', 15, 'P'),
     ('vt_tiny', 'Michroma-Regular.ttf', 11, 'PEAK'),
+    ('vt_lab', 'Michroma-Regular.ttf', 14, UPPER),             # the Tuning tiles' names
+    ('vt_tv', 'Michroma-Regular.ttf', 33, DIGITS + '.-', 1),   # their readings
+    ('vt_sub', 'Barlow-Medium.ttf', 16, LOWER + DIGITS + '.:- '),
     ('vt_pk', 'Michroma-Regular.ttf', 17, DIGITS + '.-'),
     # the smaller tach for cars with the driver camera ("Leave room for the driver camera"), 0.81 of the above
     ('a_gear_c', 'Outfit[wght].ttf', 162, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 5),

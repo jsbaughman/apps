@@ -31,6 +31,7 @@ RIGHT = [CY - 0.60 * R, CY + 0.86 * R, 1890, 1846]      # the right panel: top, 
 CAR = [1560, 400, 175, 90]
 BAR_R, BAR_W = 602, 320                                # the left bars: one column, its right edge clear of the dial
 HV = [98, 220, 300]
+TUNE = [1312, 250, 248, 140]                            # the Tuning tiles (vetroRight): the first's x, y, w, h; 22 / 18 px apart
 # the Waze map in the left panel (setting "Show Waze map inside the theme"): the window, and the right panel meanwhile:
 # the car a bit smaller and higher, two of the bars (boost or intake, oil) side by side under it
 MAP = [178, LEFT[1] + 14, CX - 40 - 178, LEFT[2] - 14 - (LEFT[1] + 14)]   # its left end is cut along the panel's bow
@@ -77,7 +78,7 @@ def build(fonts):
                     'tach': [CX, CY, R, START, SWEEP, THOUSANDS], 'red': RED, 'left': [round(v, 1) for v in LEFT],
                     'right': [round(v, 1) for v in RIGHT], 'bars': bars, 'fuel': F, 'hv': HV, 'car': CAR,
                     'tbox': [68, 37, 69, 1], 'hole': MAP, 'holeWhen': 'mapUp', 'holeInset': 0, 'holeAim': [0.26, 0.5], 'mapCar': MAP_CAR,
-                    'mapTbox': [58, 31, 56, 0.8], 'mapBars': MAP_BARS})
+                    'mapTbox': [58, 31, 56, 0.8], 'mapBars': MAP_BARS, 'tune': TUNE})
 
     # --- the needle and its cap on a layer of their own, over the numbers (z 6)
     widgets.append({'id': 'needle', 'type': 'rneedle', 'class': 'content', 'z': 6, 'x': CX - R, 'y': CY - R, 'w': 2 * R, 'h': 2 * R,
@@ -148,9 +149,27 @@ def build(fonts):
     band = R + 36
     tx = CX + math.sqrt((band + 6) ** 2 - (RIGHT[0] + 18 - CY) ** 2) + 10
     text('mode', tx + 30, RIGHT[0] + 24, 400, '{{mode}}', 'vt_mode', 'accent', 'left')
-    text('tyre_head', tx + 34, RIGHT[0] + 86, 200, 'Tires', 'vt_head', 'head', 'left')
+    text('tyre_head', tx + 34, RIGHT[0] + 86, 200, 'Tires', 'vt_head', 'head', 'left', toggle='!vetroRight=tuning')
+    text('tyre_head_m', tx + 34, RIGHT[0] + 86, 200, 'Tires', 'vt_head', 'head', 'left', toggle='vetroRight=tuning&mapUp')
+    text('tune_head', tx + 34, RIGHT[0] + 86, 200, 'Tuning', 'vt_head', 'head', 'left', toggle='vetroRight=tuning&!mapUp')
+    # the Tuning tiles: the name, a note at the right, the reading big with its unit (the tracks are the shader's)
+    tg = 'vetroRight=tuning&!mapUp'
+    for n, (name, note, tok, unit, ufont) in enumerate((('AFR', 'target {{afrT}}', '{{afr}}', ':1', 'vt_sub'),
+                                                        ('HPFP', 'rail', '{{hpfp}}', '{{u:boostLc}}', 'vt_unit'),
+                                                        ('TIMING', 'advance', '{{timing}}', '°', 'vt_deg'),
+                                                        ('KNOCK', 'retard', '{{knockR}}', '°', 'vt_deg'))):
+        x0, y0 = TUNE[0] + (n % 2) * (TUNE[2] + 22), TUNE[1] + (n // 2) * (TUNE[3] + 18)
+        xr = x0 + TUNE[2] - 18
+        text('tu%d_n' % n, x0 + 18, y0 + 27, 120, name, 'vt_lab', 'cool', 'left', toggle=tg)
+        text('tu%d_s' % n, xr, y0 + 27, 120, note, 'vt_sub', 'dim', 'right', toggle=tg)
+        text('tu%d_u' % n, xr, y0 + 82, 40, unit, ufont, 'dim', 'right', toggle=tg)
+        gap = {':1': 20, '°': 16}.get(unit, 40)            # the reading ends just before its unit
+        text('tu%d_v' % n, xr - gap, y0 + 82, 170, tok, 'vt_tv', 'accent' if n == 0 else 'fg', 'right', toggle=tg, own=True)
+        if name == 'KNOCK':
+            for c in range(6):
+                text('tu_c%d' % c, x0 + 18 + (c + 0.5) * (TUNE[2] - 36) / 6, y0 + TUNE[3] - 6, 20, str(c + 1), 'vt_sub', 'dim', 'center', toggle=tg)
     # the car and the tyres' readings: full size, or a bit smaller while the map shows
-    for mt, sfx, (cx_, cy_, dx_, dy_), cw, bh, pf, py, ty in (('!mapUp', '', CAR, 150, 37, 'vt_tp', 40, 64),
+    for mt, sfx, (cx_, cy_, dx_, dy_), cw, bh, pf, py, ty in (('!mapUp&!vetroRight=tuning', '', CAR, 150, 37, 'vt_tp', 40, 64),
                                                              ('mapUp', '_m', MAP_CAR, 124, 31, 'vt_val', 33, 54)):
         widgets.append({'id': 'tyre_car' + sfx, 'type': 'icon', 'icon': 'carXray', 'z': 5, 'x': cx_ - cw // 2, 'y': cy_ - cw,
                         'w': cw, 'h': 2 * cw, 'toggle': mt})
@@ -179,7 +198,7 @@ def build(fonts):
     for w in widgets:
         if w['type'] == 'text' and 'rate' not in w and not w.get('own'):
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
-            if any(t in ('oil', 'intake', 'oilP', 'mode', 'coolant', 'progWord', 'hvSoc', 'pullPeak', 'pullPeakLabel') for t in toks):
+            if any(t in ('oil', 'intake', 'oilP', 'mode', 'coolant', 'progWord', 'hvSoc', 'pullPeak', 'pullPeakLabel', 'afr', 'afrT', 'hpfp', 'timing', 'knockR') for t in toks):
                 continue
             w['rate'] = 2000 if all(t.startswith('u:') for t in toks) else 1000
     return {
@@ -199,7 +218,7 @@ if __name__ == '__main__':
     fdir = root + '/apps/cluster_themes/hud/fonts/'
     fonts = {}
     for f in ('vt_num', 'vt_speed', 'vt_gear', 'vt_word', 'vt_unit', 'vt_small', 'vt_val', 'vt_tp', 'vt_range', 'vt_mode',
-              'vt_deg', 'vt_tt', 'vt_head', 'vt_p', 'vt_tiny', 'vt_pk'):
+              'vt_deg', 'vt_tt', 'vt_head', 'vt_p', 'vt_tiny', 'vt_pk', 'vt_lab', 'vt_tv', 'vt_sub'):
         j = json.load(open(fdir + f + '.json'))
         fonts[f] = {'cellHeight': j['cellHeight'], 'baseline': j['baseline']}
     path = root + '/apps/cluster_themes/hud/layouts/vetro.json'

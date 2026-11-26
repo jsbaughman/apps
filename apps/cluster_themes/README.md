@@ -55,6 +55,7 @@ An Italian GT style dash: a round dial under glass standing on a perforated meta
 - **Right:** a glass panel with red lines, the drive mode, and the tyres: the car as a blue x-ray from above, each tyre's pressure and temperature in a box, its wheel green, or red under 33 psi.
 
 - **Peak boost** (Settings, on by default, Vetro and Aero; on Aero a hollow orange pointer on the boost rail): an amber marker on the boost bar at the highest boost of the pull, with PEAK and its reading over the bar; it clears once boost has stayed under 3 psi for 4 seconds.
+- **Right panel** (Settings): Tires (default), or Tuning: AFR with its target, HPFP (the fuel rail pressure), timing and knock retard, with six cells, one per cylinder, green, amber or red as a cylinder's timing falls behind the others. Read from the engine unit about 3 times a second while the panel shows (BMW identifiers from Live Data, standard OBD as the fallback; not yet checked on an S58: a value the car doesn't answer shows --).
 - **Map:** with "Show Waze map inside the theme" on, Waze's map takes the left panel while it shows, fading into the dial; the gauges then move to the right panel, the car a bit smaller with boost (or intake) and oil temperature side by side under it.
 
 Vetro has no smaller tach for the driver camera. The layout is made by `tools/gen_vetro.py`.

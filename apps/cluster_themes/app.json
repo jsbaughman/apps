@@ -2,7 +2,7 @@
   "id": "cluster_themes",
   "title": "Cluster Themes",
   "description": "Redraws the instrument cluster as Apex, a needle rev counter with boost, oil temperature, a G-meter, coolant and fuel; Veloce, a wide arc of lit tiles over a hex backdrop with a big hollow gear and four side scales; or Off for BMW's own cluster",
-  "version": "0.26.11",
+  "version": "0.27.0",
   "autostart": true,
   "vendor": "custom",
   "loggingId": "OAC1",
@@ -916,6 +916,22 @@
       ]
     },
     {
+      "key": "vetroRight",
+      "label": "Right panel (Vetro)",
+      "type": "choice",
+      "default": "tyres",
+      "options": [
+        [
+          "tyres",
+          "Tires"
+        ],
+        [
+          "tuning",
+          "Tuning (AFR, HPFP, timing, knock)"
+        ]
+      ]
+    },
+    {
       "key": "vetroBright",
       "label": "Brighter look (Vetro)",
       "type": "bool",
@@ -1568,7 +1584,184 @@
           "max": 1500,
           "note": "BMW OELDRUCK, oil pressure, hPa (absolute, as Live Data reads it)"
         }
-      ]
+      ],
+      "tune": {
+        "comment": "Vetro's Tuning tiles (setting vetroRight): BMW DME identifiers from cauliflowermossgrape's Live Data (DME8FF_R: B58 / B48 / B38; unverified on the S58; its oil pressure identifiers answer there), the OBD PIDs as fallbacks",
+        "lambda": [
+          {
+            "did": "5889",
+            "bytes": 2,
+            "at": 0,
+            "factor": 0.000244140625,
+            "min": 0.5,
+            "max": 1.6,
+            "note": "ILAG1 lambda actual"
+          },
+          {
+            "did": "5640",
+            "bytes": 2,
+            "at": 0,
+            "factor": 0.00024414,
+            "min": 0.5,
+            "max": 1.6,
+            "note": "LAMBDA_SONDE_IST lambda from the sensor"
+          },
+          {
+            "obd": "34",
+            "bytes": 2,
+            "at": 0,
+            "factor": 3.0517578125e-05,
+            "min": 0.5,
+            "max": 1.6,
+            "note": "OBD 0x34 O2 sensor 1 equivalence ratio"
+          }
+        ],
+        "lambdaT": [
+          {
+            "did": "5816",
+            "bytes": 2,
+            "at": 0,
+            "factor": 0.000244140625,
+            "min": 0.5,
+            "max": 1.6,
+            "note": "S_LAMBDA_SOLLWERT lambda target"
+          },
+          {
+            "obd": "44",
+            "bytes": 2,
+            "at": 0,
+            "factor": 3.0517578125e-05,
+            "min": 0.5,
+            "max": 1.6,
+            "note": "OBD 0x44 commanded equivalence ratio"
+          }
+        ],
+        "rail": [
+          {
+            "did": "58EF",
+            "bytes": 2,
+            "at": 0,
+            "factor": 0.0005,
+            "min": 0.2,
+            "max": 40,
+            "note": "I_DRUCK_RAIL_ABS_FILT rail pressure, MPa"
+          },
+          {
+            "did": "5658",
+            "bytes": 2,
+            "at": 0,
+            "factor": 0.002,
+            "min": 0.2,
+            "max": 40,
+            "note": "I_DRUCK_RAIL_ABS_FILT_NEU rail pressure, MPa"
+          },
+          {
+            "obd": "23",
+            "bytes": 2,
+            "at": 0,
+            "factor": 0.01,
+            "min": 0.2,
+            "max": 40,
+            "note": "OBD 0x23 fuel rail gauge pressure, 10 kPa per bit: MPa"
+          }
+        ],
+        "ign": [
+          {
+            "did": "59FA",
+            "bytes": 1,
+            "at": 0,
+            "signed": true,
+            "factor": 0.75,
+            "min": -40,
+            "max": 60,
+            "note": "I_ZUENDWINKEL ignition angle, deg"
+          },
+          {
+            "obd": "0E",
+            "bytes": 1,
+            "at": 0,
+            "factor": 0.5,
+            "offset": -64,
+            "min": -40,
+            "max": 60,
+            "note": "OBD 0x0E timing advance"
+          }
+        ],
+        "kr": [
+          {
+            "did": "554C",
+            "bytes": 1,
+            "at": 0,
+            "signed": true,
+            "factor": 0.375,
+            "min": -20,
+            "max": 20,
+            "note": "MITTELW_ZYLIND_ZWSPAET_KR knock control retard, mean, deg"
+          }
+        ],
+        "cyl": [
+          {
+            "did": "4A49",
+            "bytes": 2,
+            "at": 0,
+            "signed": true,
+            "factor": 0.1,
+            "min": -40,
+            "max": 60,
+            "note": "ignition angle, cylinder 1"
+          },
+          {
+            "did": "4A4A",
+            "bytes": 2,
+            "at": 0,
+            "signed": true,
+            "factor": 0.1,
+            "min": -40,
+            "max": 60,
+            "note": "ignition angle, cylinder 2"
+          },
+          {
+            "did": "4A4C",
+            "bytes": 2,
+            "at": 0,
+            "signed": true,
+            "factor": 0.1,
+            "min": -40,
+            "max": 60,
+            "note": "ignition angle, cylinder 3"
+          },
+          {
+            "did": "4A4D",
+            "bytes": 2,
+            "at": 0,
+            "signed": true,
+            "factor": 0.1,
+            "min": -40,
+            "max": 60,
+            "note": "ignition angle, cylinder 4"
+          },
+          {
+            "did": "4A4E",
+            "bytes": 2,
+            "at": 0,
+            "signed": true,
+            "factor": 0.1,
+            "min": -40,
+            "max": 60,
+            "note": "ignition angle, cylinder 5"
+          },
+          {
+            "did": "4A4F",
+            "bytes": 2,
+            "at": 0,
+            "signed": true,
+            "factor": 0.1,
+            "min": -40,
+            "max": 60,
+            "note": "ignition angle, cylinder 6"
+          }
+        ]
+      }
     },
     "tankLitres": 65,
     "engine": {

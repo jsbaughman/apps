@@ -2668,6 +2668,10 @@ uniform vec4 u_tyre;       // FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
 uniform float u_plain;     // 1: no floor (the "Backgrounds" setting off)
 uniform vec4 u_hole;       // the Waze map's window in the left panel while it shows: x, y, w, h (w 0: none)
 uniform vec4 u_tbox;       // the tyre boxes' half width, half height, the wheels' x offset, the wheels' scale
+uniform vec4 u_tune;       // the Tuning panel ("vetroRight" tuning): its first tile x, y, w, h (w 0: the tyres instead)
+uniform vec4 u_tuneV;      // AFR 0..1, its target 0..1 (< 0: none), HPFP 0..1, timing 0..1
+uniform vec4 u_kc0;        // knock per cylinder 1..4: -1 no reading, 0 calm, 1 some retard, 2 more
+uniform vec2 u_kc1;        // cylinders 5, 6
 uniform float u_bright;    // "vetroBright": 1 the brighter look (a lifted face, more sheen, lighter panels, full white)
 uniform vec3 u_rev;        // "vetroRev": x 1 the lit ladder (no needle), 0 the needle; y the revs' peak 0..1, z its fade 1..0
 uniform float u_peak;      // the peak boost on the first bar, 0..1 (< 0: none; setting "vetroPeak")
@@ -2807,9 +2811,31 @@ void main() {
                           + exp(-max(p.y - rb, 0.0) / 14.0) * step(rb, p.y) * step(p.x, xr) * clamp((p.x - C.x - 0.5 * R) / 300.0, 0.0, 1.0) * 0.35);
         float tx = C.x + sqrt(max(pow(BAND + 6.0, 2.0) - pow(rt + 18.0 - C.y, 2.0), 0.0)) + 10.0;
         c = put(c, vec3(1.0, 0.70, 0.17), cov(abs((p.x - tx - 2.5) - 0.48 * (p.y - rt - 6.0)) - 2.0) * step(rt + 6.0, p.y) * step(p.y, yl - 6.0));
+        // the Tuning panel: four tiles (AFR, HPFP, timing, knock), navy glass, a dark track filled to its value; AFR's
+        // target marked; knock as six cells, one per cylinder
+        for (int i = 0; i < 4; i++) {
+            if (u_tune.z <= 0.0) break;
+            vec2 o = u_tune.xy + vec2(mod(float(i), 2.0) * (u_tune.z + 22.0), floor(float(i) * 0.5) * (u_tune.w + 18.0));
+            float bd = rbox(p, o + u_tune.zw * 0.5, u_tune.zw * 0.5, 6.0);
+            if (bd > 2.0) continue;
+            c = put(c, vec3(0.03, 0.063, 0.118), cov(bd) * 0.92);
+            c = put(c, vec3(0.27, 0.35, 0.47), cov(abs(bd) - 0.6));
+            vec2 q = (p - o - vec2(18.0, u_tune.w - 36.0)) / vec2(u_tune.z - 36.0, 16.0);
+            float f = i == 0 ? u_tuneV.x : i == 1 ? u_tuneV.z : u_tuneV.w;
+            vec3 tc = mix(vec3(0.01, 0.015, 0.025), vec3(0.86, 0.91, 1.0), step(q.x, f) * step(0.2, q.y) * step(q.y, 0.8));
+            if (i == 3) {
+                float cl = floor(q.x * 6.0);
+                float st = cl < 0.5 ? u_kc0.x : cl < 1.5 ? u_kc0.y : cl < 2.5 ? u_kc0.z : cl < 3.5 ? u_kc0.w : cl < 4.5 ? u_kc1.x : u_kc1.y;
+                tc = st > 1.5 ? vec3(0.92, 0.18, 0.14) : st > 0.5 ? vec3(1.0, 0.68, 0.18) : st > -0.5 ? vec3(0.25, 0.75, 0.45) : vec3(0.22, 0.25, 0.3);
+                tc = mix(vec3(0.01, 0.015, 0.025), tc, step(0.08, fract(q.x * 6.0)) * step(fract(q.x * 6.0), 0.92) * step(0.2, q.y) * step(q.y, 0.8));
+            }
+            c = put(c, tc, step(0.0, q.x) * step(q.x, 1.0) * step(0.0, q.y) * step(q.y, 1.0));
+            if (i == 0) c = put(c, vec3(1.0, 0.73, 0.24), cov(abs(q.x - u_tuneV.y) * (u_tune.z - 36.0) - 1.3) * step(abs(q.y - 0.5), 0.7));
+        }
         // the tyres: a box each out to the side (a bright edge toward the car), a leader to its wheel, the wheel outlined
         // green (fine) or red (low) beside the body
         for (int i = 0; i < 4; i++) {
+            if (u_tune.z > 0.0) break;
             float sx_ = (i == 0 || i == 2) ? -1.0 : 1.0, sy_ = i < 2 ? -1.0 : 1.0;
             float st = i == 0 ? u_tyre.x : i == 1 ? u_tyre.y : i == 2 ? u_tyre.z : u_tyre.w;
             vec2 wc = u_car.xy + vec2(sx_ * u_tbox.z, sy_ * u_car.w);
