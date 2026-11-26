@@ -2668,6 +2668,7 @@ uniform vec4 u_tyre;       // FL, FR, RL, RR: 0 no reading, 1 fine, 2 low
 uniform float u_plain;     // 1: no floor (the "Backgrounds" setting off)
 uniform vec4 u_hole;       // the Waze map's window in the left panel while it shows: x, y, w, h (w 0: none)
 uniform vec4 u_tbox;       // the tyre boxes' half width, half height, the wheels' x offset, the wheels' scale
+uniform float u_bright;    // "vetroBright": 1 the brighter look (a lifted face, more sheen, lighter panels, full white)
 uniform vec3 u_rev;        // "vetroRev": x 1 the lit ladder (no needle), 0 the needle; y the revs' peak 0..1, z its fade 1..0
 uniform float u_peak;      // the peak boost on the first bar, 0..1 (< 0: none; setting "vetroPeak")
 uniform vec4 u_hv;         // the HV battery gauge (setting "vetroHv"): x, y, height, charge 0..1; x < 0: none
@@ -2738,7 +2739,7 @@ void main() {
         pc = mix(pc, vec3(0.06, 0.085, 0.12), clamp((tt - 0.62) / 0.38, 0.0, 1.0));
         pc += vec3(0.03, 0.07, 0.12) * exp(-(pow((p.x - u_left.x - 110.0) / 260.0, 2.0) + pow((p.y - C.y - 0.3 * R) / 150.0, 2.0)));
         pc *= 1.0 - 0.45 * clamp((p.x - xl) / 460.0, 0.0, 1.0);
-        c = put(c, pc, lin * (0.35 + 0.6 * k));
+        c = put(c, pc * (1.0 + 0.35 * u_bright), lin * (0.35 + 0.6 * k));
         // the dark ring it ends against at the dial, a fine line at its edge
         c = put(c, vec3(0.012, 0.018, 0.03), lin * clamp(1.0 - (d - R - 34.0) / 16.0, 0.0, 1.0) * 0.92);
         c = put(c, vec3(0.45, 0.52, 0.62), lin * cov(abs(d - R - 40.0) - 0.6) * 0.35);
@@ -2790,7 +2791,7 @@ void main() {
         c *= 1.0 - 0.5 * exp(-max(p.y - rb, 0.0) / 10.0) * step(rb, p.y) * step(BAND, d) * step(p.x, xr);
         float tr = clamp((p.y - rt) / (rb - rt), 0.0, 1.0);
         vec3 gc = vec3(0.035 + 0.03 * (1.0 - tr), 0.06 + 0.045 * (1.0 - tr), 0.10 + 0.07 * (1.0 - tr));
-        c = put(c, gc, inP * 0.82);
+        c = put(c, gc * (1.0 + 0.35 * u_bright), inP * 0.82);
         float inB = step(R + 2.0, d) * step(d, BAND) * step(rt, p.y) * step(p.y, rb) * step(C.x + 0.25 * R, p.x);
         c = put(c, vec3(0.02, 0.035, 0.06), inB * 0.7);
         float ok = step(rt, p.y) * step(p.y, rb) * step(C.x + 0.25 * R, p.x);
@@ -2859,7 +2860,7 @@ void main() {
         float redK = u_scale.w * u_scale.z;
         float pxk = R * radians(u_scale.y) / u_scale.z;                            // px per thousand at the rim
         // the face: black, faintly lighter toward the rim; red or yellow from the inner ring out, lit from above
-        float fv = 0.018 + 0.05 * pow(clamp((d / R - 0.5) / 0.5, 0.0, 1.0), 2.0);
+        float fv = 0.018 + 0.05 * pow(clamp((d / R - 0.5) / 0.5, 0.0, 1.0), 2.0) + u_bright * (0.035 + 0.05 * exp(-pow(d / (0.75 * R), 2.0)));
         vec3 fc = vec3(fv, fv, fv * 1.08);
         vec3 FC = u_dial > 1.5 ? vec3(0.96, 0.74, 0.04) : vec3(0.62, 0.04, 0.03);
         fc = mix(fc, FC * (0.78 + 0.28 * up - 0.18 * clamp((d / R - 0.75) / 0.25, 0.0, 1.0)), step(0.5, u_dial) * clamp(d - 0.5 * R + 0.5, 0.0, 1.0));
@@ -2868,7 +2869,7 @@ void main() {
         vec3 col = fc;
         // the hub: dark charcoal, recessed (a shadow inside its edge, deepest under its top), a fine grey edge
         float HUB = 0.43 * R;
-        col = mix(col, vec3(0.040, 0.043, 0.052), cov(d - HUB));
+        col = mix(col, vec3(0.040, 0.043, 0.052) * (1.0 + 0.6 * u_bright), cov(d - HUB));
         col *= 1.0 - pow(clamp(1.0 - (HUB - d) / 34.0, 0.0, 1.0), 1.6) * step(d, HUB) * (0.55 + 0.35 * clamp(up / 0.43, 0.0, 1.0));
         vec3 ink = u_dial > 1.5 ? vec3(0.59, 0.44, 0.04) : u_dial > 0.5 ? vec3(0.37, 0.04, 0.03) : vec3(0.20, 0.21, 0.235);
         col += vec3(0.18 + 0.2 * clamp(up, 0.0, 1.0)) * cov(abs(d - HUB) - 0.6);
@@ -2921,7 +2922,7 @@ void main() {
             float bt = clamp((p.y - y0) / (y1 - y0), 0.0, 1.0);
             vec3 tint = mix(i == 0 ? vec3(0.06, 0.10, 0.17) : vec3(0.075, 0.11, 0.17), vec3(0.03, 0.055, 0.10), bt);
             tint += vec3(0.6, 0.85, 1.0) * 0.045 * exp(-pow(((p.x - C.x) * 0.35 + (p.y - y0)) / (y1 - y0) - 0.55, 2.0) / 0.048);
-            col = mix(col, tint, cov(bd) * 0.72);
+            col = mix(col, tint * (1.0 + 0.35 * u_bright), cov(bd) * 0.72);
             float edgeR = cov(abs(d - rr + 1.5) - 1.3) * step(y0 + 2.0, p.y) * step(p.y, y1 - 2.0) * step(C.x, p.x) * (0.35 + 0.65 * clamp(min(p.y - y0, y1 - p.y) / 14.0, 0.0, 1.0));
             // with the lit ladder, the right edges take the revs' colour as they climb
             vec3 ec = mix(vec3(0.80, 0.84, 0.90), revCol(u_tach.w), u_rev.x * smoothstep(0.45, 0.8, u_tach.w));
@@ -2934,7 +2935,7 @@ void main() {
         // right a touch darker
         float u_ = (q.x + q.y) / R;
         col *= 1.0 - clamp(u_, 0.0, 1.4) * 0.12;
-        col += vec3(0.85, 0.9, 1.0) * (exp(-pow((u_ + 0.55) / 0.22, 2.0)) * 0.055 + exp(-pow((u_ + 0.95) / 0.08, 2.0)) * 0.03
+        col += vec3(0.85, 0.9, 1.0) * (1.0 + 1.2 * u_bright) * (exp(-pow((u_ + 0.55) / 0.22, 2.0)) * 0.055 + exp(-pow((u_ + 0.95) / 0.08, 2.0)) * 0.03
                                       + exp(-pow((d - R + 30.0) / 14.0, 2.0)) * clamp(up - 0.2, 0.0, 1.0) * 0.06);
         // the bezel's shadow inside, deepest under its top
         col *= 1.0 - pow(clamp(1.0 - (R - 4.0 - d) / 16.0, 0.0, 1.0), 2.0) * (0.35 + 0.45 * clamp(up, 0.0, 1.0));
@@ -2962,7 +2963,7 @@ void main() {
         mf = 1.0 - 0.45 * clamp((p.y - u_hole.y - 0.55 * u_hole.w) / (0.45 * u_hole.w), 0.0, 1.0);
     }
     float al = 1.0 - ma * mf;
-    gl_FragColor = vec4(clamp(c, 0.0, 0.965) * (1.0 - ma) / max(al, 0.001), al);
+    gl_FragColor = vec4(clamp(c, 0.0, 0.965 + 0.035 * u_bright) * (1.0 - ma) / max(al, 0.001), al);
 }
 `;
 

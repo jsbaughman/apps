@@ -374,7 +374,7 @@ function cachedText(w, h, s, o) {
 }
 // settings that always rebuild (they pick another layout, change the theme's colours or what is placed where); every
 // other setting first tries _softSwitch, which swaps text in the layers already on the cluster
-const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap', 'vetroRev'];
+const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap', 'vetroRev', 'vetroBright'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
@@ -2251,6 +2251,11 @@ class HudApp {
         this.themeName = this._themeName();
         this.theme = THEMES[this.themeName] || THEMES.classic;
         // Circuit's band colour (setting "circuitColor"): the numbers on the bands ("bandInk")
+        // Vetro's brighter look ("vetroBright"): the type full white, the silver numbers brighter
+        if (this.themeName === 'vetro' && this.setting('vetroBright') === true) {
+            this.theme = Object.assign({}, this.theme, { fg: [255, 255, 255, 255], dim: [222, 228, 236, 255], num: [255, 255, 255, 255],
+                numLow: [184, 188, 198, 255], head: [245, 248, 252, 255] });
+        }
         if (this.themeName === 'circuit') this.theme = Object.assign({}, this.theme, { bandInk: (CIRCUIT_COLORS[this.setting('circuitColor')] || CIRCUIT_COLORS.red).ink });
         this.hudHoliday = this._hudHoliday();      // the HUD's holiday colours (hud_holiday.js), null for none
         if (this.hudHoliday) this.theme = hudHoliday.theme(this.theme, this.hudHoliday);
@@ -2620,6 +2625,7 @@ class HudApp {
             c.uniform(ref, 'u_scale', [T[3], T[4], T[5], (w.red || 7200) / (T[5] * 1000)]);
             c.uniform(ref, 'u_dial', [{ red: 1, yellow: 2 }[this.setting('vetroDial')] || 0]);
             c.uniform(ref, 'u_rev', [this.setting('vetroRev') === 'ladder' ? 1 : 0, 0, 0]);
+            c.uniform(ref, 'u_bright', [this.setting('vetroBright') === true ? 1 : 0]);
             c.uniform(ref, 'u_left', [L[0] - w.x, L[1] - w.y, L[2] - w.y, L[3]]);
             c.uniform(ref, 'u_right', [Rg[0] - w.y, Rg[1] - w.y, Rg[2] - w.x, Rg[3] - w.x]);
             // while the map shows in the left panel ("hole", "holeWhen" mapUp), the tyres smaller ("mapCar", "mapTbox") and
