@@ -2673,6 +2673,7 @@ uniform vec4 u_tuneV;      // the tiles' tracks: AFR, HPFP, timing, knock retard
 uniform float u_bright;    // "vetroBright": 1 the brighter look (a lifted face, more sheen, lighter panels, full white)
 uniform vec3 u_rev;        // "vetroRev": x 1 the lit ladder (no needle), 0 the needle; y the revs' peak 0..1, z its fade 1..0
 uniform float u_peak;      // the peak boost on the first bar, 0..1 (< 0: none; setting "vetroPeak")
+uniform float u_hvLie;     // 1: the HV gauge lies down (u_hv.z its length), filled from the left
 uniform vec4 u_hv;         // the HV battery gauge (setting "vetroHv"): x, y, height, charge 0..1; x < 0: none
 
 float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
@@ -2767,17 +2768,20 @@ void main() {
 
     // --- the HV battery (a plug-in hybrid's charge): a tall recessed track left of the panel, filled from the foot in
     //     cyan with a glow at the top (its battery icon and numbers are layers over it)
+    // lying down (u_hvLie): z long and 15 px thick, filled from the left (above the panel while the map shows)
+    float hz = u_hv.z;
     vec2 hp = p - u_hv.xy;
-    if (u_hv.x > 0.0 && hp.x > -2.0 && hp.x < 32.0 && hp.y > -2.0 && hp.y < u_hv.z + 12.0) {
-        float bd = max(abs(hp.x - 15.0) - 15.0, abs(hp.y - u_hv.z * 0.5) - u_hv.z * 0.5);
-        float pos = 1.0 - hp.y / u_hv.z;
+    if (u_hvLie > 0.5) hp = vec2(hp.y * 2.0, hz - hp.x);
+    if (u_hv.x > 0.0 && hp.x > -2.0 && hp.x < 32.0 && hp.y > -2.0 && hp.y < hz + 12.0) {
+        float bd = max(abs(hp.x - 15.0) - 15.0, abs(hp.y - hz * 0.5) - hz * 0.5);
+        float pos = 1.0 - hp.y / hz;
         vec3 hcl = mix(vec3(0.008, 0.012, 0.02), vec3(0.32, 0.86, 0.99) * (0.85 + 0.15 * sin(hp.x * 0.1047)),
-                       step(pos, u_hv.w) * step(4.0, hp.x) * step(hp.x, 27.0) * step(hp.y, u_hv.z - 3.0));
-        hcl += vec3(0.2, 0.7, 1.0) * exp(-pow((pos - u_hv.w) * u_hv.z / 5.0, 2.0)) * 0.3;
+                       step(pos, u_hv.w) * step(4.0, hp.x) * step(hp.x, 27.0) * step(hp.y, hz - 3.0));
+        hcl += vec3(0.2, 0.7, 1.0) * exp(-pow((pos - u_hv.w) * hz / 5.0, 2.0)) * 0.3;
         hcl *= 1.0 - 0.75 * clamp(1.0 - min(hp.y - 3.0, hp.x - 2.0) / 4.0, 0.0, 1.0);
-        c *= 1.0 - 0.4 * step(0.0, bd) * step(u_hv.z, hp.y);
+        c *= 1.0 - 0.4 * step(0.0, bd) * step(hz, hp.y) * (1.0 - u_hvLie);
         c = put(c, hcl, cov(bd));
-        c = put(c, BLUE * 0.85, cov(abs(bd) - 0.6) * step(15.0, hp.x + max(hp.y - u_hv.z + 15.0, 0.0)) * 0.7);
+        c = put(c, BLUE * 0.85, cov(abs(bd) - 0.6) * step(15.0, hp.x + max(hp.y - hz + 15.0, 0.0)) * 0.7);
     }
 
     // --- the right panel: navy glass framed by fine light lines, a darker ring band round the dial, red lines along the

@@ -2644,7 +2644,8 @@ class HudApp {
             c.uniform(ref, 'u_rev', [this.setting('vetroRev') === 'ladder' ? 1 : 0, 0, 0]);
             c.uniform(ref, 'u_bright', [this.setting('vetroBright') === true ? 1 : 0]);
             c.uniform(ref, 'u_tune', [this._tuneOn(w) ? 1 : 0]);
-            c.uniform(ref, 'u_left', [L[0] - w.x, L[1] - w.y, L[2] - w.y, L[3]]);
+            const Lm = w.mapLeft && this.setting('mapHere') ? [w.mapLeft].concat(L.slice(1)) : L;   // the panel out to the edge while the map shows
+            c.uniform(ref, 'u_left', [Lm[0] - w.x, Lm[1] - w.y, Lm[2] - w.y, Lm[3]]);
             c.uniform(ref, 'u_right', [Rg[0] - w.y, Rg[1] - w.y, Rg[2] - w.x, Rg[3] - w.x]);
             // while the map shows in the left panel ("hole", "holeWhen" mapUp), the tyres smaller ("mapCar", "mapTbox") and
             // two of the bars under the car ("mapBars")
@@ -2660,7 +2661,8 @@ class HudApp {
             }
             c.uniform(ref, 'u_hole', this._hole(w));
             c.uniform(ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], 0]);
-            c.uniform(ref, 'u_hv', w.hv && this.setting('vetroHv') === true ? [w.hv[0] - w.x, w.hv[1] - w.y, w.hv[2], 0] : [-1, 0, 1, 0]);
+            c.uniform(ref, 'u_hv', this._hvAt(w) ? this._hvAt(w).concat([0]) : [-1, 0, 1, 0]);
+            c.uniform(ref, 'u_hvLie', [w.mapHv && this.setting('mapHere') ? 1 : 0]);
         } else if (w.type === 'gdash') {
             // Circuit (tools/gen_circuit.py): "tach" [cx, cy, r, start deg, sweep deg, thousands], "zones" [amber, red] rpm,
             // "left" / "right" [cx, cy, r] (the side dials), "gbox" [cx, cy, half w, half h] (the gear's box), "car"
@@ -2981,6 +2983,13 @@ class HudApp {
     }
 
     _barsOf(w) { return (w.bars || []).map((b) => this._pickOf(b)); }
+
+    /** Vetro's HV gauge with the setting on: [x, y, height] in the layer, upright, or lying above the panel (height < 0) while the map shows. */
+    _hvAt(w) {
+        if (!w.hv || this.setting('vetroHv') !== true) return null;
+        const h = w.mapHv && this.setting('mapHere') ? w.mapHv : w.hv;
+        return [h[0] - w.x, h[1] - w.y, Math.abs(h[2])];
+    }
 
     /** Vetro's right panel shows the Tuning tiles now: the layout has them, the setting asks for them, the map isn't up. */
     _tuneOn(w) { return !!(w.tune && this.setting('vetroRight') === 'tuning' && !this.setting('mapHere')); }
@@ -3545,7 +3554,7 @@ class HudApp {
             x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2], fl]);
             x.c.uniform(x.ref, 'u_peak', [pkF]);
             if (this._tuneOn(w)) x.c.uniform(x.ref, 'u_tuneV', this._tuneVals());
-            if (w.hv && this.setting('vetroHv') === true) x.c.uniform(x.ref, 'u_hv', [w.hv[0] - w.x, w.hv[1] - w.y, w.hv[2], hvF]);
+            if (this._hvAt(w)) x.c.uniform(x.ref, 'u_hv', this._hvAt(w).concat([hvF]));
         } else if (w.type === 'gdash') {
             const T = w.tach, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
             const rpm = this._raw('rpm');
