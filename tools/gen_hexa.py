@@ -26,8 +26,6 @@ LEFT = {
     'coolant': [(94, 385), (366, 385), (372, 393), (356, 470), (86, 470), (86, 393)],
     'oil':     [(88, 479), (348, 479), (376, 560), (96, 560)],
     'intake':  [(104, 569), (384, 569), (402, 654), (124, 654)],
-    # the HV battery (setting "vetroHv"), above boost: its right edge on boost's line
-    'hv':      [(242, 207), (512, 207), (453, 283), (161, 283), (161, 262)],
 }
 
 
@@ -65,10 +63,10 @@ def build(fonts):
         widgets.append(d)
 
     # --- the backdrop and the rev arc
-    order = ['boost', 'coolant', 'oil', 'intake', 'hv', 'mode', 'power', 'torque', 'fuel', None]
-    panels = [[list(v) for v in (LEFT.get(k) or RIGHT.get(k))] if k else None for k in order]
+    order = ['boost', 'coolant', 'oil', 'intake', 'mode', 'power', 'torque', 'fuel']
+    panels = [[list(v) for v in (LEFT.get(k) or RIGHT.get(k))] for k in order]
     widgets.append({'id': 'floor', 'type': 'hfloor', 'class': 'content', 'z': 0, 'x': 0, 'y': 0, 'w': W, 'h': H, 'conn': 0,
-                    'panels': panels, 'panelIf': ['vetroHv' if k == 'hv' else None for k in order], 'warn': [WARN.get(k) for k in order],
+                    'panels': panels, 'warn': [WARN.get(k) for k in order],
                     'barAt': [[1745, 428, 15], [1745, 514, 15], [1682, 592, 94, 13]],
                     'arc': [CX, CY, R - TH, 515],
                     # the Waze map in the well ("Show Waze map inside the theme"): its window round the arc's inside
@@ -83,9 +81,8 @@ def build(fonts):
         a = math.radians(T0 - (T0 - T1) * k / float(KEND))
         x, y = CX + nr * math.cos(a), CY - nr * math.sin(a)
         text('n%d' % k, x, y, 64, str(k), 'hx_num', 'hot' if k >= 7 else 'fg', 'center', rate=60000)
-    # A / M, small at the gear's top right; before the gear in file order so it shares the numbers' sheet
-    text('prog', 1060, 318, 40, '{{progAM}}', 'hx_unit', 'hot', 'left')
     text('gear', 966, 361, 240, '{{gearnum}}', 'hx_gear', 'hot', 'center', rate=FAST, own=True)
+    text('prog', 1060, 318, 40, '{{progAM}}', 'hx_unit', 'hot', 'left')   # A / M, small at the gear's top right
     text('speed', 964, 523, 280, '{{speed}}', 'hx_speed', 'fg', 'center', rate=FAST, own=True, spacing=-8)
     text('speed_u', 960, 587, 120, '{{u:speed}}', 'hx_unit', 'fg', 'center')
     text('rpm_u', 668, 516, 200, 'RPM x 1000', 'hx_rpm', 'dim', 'center', rate=60000)
@@ -93,29 +90,20 @@ def build(fonts):
     # --- the left gauges: icon, label, value (right-aligned: its unit right after it)
     rows = [  # key, icon, label, value, unit, icon x, label x / y, value right x / y, unit x, cyan unit
         ('boost', 'turbo', 'BOOST', '{{boost}}', '{{u:boostLc}}', 168, 214, 316, 300, 350, 320, True),
-        ('oilP', 'gauge', 'OIL PRESS', '{{oilP}}', '{{u:boostLc}}', 168, 214, 316, 300, 350, 320, True),   # "Show boost" off
         ('coolant', 'coolant', 'COOLANT', '{{coolant}}', '{{u:temp}}', 136, 184, 408, 254, 444, 262, False),
         ('oil', 'oilcan', 'OIL', '{{oil}}', '{{u:temp}}', 142, 190, 501, 262, 535, 270, False),
         ('intake', 'intake', 'INTAKE', '{{intake}}', '{{u:temp}}', 160, 210, 592, 268, 626, 276, False),
     ]
     for key, ic, label, val, unit, ix, lx, ly, vx, vy, ux, cyan in rows:
-        tg = 'showBoost' if key == 'boost' else '!showBoost' if key == 'oilP' else None
         s = 46
         widgets.append({'id': key + '_i', 'type': 'icon', 'icon': ic, 'z': 5, 'x': ix - s // 2, 'y': int((ly + vy) / 2 + 2 - s / 2),
-                        'w': s, 'h': s, 'color': 'cool', 'toggle': tg})
-        text(key + '_l', lx, ly, 180, label, 'hx_lab', 'fg', 'left', rate=60000, toggle=tg)
-        text(key + '_v', vx, vy, 110, val, 'hx_val', 'fg', 'right', rate=FAST if key == 'boost' else None, spacing=-3, toggle=tg)
+                        'w': s, 'h': s, 'color': 'cool'})
+        text(key + '_l', lx, ly, 160, label, 'hx_lab', 'fg', 'left', rate=60000)
+        text(key + '_v', vx, vy, 110, val, 'hx_val', 'fg', 'right', rate=FAST if key == 'boost' else None, spacing=-3)
         if cyan:
-            text(key + '_u', ux, vy + 2, 60, unit, 'hx_uc', 'cool', 'left', toggle=tg)
+            text(key + '_u', ux, vy + 2, 60, unit, 'hx_uc', 'cool', 'left')
         else:
-            text(key + '_u', ux, vy + 4, 40, unit, 'hx_u', 'dim', 'left', toggle=tg)
-
-    # the HV battery above boost (setting "vetroHv"): its icon, the label, the charge
-    widgets.append({'id': 'hv_i', 'type': 'icon', 'icon': 'battery', 'z': 5, 'x': 236, 'y': 225, 'w': 44, 'h': 44,
-                    'color': 'cool', 'toggle': 'vetroHv'})
-    text('hv_l', 304, 231, 170, 'HV BATTERY', 'hx_lab', 'fg', 'left', rate=60000, toggle='vetroHv')
-    text('hv_v', 381, 262, 90, '{{hvSoc}}', 'hx_val', 'fg', 'right', spacing=-3, toggle='vetroHv')
-    text('hv_u', 387, 266, 30, '%', 'hx_u', 'dim', 'left', rate=60000, toggle='vetroHv')
+            text(key + '_u', ux, vy + 4, 40, unit, 'hx_u', 'dim', 'left')
 
     # --- the right: the drive mode in the box, power and torque (their tick bars in the backdrop), fuel
     text('mode', 1645, 327, 320, '{{mode}}', 'hx_mode', 'fg', 'center')
@@ -138,8 +126,7 @@ def build(fonts):
         {'id': 'strip_cover_r', 'type': 'fill', 'class': 'content', 'z': 0, 'x': 1460, 'y': 660, 'w': 460, 'h': 60,
          'color': 'bg', 'stripRow': 'r'},
     ]
-    # connections (8 layers each): the backdrop, the arc, the middle on 0; the right on 1, the left on 2 (the strip covers on 0, as
-    # 0.28.2, which held on the car: 0.28.4 moved them and reset the cluster, with more uniforms)
+    # connections (8 layers each): the backdrop, the arc, the middle on 0; the right on 1, the left on 2
     for w in widgets:
         if w['id'] in ('floor', 'arc') or w['id'].startswith('strip') or 'conn' in w:
             continue
@@ -151,7 +138,7 @@ def build(fonts):
     for w in widgets:
         if w['type'] == 'text' and 'rate' not in w and not w.get('own'):
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
-            if any(t in ('oil', 'intake', 'oilP', 'hvSoc', 'coolant', 'mode', 'power', 'torque', 'fuelPct', 'range') for t in toks):
+            if any(t in ('oil', 'intake', 'coolant', 'mode', 'power', 'torque', 'fuelPct', 'range') for t in toks):
                 continue
             w['rate'] = 2000 if all(t.startswith('u:') for t in toks) else 1000
     return {

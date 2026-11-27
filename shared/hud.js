@@ -113,8 +113,7 @@
  *             [cx, cy, box dx, wheel dy] (the tyres); the face by the "vetroDial" setting
  *   rneedle   effect layer; Vetro's needle and cap over the rev counter's numbers (shaders.js rneedle): "tach" as rdash's
  *   hfloor    effect layer; the Hexa theme's backdrop (shaders.js hfloor, layout made by tools/gen_hexa.py): the hex floor, the
- *             black well, "panels" (up to 10 gauge panels, up to 6 corners each: the first 5 left, the next 5 right; null:
- *             none), "panelIf" (per panel: a toggle it shows under, or null), "warn"
+ *             black well, "panels" (up to 8 gauge panels, up to 6 corners each: the first 4 left, the next 4 right), "warn"
  *             per panel ({ signal, amber, red, low }: its frame amber or red, _hexaWarn), "barAt" (the power and torque tick
  *             bars [x, middle y, ticks], the fuel bar [x, y, w, h]), "arc" [the rev arc's centre x, y, inner radius, the
  *             well's foot y]; the Waze map in the well ("hole", "holeWhen" mapUp; the layout is "mapLive")
@@ -2646,26 +2645,22 @@ class HudApp {
             // and torque tick bars [left x, middle y, ticks], the fuel bar [x, y, w, h]), "arc" [the rev arc's centre x, y,
             // its inner radius, the well's foot y]; "warn" per panel (_hexaWarn); target px
             c.uniform(ref, 'u_size', [w.w, w.h]);
-            // the layout's 10 panels: 0..3 left, 4 the HV battery (over them), 5..8 right, 9 none
-            const corners = (i) => {
-                const pi = (w.panelIf || [])[i];      // a panel shown only while this toggle is on (the HV battery: vetroHv)
-                const P = pi && !this._toggleOn(pi) ? null : (w.panels || [])[i];
-                const out = [];
+            const pv = [];
+            for (let i = 0; i < 8; i++) {
+                const P = (w.panels || [])[i];
                 for (let j = 0; j < 6; j++) {
-                    if (!P) { out.push(-1, -1); continue; }
+                    if (!P) { pv.push(-1, -1); continue; }
                     const v = P[Math.min(j, P.length - 1)];
-                    out.push(v[0] - w.x, v[1] - w.y);
+                    pv.push(v[0] - w.x, v[1] - w.y);
                 }
-                return out;
-            };
-            c.uniform(ref, 'u_pv', [0, 1, 2, 3, 5, 6, 7, 8].reduce((a, i) => a.concat(corners(i)), []), { type: 'vec4' });
-            w.hvOn = corners(4)[0] >= 0;          // the HV battery's panel: its shape is in the shader (hfloor), only shown
-            c.uniform(ref, 'u_warn', [0, 0, 0, 0]);
+            }
+            c.uniform(ref, 'u_pv', pv, { type: 'vec4' });
+            c.uniform(ref, 'u_warn', [0, 0, 0, 0, 0, 0, 0, 0], { type: 'float' });
             const ba = [];
             (w.barAt || []).slice(0, 3).forEach((b, i) => ba.push(b[0] - w.x, b[1] - w.y, b[2], i === 2 ? b[3] : 0));
             while (ba.length < 12) ba.push(-999, -999, 0, 0);
             c.uniform(ref, 'u_barAt', ba, { type: 'vec4' });
-            c.uniform(ref, 'u_bars', [0, 0, 0, w.hvOn ? 1 : 0]);
+            c.uniform(ref, 'u_bars', [0, 0, 0, 0]);
             const Ar = w.arc;
             c.uniform(ref, 'u_arc', [Ar[0] - w.x, Ar[1] - w.y, Ar[2], Ar[3] - w.y]);
             c.uniform(ref, 'u_hole', this._hole(w));
@@ -3597,13 +3592,13 @@ class HudApp {
             // Hexa: the power and torque bars (% of the engine's peaks), the fuel bar, each panel's warning
             const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 200) / 200;
             const pw = this._raw('powerPct'), tq = this._raw('torquePct'), fuel = this._raw('fuel');
-            const bars = [isNum(pw) ? q(pw / 100) : 0, isNum(tq) ? q(tq / 100) : 0, isNum(fuel) ? q(fuel) : 0, w.hvOn ? 1 : 0];
-            const warn = [0, 1, 2, 3, 5, 6, 7, 8].map((i) => this._hexaWarn((w.warn || [])[i]));
+            const bars = [isNum(pw) ? q(pw / 100) : 0, isNum(tq) ? q(tq / 100) : 0, isNum(fuel) ? q(fuel) : 0, 0];
+            const warn = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => this._hexaWarn((w.warn || [])[i]));
             const key = bars.concat(warn).join('|');
             if (!force && key === x.last) return;
             x.last = key;
             x.c.uniform(x.ref, 'u_bars', bars);
-            x.c.uniform(x.ref, 'u_warn', [0, 1, 2, 3].map((i) => warn[i] + 3 * warn[4 + i]));
+            x.c.uniform(x.ref, 'u_warn', warn, { type: 'float' });
         } else if (w.type === 'rdash') {
             const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 400) / 400;
             const mapOn = !!(w.hole && this.setting('mapUp') === true);
