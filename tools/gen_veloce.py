@@ -35,11 +35,12 @@ def text(id_, x, y, w, h, t, font, color='fg', align='center', **kw):
     return d
 
 
-def mini_block(n, mini, label, value, unit, nums, conn=None):
+def mini_block(n, mini, label, value, unit, nums, conn=None, when=None, sfx=''):
     """A side scale's texts: the label and value on one row above it, its min / middle / max numbers just above the line."""
     x, y, w = mini['x'], mini['y'], mini['w']
     # 20 % larger than the first version (vl_lab, vl_sm, 0.21.7), on the same baselines (the label row's bottom at y - 54,
     # the scale numbers' at y - 19)
+    both = lambda c: (when + '&' + c) if when and c else (when or c)
     out = [text('m%d_l' % n, x, y - 54 - 33, 210, 33, label, 'vl_lab', 'fg', 'left'),
            text('m%d_v' % n, x + w - 136, y - 54 - 33, 130, 33, value, 'vl_lab', 'fg', 'right'),
            text('m%d_u' % n, x + w, y - 54 - 33, 60, 33, unit, 'vl_lab', 'dim', 'left')]
@@ -48,9 +49,12 @@ def mini_block(n, mini, label, value, unit, nums, conn=None):
         out += [text('m%d_lo_%s' % (n, tag), x - 36, y - 19 - 25, 72, 25, lo, 'vl_sm', 'dim', 'center', toggle=cond),
                 text('m%d_mid_%s' % (n, tag), x + w / 2 - 36, y - 19 - 25, 72, 25, mid, 'vl_sm', 'dim', 'center', toggle=cond),
                 text('m%d_hi_%s' % (n, tag), x + w - 36, y - 19 - 25, 72, 25, hi, 'vl_sm', 'hot', 'center', toggle=cond)]
-    if conn is not None:
-        for t in out:
+    for t in out:
+        if conn is not None:
             t['conn'] = conn
+        if when:
+            t['toggle'] = both(t.get('toggle'))
+            t['id'] += sfx
     return out
 
 
@@ -59,7 +63,8 @@ def build():
     minis = [
         # staggered along the arc, as in the reference photo: the upper scales sit further in, the lower ones further out
         {'x': 210, 'y': 330, 'w': 210, 'signal': 'oil', 'min': 50, 'max': 150, 'red': 0.8},
-        {'x': 90, 'y': 490, 'w': 210, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75},
+        {'x': 90, 'y': 490, 'w': 210, 'signal': 'boost', 'min': 0, 'max': 2.758, 'red': 0.75,
+         'alt': 'intake', 'altMin': 0, 'altMax': 100, 'altRed': 0.6, 'altWhen': 'showBoost'},   # "Show boost" off: intake
         {'x': 1500, 'y': 330, 'w': 210, 'signal': 'fuel', 'min': 0, 'max': 1, 'red': 1},
         {'x': 1620, 'y': 490, 'w': 210, 'signal': 'coolant', 'min': 40, 'max': 130, 'red': 0.85},
     ]
@@ -89,7 +94,9 @@ def build():
     widgets += mini_block(0, minis[0], 'Oil Temp', '{{oil}}', '{{u:temp}}',
                           [(TUS, ('122', '212', '302')), (TMET, ('50', '100', '150'))])
     widgets += mini_block(1, minis[1], 'Boost', '{{boost}}', '{{u:boostLc}}',
-                          [(PUS, ('0', '20', '40')), (PMET, ('0', '1.4', '2.8'))])
+                          [(PUS, ('0', '20', '40')), (PMET, ('0', '1.4', '2.8'))], when='showBoost')
+    widgets += mini_block(1, minis[1], 'Intake', '{{intake}}', '{{u:temp}}',
+                          [(TUS, ('32', '122', '212')), (TMET, ('0', '50', '100'))], when='!showBoost', sfx='i')
     widgets += mini_block(2, minis[2], 'Fuel', '{{fuelPct}}', '%',
                           [(US, ('0', '50', '100')), (METRIC, ('0', '50', '100'))], conn=1)
     widgets += mini_block(3, minis[3], 'Water Temp', '{{coolant}}', '{{u:temp}}',

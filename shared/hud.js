@@ -384,7 +384,7 @@ function cachedText(w, h, s, o) {
 }
 // settings that always rebuild (they pick another layout, change the theme's colours or what is placed where); every
 // other setting first tries _softSwitch, which swaps text in the layers already on the cluster
-const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap', 'vetroRev', 'vetroBright', 'vetroRight', 'vetroCamTach'];
+const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap', 'vetroRev', 'vetroBright', 'vetroRight', 'vetroCamTach', 'showBoost'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
@@ -2616,7 +2616,7 @@ class HudApp {
             c.uniform(ref, 'u_arc', [A[0] - w.x, A[1] - w.y, A[2], A[3]]);
             c.uniform(ref, 'u_red', [(w.red || 7000) / (A[7] * 1000), A[8] || 0.16, A[7]]);
             c.uniform(ref, 'u_band', [B[0] - w.x, B[1] - w.y, B[2], B[3]]);
-            c.uniform(ref, 'u_miniZ', [0, 1, 2, 3].map((i) => { const m = (w.minis || [])[i]; return m && isNum(m.red) ? m.red : 1; }));
+            c.uniform(ref, 'u_miniZ', [0, 1, 2, 3].map((i) => { const m = this._vetroBar((w.minis || [])[i]); return m && isNum(m.red) ? m.red : 1; }));
         } else if (w.type === 'adash') {
             // Aero (tools/gen_aero.py): "rail" [top-line y at the middle, middle x, curve radius, track depth], "scale" [x at 0,
             // x at the top, thousands], "zones" [amber, red] rpm, "bars" (2: [left x, top-line y, width, depth]), "frames" (4:
@@ -3113,7 +3113,7 @@ class HudApp {
     }
 
     /** A Vetro left bar: its own signal, or its "alt" while the setting "altWhen" is off ("Show boost" off: intake). */
-    _vetroBar(b) { return b.alt && this.setting(b.altWhen) === false ? Object.assign({}, b, { signal: b.alt, min: b.altMin, max: b.altMax }) : b; }
+    _vetroBar(b) { return b && b.alt && this.setting(b.altWhen) === false ? Object.assign({}, b, { signal: b.alt, min: b.altMin, max: b.altMax }, isNum(b.altRed) ? { red: b.altRed } : null) : b; }
 
     /** One bar or scale with its "pick" filled in from the layout's "picks" (else as it is). */
     _pickOf(b) {
@@ -3554,7 +3554,7 @@ class HudApp {
         } else if (w.type === 'ldash') {
             const A = w.arc, q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000;
             const rpm = this._raw('rpm');
-            const ms = [0, 1, 2, 3].map((i) => (w.minis || [])[i]);
+            const ms = [0, 1, 2, 3].map((i) => this._vetroBar((w.minis || [])[i]));   // "Show boost" off: a boost scale shows intake
             const mv = ms.map((m) => { const v = m && m.signal ? this._raw(m.signal) : null; return isNum(v) ? q((v - m.min) / (m.max - m.min)) : 0; });
             const rv = isNum(rpm) ? q(rpm / (A[7] * 1000)) : 0;
             const sh = this._shiftNow(now);

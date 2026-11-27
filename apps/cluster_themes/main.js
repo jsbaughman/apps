@@ -67,7 +67,7 @@ mgu.run({
             smartTemps: false,    // no theme here hides temperatures (smart_temps.js works on readout slots only)
             // the Settings tab lists only the settings of the theme on the cluster (shared/page.js); not listed: all themes
             settingThemes: {
-                showBoost: ['apex', 'circuit', 'aero', 'vetro'], leftTop: ['apex', 'circuit', 'aero'], leftBottom: ['apex', 'circuit', 'aero'],
+                leftTop: ['apex', 'circuit', 'aero'], leftBottom: ['apex', 'circuit', 'aero'],
                 circuitColor: ['circuit'], circuitMap: ['circuit'], vetroDial: ['vetro'], vetroRev: ['vetro'], vetroRight: ['vetro'], vetroBright: ['vetro'], vetroHv: ['vetro'], vetroPeak: ['vetro', 'aero'], aeroBackdrop: ['aero'], apexBackdrop: ['apex'], gearStyle: ['apex', 'veloce'], tachSpeed: ['apex'], dialGlow: ['apex'], leftStyle: ['apex'],
                 gaugeFill: ['apex'], rightPanel: ['apex'], cameraNotch: ['apex', 'circuit', 'vetro'], vetroCamTach: ['apex', 'circuit', 'vetro'],
                 clock: ['apex', 'veloce', 'aero'], timeZone: ['apex', 'veloce', 'aero'],   // the themes with their own clock in the strip

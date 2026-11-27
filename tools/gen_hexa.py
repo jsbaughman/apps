@@ -90,20 +90,22 @@ def build(fonts):
     # --- the left gauges: icon, label, value (right-aligned: its unit right after it)
     rows = [  # key, icon, label, value, unit, icon x, label x / y, value right x / y, unit x, cyan unit
         ('boost', 'turbo', 'BOOST', '{{boost}}', '{{u:boostLc}}', 168, 214, 316, 300, 350, 320, True),
+        ('oilP', 'gauge', 'OIL PRESS', '{{oilP}}', '{{u:boostLc}}', 168, 214, 316, 300, 350, 320, True),   # "Show boost" off
         ('coolant', 'coolant', 'COOLANT', '{{coolant}}', '{{u:temp}}', 136, 184, 408, 254, 444, 262, False),
         ('oil', 'oilcan', 'OIL', '{{oil}}', '{{u:temp}}', 142, 190, 501, 262, 535, 270, False),
         ('intake', 'intake', 'INTAKE', '{{intake}}', '{{u:temp}}', 160, 210, 592, 268, 626, 276, False),
     ]
     for key, ic, label, val, unit, ix, lx, ly, vx, vy, ux, cyan in rows:
+        tg = 'showBoost' if key == 'boost' else '!showBoost' if key == 'oilP' else None
         s = 46
         widgets.append({'id': key + '_i', 'type': 'icon', 'icon': ic, 'z': 5, 'x': ix - s // 2, 'y': int((ly + vy) / 2 + 2 - s / 2),
-                        'w': s, 'h': s, 'color': 'cool'})
-        text(key + '_l', lx, ly, 160, label, 'hx_lab', 'fg', 'left', rate=60000)
-        text(key + '_v', vx, vy, 110, val, 'hx_val', 'fg', 'right', rate=FAST if key == 'boost' else None, spacing=-3)
+                        'w': s, 'h': s, 'color': 'cool', 'toggle': tg})
+        text(key + '_l', lx, ly, 180, label, 'hx_lab', 'fg', 'left', rate=60000, toggle=tg)
+        text(key + '_v', vx, vy, 110, val, 'hx_val', 'fg', 'right', rate=FAST if key == 'boost' else None, spacing=-3, toggle=tg)
         if cyan:
-            text(key + '_u', ux, vy + 2, 60, unit, 'hx_uc', 'cool', 'left')
+            text(key + '_u', ux, vy + 2, 60, unit, 'hx_uc', 'cool', 'left', toggle=tg)
         else:
-            text(key + '_u', ux, vy + 4, 40, unit, 'hx_u', 'dim', 'left')
+            text(key + '_u', ux, vy + 4, 40, unit, 'hx_u', 'dim', 'left', toggle=tg)
 
     # --- the right: the drive mode in the box, power and torque (their tick bars in the backdrop), fuel
     text('mode', 1645, 327, 320, '{{mode}}', 'hx_mode', 'fg', 'center')
@@ -138,7 +140,7 @@ def build(fonts):
     for w in widgets:
         if w['type'] == 'text' and 'rate' not in w and not w.get('own'):
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
-            if any(t in ('oil', 'intake', 'coolant', 'mode', 'power', 'torque', 'fuelPct', 'range') for t in toks):
+            if any(t in ('oil', 'intake', 'oilP', 'coolant', 'mode', 'power', 'torque', 'fuelPct', 'range') for t in toks):
                 continue
             w['rate'] = 2000 if all(t.startswith('u:') for t in toks) else 1000
     return {

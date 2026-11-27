@@ -48,7 +48,12 @@
           "signal": "boost",
           "min": 0,
           "max": 2.758,
-          "red": 0.75
+          "red": 0.75,
+          "alt": "intake",
+          "altMin": 0,
+          "altMax": 100,
+          "altRed": 0.6,
+          "altWhen": "showBoost"
         },
         {
           "x": 1500,
@@ -448,6 +453,7 @@
       "font": "vl_lab",
       "color": "fg",
       "align": "left",
+      "toggle": "showBoost",
       "rate": 2000
     },
     {
@@ -462,6 +468,7 @@
       "font": "vl_lab",
       "color": "fg",
       "align": "right",
+      "toggle": "showBoost",
       "rate": 45,
       "own": true,
       "conn": 2
@@ -478,6 +485,7 @@
       "font": "vl_lab",
       "color": "dim",
       "align": "left",
+      "toggle": "showBoost",
       "rate": 2000
     },
     {
@@ -492,7 +500,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "uPress=us",
+      "toggle": "showBoost&uPress=us",
       "rate": 2000
     },
     {
@@ -507,7 +515,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "uPress=us",
+      "toggle": "showBoost&uPress=us",
       "rate": 2000
     },
     {
@@ -522,7 +530,7 @@
       "font": "vl_sm",
       "color": "hot",
       "align": "center",
-      "toggle": "uPress=us",
+      "toggle": "showBoost&uPress=us",
       "rate": 2000
     },
     {
@@ -537,7 +545,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "uPress=metric",
+      "toggle": "showBoost&uPress=metric",
       "rate": 2000
     },
     {
@@ -552,7 +560,7 @@
       "font": "vl_sm",
       "color": "dim",
       "align": "center",
-      "toggle": "uPress=metric",
+      "toggle": "showBoost&uPress=metric",
       "rate": 2000
     },
     {
@@ -567,7 +575,142 @@
       "font": "vl_sm",
       "color": "hot",
       "align": "center",
-      "toggle": "uPress=metric",
+      "toggle": "showBoost&uPress=metric",
+      "rate": 2000
+    },
+    {
+      "id": "m1_li",
+      "type": "text",
+      "z": 5,
+      "x": 90,
+      "y": 403,
+      "w": 210,
+      "h": 33,
+      "text": "Intake",
+      "font": "vl_lab",
+      "color": "fg",
+      "align": "left",
+      "toggle": "!showBoost",
+      "rate": 2000
+    },
+    {
+      "id": "m1_vi",
+      "type": "text",
+      "z": 5,
+      "x": 164,
+      "y": 403,
+      "w": 130,
+      "h": 33,
+      "text": "{{intake}}",
+      "font": "vl_lab",
+      "color": "fg",
+      "align": "right",
+      "toggle": "!showBoost",
+      "rate": 1000
+    },
+    {
+      "id": "m1_ui",
+      "type": "text",
+      "z": 5,
+      "x": 300,
+      "y": 403,
+      "w": 60,
+      "h": 33,
+      "text": "{{u:temp}}",
+      "font": "vl_lab",
+      "color": "dim",
+      "align": "left",
+      "toggle": "!showBoost",
+      "rate": 2000
+    },
+    {
+      "id": "m1_lo_usi",
+      "type": "text",
+      "z": 5,
+      "x": 54,
+      "y": 446,
+      "w": 72,
+      "h": 25,
+      "text": "32",
+      "font": "vl_sm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "!showBoost&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "m1_mid_usi",
+      "type": "text",
+      "z": 5,
+      "x": 159,
+      "y": 446,
+      "w": 72,
+      "h": 25,
+      "text": "122",
+      "font": "vl_sm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "!showBoost&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "m1_hi_usi",
+      "type": "text",
+      "z": 5,
+      "x": 264,
+      "y": 446,
+      "w": 72,
+      "h": 25,
+      "text": "212",
+      "font": "vl_sm",
+      "color": "hot",
+      "align": "center",
+      "toggle": "!showBoost&uTemp=us",
+      "rate": 2000
+    },
+    {
+      "id": "m1_lo_mi",
+      "type": "text",
+      "z": 5,
+      "x": 54,
+      "y": 446,
+      "w": 72,
+      "h": 25,
+      "text": "0",
+      "font": "vl_sm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "!showBoost&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "m1_mid_mi",
+      "type": "text",
+      "z": 5,
+      "x": 159,
+      "y": 446,
+      "w": 72,
+      "h": 25,
+      "text": "50",
+      "font": "vl_sm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "!showBoost&uTemp=metric",
+      "rate": 2000
+    },
+    {
+      "id": "m1_hi_mi",
+      "type": "text",
+      "z": 5,
+      "x": 264,
+      "y": 446,
+      "w": 72,
+      "h": 25,
+      "text": "100",
+      "font": "vl_sm",
+      "color": "hot",
+      "align": "center",
+      "toggle": "!showBoost&uTemp=metric",
       "rate": 2000
     },
     {
