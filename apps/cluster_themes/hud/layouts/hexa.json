@@ -705,6 +705,101 @@
       "rate": 2000
     },
     {
+      "id": "hv_p",
+      "type": "icon",
+      "icon": "hexaPanel",
+      "z": 4,
+      "x": 141,
+      "y": 190,
+      "w": 392,
+      "h": 116,
+      "pts": [
+        [
+          242,
+          207
+        ],
+        [
+          512,
+          207
+        ],
+        [
+          453,
+          283
+        ],
+        [
+          161,
+          283
+        ],
+        [
+          161,
+          262
+        ]
+      ],
+      "toggle": "vetroHv",
+      "conn": 2
+    },
+    {
+      "id": "hv_i",
+      "type": "icon",
+      "icon": "battery",
+      "z": 5,
+      "x": 236,
+      "y": 225,
+      "w": 44,
+      "h": 44,
+      "color": "cool",
+      "toggle": "vetroHv",
+      "conn": 2
+    },
+    {
+      "id": "hv_l",
+      "type": "text",
+      "z": 5,
+      "x": 304,
+      "y": 220,
+      "w": 170,
+      "h": 22,
+      "text": "HV BATTERY",
+      "font": "hx_lab",
+      "color": "fg",
+      "align": "left",
+      "rate": 60000,
+      "toggle": "vetroHv",
+      "conn": 2
+    },
+    {
+      "id": "hv_v",
+      "type": "text",
+      "z": 5,
+      "x": 291,
+      "y": 250,
+      "w": 90,
+      "h": 25,
+      "text": "{{hvSoc}}",
+      "font": "hx_val",
+      "color": "fg",
+      "align": "right",
+      "spacing": -3,
+      "toggle": "vetroHv",
+      "conn": 2
+    },
+    {
+      "id": "hv_u",
+      "type": "text",
+      "z": 5,
+      "x": 387,
+      "y": 255,
+      "w": 30,
+      "h": 22,
+      "text": "%",
+      "font": "hx_u",
+      "color": "dim",
+      "align": "left",
+      "rate": 60000,
+      "toggle": "vetroHv",
+      "conn": 2
+    },
+    {
       "id": "mode",
       "type": "text",
       "z": 5,

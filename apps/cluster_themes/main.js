@@ -68,7 +68,7 @@ mgu.run({
             // the Settings tab lists only the settings of the theme on the cluster (shared/page.js); not listed: all themes
             settingThemes: {
                 leftTop: ['apex', 'circuit', 'aero'], leftBottom: ['apex', 'circuit', 'aero'],
-                circuitColor: ['circuit'], circuitMap: ['circuit'], vetroDial: ['vetro'], vetroRev: ['vetro'], vetroRight: ['vetro'], vetroBright: ['vetro'], vetroHv: ['vetro'], vetroPeak: ['vetro', 'aero'], aeroBackdrop: ['aero'], apexBackdrop: ['apex'], gearStyle: ['apex', 'veloce'], tachSpeed: ['apex'], dialGlow: ['apex'], leftStyle: ['apex'],
+                circuitColor: ['circuit'], circuitMap: ['circuit'], vetroDial: ['vetro'], vetroRev: ['vetro'], vetroRight: ['vetro'], vetroBright: ['vetro'], vetroHv: ['vetro', 'hexa'], vetroPeak: ['vetro', 'aero'], aeroBackdrop: ['aero'], apexBackdrop: ['apex'], gearStyle: ['apex', 'veloce'], tachSpeed: ['apex'], dialGlow: ['apex'], leftStyle: ['apex'],
                 gaugeFill: ['apex'], rightPanel: ['apex'], cameraNotch: ['apex', 'circuit', 'vetro'], vetroCamTach: ['apex', 'circuit', 'vetro'],
                 clock: ['apex', 'veloce', 'aero'], timeZone: ['apex', 'veloce', 'aero'],   // the themes with their own clock in the strip
             },   // no theme here has shift lights: Alerts shows the warnings alone

@@ -105,6 +105,17 @@ def build(fonts):
         else:
             text(key + '_u', ux, vy + 4, 40, unit, 'hx_u', 'dim', 'left')
 
+    # the HV battery above boost (setting "vetroHv"): its panel a picture (car_top.js paintHexaPanel), not in the backdrop
+    # shader (0.28.4 / 0.28.5 put it there and the cluster reset); its right edge on boost's line; its icon, label, charge
+    HVP = [(242, 207), (512, 207), (453, 283), (161, 283), (161, 262)]
+    widgets.append({'id': 'hv_p', 'type': 'icon', 'icon': 'hexaPanel', 'z': 4, 'x': 141, 'y': 190, 'w': 392, 'h': 116,
+                    'pts': [list(p) for p in HVP], 'toggle': 'vetroHv', 'conn': 2})
+    widgets.append({'id': 'hv_i', 'type': 'icon', 'icon': 'battery', 'z': 5, 'x': 236, 'y': 225, 'w': 44, 'h': 44,
+                    'color': 'cool', 'toggle': 'vetroHv', 'conn': 2})
+    text('hv_l', 304, 231, 170, 'HV BATTERY', 'hx_lab', 'fg', 'left', rate=60000, toggle='vetroHv', conn=2)
+    text('hv_v', 381, 262, 90, '{{hvSoc}}', 'hx_val', 'fg', 'right', spacing=-3, toggle='vetroHv', conn=2)
+    text('hv_u', 387, 266, 30, '%', 'hx_u', 'dim', 'left', rate=60000, toggle='vetroHv', conn=2)
+
     # --- the right: the drive mode in the box, power and torque (their tick bars in the backdrop), fuel
     text('mode', 1645, 327, 320, '{{mode}}', 'hx_mode', 'fg', 'center')
     for key, label, val, unit, lx, ly, vy in (('power', 'POWER', '{{power}}', '{{u:powerLc}}', 1622, 391, 426),
@@ -138,7 +149,7 @@ def build(fonts):
     for w in widgets:
         if w['type'] == 'text' and 'rate' not in w and not w.get('own'):
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
-            if any(t in ('oil', 'intake', 'coolant', 'mode', 'power', 'torque', 'fuelPct', 'range') for t in toks):
+            if any(t in ('oil', 'intake', 'hvSoc', 'coolant', 'mode', 'power', 'torque', 'fuelPct', 'range') for t in toks):
                 continue
             w['rate'] = 2000 if all(t.startswith('u:') for t in toks) else 1000
     return {

@@ -70,6 +70,7 @@ A wide glass rev arc over a floor of raised hex tiles lit cyan, after a concept 
 - **Right:** the drive mode, power and torque (with bars, % of the engine's peaks), fuel with its bar and the range.
 - **Warnings:** a panel's frame turns amber, then red: coolant from 113 / 120 °C (235 / 248 °F), oil from 135 / 145 °C (275 / 293 °F), intake from 55 / 65 °C (131 / 149 °F), fuel under 12 / 6 %.
 - **Map:** with "Show Waze map inside the theme" on, Waze's map shows in the well under the arc, the gear and speed over it (the glass plates and the line under the gear step aside for it).
+- **HV battery** (the "HV battery gauge" setting, plug-in hybrids): a panel above boost with the battery's charge.
 - **A / M** beside the gear: automatic or manual.
 
 All the type is Saira Italic. The layout is made by `tools/gen_hexa.py`; the floor and panels are one shader (hfloor), the arc another (hdash), each well under the size that reset the cluster.

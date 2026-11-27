@@ -307,7 +307,7 @@ const visible = require('./visible');
 const sun = require('./sun');
 const textRaster = require('./hud_text');
 const { paintIcon } = require('./icons');
-const { paintCarTop, paintCarXray } = require('./car_top');
+const { paintCarTop, paintCarXray, paintHexaPanel } = require('./car_top');
 const shaders = require('./shaders');
 const calibration = require('./calibration');
 const Car = require('./kit/car');
@@ -2529,6 +2529,7 @@ class HudApp {
         else if (w.type === 'garland') { x.tw = new Garland.Twinkle(w); this._blit(x, null, Garland.paint(w, x.tw.lvl, null)); }
         else if (w.type === 'icon' && w.icon === 'carTop') this._blit(x, null, paintCarTop(w.w, w.h));   // the tyre panel's car (car_top.js)
         else if (w.type === 'icon' && w.icon === 'carXray') this._blit(x, null, paintCarXray(w.w, w.h));   // Vetro's x-ray car
+        else if (w.type === 'icon' && w.icon === 'hexaPanel') this._blit(x, null, paintHexaPanel(w.w, w.h, w.pts.map((p) => [p[0] - w.x, p[1] - w.y])));   // Hexa's HV panel
         else if (w.type === 'icon') this._blit(x, null, paintIcon(w.icon, w.w, w.h, color(t, w.color || 'fg')));
         if (w.type === 'cdash' || w.type === 'ldash' || w.type === 'gdash' || w.type === 'adash' || w.type === 'rdash') this._dashLook(x);
         if (w.type === 'sdash') {

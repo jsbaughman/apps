@@ -197,4 +197,56 @@ function paintCarXray(w, h) {
     return out;
 }
 
-module.exports = { paintCarTop, paintCarXray };
+/**
+ * Hexa's HV battery panel as a picture (tools/gen_hexa.py "hexaPanel"): the glass panel the backdrop shader draws for
+ * the other gauges (shaders.js hfloor), painted here instead, since adding it to the shader reset the cluster (0.28.4,
+ * 0.28.5). pts: its corners in this picture's px. A soft shadow under it, the dark glass lighter at the top, a fine
+ * inner frame, the cyan frame with its glow; straight RGBA.
+ */
+function paintHexaPanel(w, h, pts) {
+    const out = Buffer.alloc(w * h * 4, 0);
+    const n = pts.length;
+    let y0 = Infinity, y1 = -Infinity;
+    pts.forEach((p) => { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); });
+    const sd = (x, y) => {               // signed distance to the polygon: < 0 inside
+        let d = Infinity, inside = false;
+        for (let i = 0, j = n - 1; i < n; j = i++) {
+            const ax = pts[j][0], ay = pts[j][1], bx = pts[i][0], by = pts[i][1];
+            const ex = bx - ax, ey = by - ay, l = Math.max(1e-6, ex * ex + ey * ey);
+            const t = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / l));
+            d = Math.min(d, Math.hypot(x - ax - ex * t, y - ay - ey * t));
+            if ((ay > y) !== (by > y) && x < (bx - ax) * (y - ay) / (by - ay) + ax) inside = !inside;
+        }
+        return inside ? -d : d;
+    };
+    const cov = (d) => Math.max(0, Math.min(1, 0.5 - d));
+    for (let py = 0; py < h; py++) {
+        for (let px = 0; px < w; px++) {
+            const x = px + 0.5, y = py + 0.5, d = sd(x, y);
+            let r = 0, g = 0, b = 0, a = 0;
+            const over = (cr, cg, cb, ca) => { r = r * (1 - ca) + cr * ca; g = g * (1 - ca) + cg * ca; b = b * (1 - ca) + cb * ca; a = a + ca * (1 - a); };
+            // the shadow under it on the floor
+            const ds = sd(x, y - 6);
+            if (ds > -40) over(0, 0, 0, 0.6 * Math.exp(-Math.max(ds, 0) / 10) * Math.max(0, Math.min(1, (y - y1 + 10) / 10)) * (ds > 0 ? 1 : 0));
+            // the glow round the frame
+            const gl = Math.exp(-Math.abs(d) / 5) * 0.45 * (d > 0 ? 1 : 0);
+            if (gl > 0.004) over(70, 175, 255, Math.min(1, gl));
+            // the glass, lighter at the top
+            const f = Math.pow(Math.max(0, Math.min(1, (y - y0) / Math.max(1, y1 - y0))), 0.7);
+            const gc = cov(d) * 0.92;
+            if (gc > 0) over(15 + (4 - 15) * f, 28 + (8 - 28) * f, 44 + (14 - 44) * f, gc);
+            const fr = Math.max(0, Math.min(1, 0.5 - (Math.abs(d + 6.6) - 0.6))) * 0.45;      // the inner frame
+            if (fr > 0 && d < 0) { r += 89 * fr; g += 140 * fr; b += 191 * fr; }
+            const ed = cov(Math.abs(d) - 1.1);      // the frame
+            if (ed > 0) over(91, 227, 255, ed);
+            if (d < 0) { const ig = Math.exp(d / 5) * 0.45; r += 70 * ig; g += 175 * ig; b += 255 * ig; }
+            if (a <= 0) continue;
+            const o = (py * w + px) * 4;
+            out[o] = Math.min(255, Math.round(r)); out[o + 1] = Math.min(255, Math.round(g)); out[o + 2] = Math.min(255, Math.round(b));
+            out[o + 3] = Math.round(Math.min(1, a) * 255);
+        }
+    }
+    return out;
+}
+
+module.exports = { paintCarTop, paintCarXray, paintHexaPanel };
