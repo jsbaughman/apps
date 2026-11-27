@@ -34,6 +34,7 @@ HV = [98, 220, 300]
 TUNE = [1312, 250, 248, 140]                            # the Tuning tiles (vetroRight): the first's x, y, w, h; 22 / 18 px apart
 # the Waze map in the left panel (setting "Show Waze map inside the theme"): the window, and the right panel meanwhile:
 # the car a bit smaller and higher, two of the bars (boost or intake, oil) side by side under it
+CAM_TACH = (960, 372, 258)                              # cameraNotch: the rev counter's top (y 114) clear of the camera
 MAP_LEFT = 46                                           # the left panel reaches out to here while the map shows
 MAP = [24, LEFT[1] + 14, CX - 40 - 24, LEFT[2] - 14 - (LEFT[1] + 14)]   # its left end is cut along the panel's bow
 MAP_HV = [300, 114, -300]                               # the HV gauge meanwhile: lying above the panel, x, y, length
@@ -76,34 +77,46 @@ def build(fonts):
             b.update({'alt': 'intake', 'altMin': 0, 'altMax': 100, 'altWhen': 'showBoost'})
         bars.append(b)
     F = [BAR_R - BAR_W, LEFT[2] + 30, 250]
-    widgets.append({'id': 'dash', 'type': 'rdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
-                    'tach': [CX, CY, R, START, SWEEP, THOUSANDS], 'red': RED, 'left': [round(v, 1) for v in LEFT],
-                    'right': [round(v, 1) for v in RIGHT], 'bars': bars, 'fuel': F, 'hv': HV, 'car': CAR,
-                    'tbox': [68, 37, 69, 1], 'hole': MAP, 'holeWhen': 'mapUp', 'holeInset': 0, 'holeAim': [0.35, 0.5], 'mapLeft': MAP_LEFT, 'mapHv': MAP_HV, 'mapCar': MAP_CAR,
-                    'mapTbox': [58, 31, 56, 0.8], 'mapBars': MAP_BARS, 'tune': TUNE})
-
-    # --- the needle and its cap on a layer of their own, over the numbers (z 6)
-    widgets.append({'id': 'needle', 'type': 'rneedle', 'class': 'content', 'z': 6, 'x': CX - R, 'y': CY - R, 'w': 2 * R, 'h': 2 * R,
-                    'tach': [CX, CY, R, START, SWEEP, THOUSANDS], 'conn': 1, 'toggle': 'vetroRev=needle'})
-    # --- the rev counter's numbers: a soft shadow under each, the number per face (silver; the redline one red)
-    nr = R - 77                                         # (the ladder 19 px wide)
-    for k in range(THOUSANDS + 1):
-        a = math.radians(START + SWEEP * k / float(THOUSANDS))
-        x, y = CX + nr * math.sin(a), CY - nr * math.cos(a)
-        top = y - cell('vt_num') / 2.0 + 2
-        widgets.append({'id': 'n%d_sh' % k, 'type': 'text', 'z': 4, 'x': int(round(x - 50 + 1)), 'y': int(round(top + 4)),
-                        'w': 100, 'h': cell('vt_num'), 'text': str(k), 'font': 'vt_num', 'color': 'shade', 'align': 'center',
-                        'glow': True, 'rate': 60000})
-        for face, (lo, hi) in FACES.items():
-            c1, c2 = hi if k * 1000 >= RED else lo
-            widgets.append({'id': 'n%d_%s' % (k, face), 'type': 'text', 'z': 5, 'x': int(round(x - 50)), 'y': int(round(top)),
-                            'w': 100, 'h': cell('vt_num'), 'text': str(k), 'font': 'vt_num', 'color': c1, 'color2': c2,
-                            'align': 'center', 'toggle': 'vetroDial=' + face, 'rate': 60000})
-    # --- the speed (right-aligned, its unit after it) and the gear (AUTO / MANUAL under it), in their glass boxes
-    text('speed', 1158, 306 + 0.36 * cell('vt_speed'), 220, '{{speed}}', 'vt_speed', 'fg', 'right', rate=FAST, own=True)
-    text('speed_u', 1166, 320 + 7, 80, '{{u:speedLc}}', 'vt_unit', 'dim', 'left')
-    text('gear', CX + 0.30 * R, 428 + 0.36 * cell('vt_gear'), 120, '{{gearnum}}', 'vt_gear', 'fg', 'center', rate=FAST, own=True)
-    text('prog', CX + 0.30 * R - 32, 484, 140, '{{progWord}}', 'vt_word', 'dim', 'left')
+    # the dash, the needle, the numbers, the speed and the gear: as they are, or with the rev counter lower and smaller,
+    # clear of the driver camera ("Leave room for the driver camera", cameraNotch), as Circuit's
+    for cam in (False, True):
+        cx, cy, rr = CAM_TACH if cam else (CX, CY, R)
+        tg, sfx = ('cameraNotch', '_c') if cam else ('!cameraNotch', '')
+        fn = (lambda f: f + '_c') if cam else (lambda f: f)
+        both = lambda t: tg + '&' + t if t else tg
+        widgets.append({'id': 'dash' + sfx, 'type': 'rdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
+                        'tach': [cx, cy, rr, START, SWEEP, THOUSANDS], 'red': RED, 'left': [round(v, 1) for v in LEFT],
+                        'right': [round(v, 1) for v in RIGHT], 'bars': bars, 'fuel': F, 'hv': HV, 'car': CAR,
+                        'tbox': [68, 37, 69, 1], 'hole': MAP, 'holeWhen': 'mapUp', 'holeInset': 0, 'holeAim': [0.35, 0.5],
+                        'mapLeft': MAP_LEFT, 'mapHv': MAP_HV, 'mapCar': MAP_CAR, 'mapTbox': [58, 31, 56, 0.8],
+                        'mapBars': MAP_BARS, 'tune': TUNE, 'toggle': tg})
+        # the needle and its cap on a layer of their own, over the numbers (z 6)
+        widgets.append({'id': 'needle' + sfx, 'type': 'rneedle', 'class': 'content', 'z': 6, 'x': cx - rr, 'y': cy - rr,
+                        'w': 2 * rr, 'h': 2 * rr, 'tach': [cx, cy, rr, START, SWEEP, THOUSANDS], 'conn': 1,
+                        'toggle': both('vetroRev=needle')})
+        # the numbers: a soft shadow under each, the number per face (silver; the redline one red)
+        nr, nf = rr - 77, fn('vt_num')                  # (the ladder 19 px wide)
+        bw = 72 if cam else 100                         # the boxes narrower on the small dial: neighbours must not overlap (one sheet)
+        for k in range(THOUSANDS + 1):
+            a = math.radians(START + SWEEP * k / float(THOUSANDS))
+            x, y = cx + nr * math.sin(a), cy - nr * math.cos(a)
+            top = y - cell(nf) / 2.0 + 2
+            widgets.append({'id': 'n%d_sh%s' % (k, sfx), 'type': 'text', 'z': 4, 'x': int(round(x - bw / 2 + 1)), 'y': int(round(top + 4)),
+                            'w': bw, 'h': cell(nf), 'text': str(k), 'font': nf, 'color': 'shade', 'align': 'center',
+                            'glow': True, 'rate': 60000, 'toggle': tg})
+            for face, (lo, hi) in FACES.items():
+                c1, c2 = hi if k * 1000 >= RED else lo
+                widgets.append({'id': 'n%d_%s%s' % (k, face, sfx), 'type': 'text', 'z': 5, 'x': int(round(x - bw / 2)), 'y': int(round(top)),
+                                'w': bw, 'h': cell(nf), 'text': str(k), 'font': nf, 'color': c1, 'color2': c2,
+                                'align': 'center', 'toggle': both('vetroDial=' + face), 'rate': 60000})
+        # the speed (right-aligned, its unit after it) and the gear (AUTO / MANUAL under it), in their glass boxes
+        ux = cx + rr - 87 if cam else cx + 0.687 * rr       # the unit clear of the box's curved end on the small dial
+        text('speed' + sfx, ux - 8, cy - 0.08 * rr + 0.36 * cell(fn('vt_speed')), 220, '{{speed}}', fn('vt_speed'), 'fg', 'right',
+             rate=FAST, own=True, toggle=tg)
+        text('speed_u' + sfx, ux, cy - 0.033 * rr + 7, 80, '{{u:speedLc}}', 'vt_unit', 'dim', 'left', toggle=tg)
+        text('gear' + sfx, cx + 0.30 * rr, cy + 0.327 * rr + 0.36 * cell(fn('vt_gear')), 120, '{{gearnum}}', fn('vt_gear'), 'fg', 'center',
+             rate=FAST, own=True, toggle=tg)
+        text('prog' + sfx, cx + 0.30 * rr - 32, cy + 0.513 * rr, 140, '{{progWord}}', 'vt_word', 'dim', 'left', toggle=tg)
 
     # --- the bars: the reading over the right end (the number, the unit small after it), the icon before the track; in
     #     the left panel, or the first two under the car while the map shows
@@ -198,7 +211,9 @@ def build(fonts):
     ]
     # connections (8 layers each): the right panel on 1, the left side on 2, the dial and the strip on 0
     for w in widgets:
-        if w['id'] in ('dash', 'needle') or w['id'].startswith('strip'):
+        if w['id'] in ('dash', 'needle', 'dash_c', 'needle_c') or w['id'].startswith('strip'):
+            continue
+        if w['id'][:1] == 'n' and w['id'][1:2].isdigit():      # the rev counter's numbers: all with the dial (two sheets)
             continue
         if w['x'] >= 1250:
             w['conn'] = 1
@@ -228,7 +243,7 @@ if __name__ == '__main__':
     fdir = root + '/apps/cluster_themes/hud/fonts/'
     fonts = {}
     for f in ('vt_num', 'vt_speed', 'vt_gear', 'vt_word', 'vt_unit', 'vt_small', 'vt_val', 'vt_tp', 'vt_range', 'vt_mode',
-              'vt_deg', 'vt_tt', 'vt_head', 'vt_p', 'vt_tiny', 'vt_pk', 'vt_lab', 'vt_tv', 'vt_sub'):
+              'vt_deg', 'vt_tt', 'vt_head', 'vt_p', 'vt_tiny', 'vt_pk', 'vt_lab', 'vt_tv', 'vt_sub', 'vt_num_c', 'vt_speed_c', 'vt_gear_c'):
         j = json.load(open(fdir + f + '.json'))
         fonts[f] = {'cellHeight': j['cellHeight'], 'baseline': j['baseline']}
     path = root + '/apps/cluster_themes/hud/layouts/vetro.json'
