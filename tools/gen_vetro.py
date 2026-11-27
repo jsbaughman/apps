@@ -34,7 +34,11 @@ HV = [98, 220, 300]
 TUNE = [1312, 250, 248, 140]                            # the Tuning tiles (vetroRight): the first's x, y, w, h; 22 / 18 px apart
 # the Waze map in the left panel (setting "Show Waze map inside the theme"): the window, and the right panel meanwhile:
 # the car a bit smaller and higher, two of the bars (boost or intake, oil) side by side under it
-CAM_TACH = (960, 372, 258)                              # cameraNotch: the rev counter's top (y 114) clear of the camera
+# cameraNotch: the rev counter lower and smaller, its top clear of the camera; how small by "vetroCamTach" (the camera
+# sits lower over some dials, by the driver's eye and the screen's depth): large (top y 114), medium (y 150), small (y 180)
+# (small: the right panel's top (y 150) must stay inside the dark band round the dial, R + 36)
+CAM_TACH = {'large': (960, 372, 258), 'medium': (960, 392, 242), 'small': (960, 408, 228)}
+CAM_FONT = {'large': '_c', 'medium': '_cm', 'small': '_cs'}
 MAP_LEFT = 46                                           # the left panel reaches out to here while the map shows
 MAP = [24, LEFT[1] + 14, CX - 40 - 24, LEFT[2] - 14 - (LEFT[1] + 14)]   # its left end is cut along the panel's bow
 MAP_HV = [300, 114, -300]                               # the HV gauge meanwhile: lying above the panel, x, y, length
@@ -79,10 +83,10 @@ def build(fonts):
     F = [BAR_R - BAR_W, LEFT[2] + 30, 250]
     # the dash, the needle, the numbers, the speed and the gear: as they are, or with the rev counter lower and smaller,
     # clear of the driver camera ("Leave room for the driver camera", cameraNotch), as Circuit's
-    for cam in (False, True):
-        cx, cy, rr = CAM_TACH if cam else (CX, CY, R)
-        tg, sfx = ('cameraNotch', '_c') if cam else ('!cameraNotch', '')
-        fn = (lambda f: f + '_c') if cam else (lambda f: f)
+    for cam in (None, 'large', 'medium', 'small'):
+        cx, cy, rr = CAM_TACH[cam] if cam else (CX, CY, R)
+        tg, sfx = ('cameraNotch&vetroCamTach=' + cam, CAM_FONT[cam]) if cam else ('!cameraNotch', '')
+        fn = (lambda f, s=sfx: f + s)
         both = lambda t: tg + '&' + t if t else tg
         widgets.append({'id': 'dash' + sfx, 'type': 'rdash', 'class': 'content', 'z': 1, 'x': 0, 'y': 0, 'w': W, 'h': H,
                         'tach': [cx, cy, rr, START, SWEEP, THOUSANDS], 'red': RED, 'left': [round(v, 1) for v in LEFT],
@@ -96,7 +100,7 @@ def build(fonts):
                         'toggle': both('vetroRev=needle')})
         # the numbers: a soft shadow under each, the number per face (silver; the redline one red)
         nr, nf = rr - 77, fn('vt_num')                  # (the ladder 19 px wide)
-        bw = 72 if cam else 100                         # the boxes narrower on the small dial: neighbours must not overlap (one sheet)
+        bw = {'large': 72, 'medium': 66, 'small': 58}[cam] if cam else 100                        # the boxes narrower on the small dial: neighbours must not overlap (one sheet)
         for k in range(THOUSANDS + 1):
             a = math.radians(START + SWEEP * k / float(THOUSANDS))
             x, y = cx + nr * math.sin(a), cy - nr * math.cos(a)
@@ -211,7 +215,7 @@ def build(fonts):
     ]
     # connections (8 layers each): the right panel on 1, the left side on 2, the dial and the strip on 0
     for w in widgets:
-        if w['id'] in ('dash', 'needle', 'dash_c', 'needle_c') or w['id'].startswith('strip'):
+        if w['id'].startswith(('dash', 'needle', 'strip')):
             continue
         if w['id'][:1] == 'n' and w['id'][1:2].isdigit():      # the rev counter's numbers: all with the dial (two sheets)
             continue
@@ -243,7 +247,8 @@ if __name__ == '__main__':
     fdir = root + '/apps/cluster_themes/hud/fonts/'
     fonts = {}
     for f in ('vt_num', 'vt_speed', 'vt_gear', 'vt_word', 'vt_unit', 'vt_small', 'vt_val', 'vt_tp', 'vt_range', 'vt_mode',
-              'vt_deg', 'vt_tt', 'vt_head', 'vt_p', 'vt_tiny', 'vt_pk', 'vt_lab', 'vt_tv', 'vt_sub', 'vt_num_c', 'vt_speed_c', 'vt_gear_c'):
+              'vt_deg', 'vt_tt', 'vt_head', 'vt_p', 'vt_tiny', 'vt_pk', 'vt_lab', 'vt_tv', 'vt_sub', 'vt_num_c', 'vt_speed_c', 'vt_gear_c',
+              'vt_num_cm', 'vt_speed_cm', 'vt_gear_cm', 'vt_num_cs', 'vt_speed_cs', 'vt_gear_cs'):
         j = json.load(open(fdir + f + '.json'))
         fonts[f] = {'cellHeight': j['cellHeight'], 'baseline': j['baseline']}
     path = root + '/apps/cluster_themes/hud/layouts/vetro.json'

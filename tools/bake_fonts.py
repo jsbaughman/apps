@@ -112,6 +112,12 @@ CLUSTER_FONTS = [
     ('vt_num_c', 'Michroma-Regular.ttf', 47, DIGITS, 1, None, {'1': 'I'}),   # the camera tach's (0.86)
     ('vt_speed_c', 'Michroma-Regular.ttf', 57, DIGITS + '-', 1),
     ('vt_gear_c', 'Michroma-Regular.ttf', 67, DIGITS + 'PRN-', 1, None, {'1': 'I'}),
+    ('vt_num_cm', 'Michroma-Regular.ttf', 44, DIGITS, 1, None, {'1': 'I'}),   # the medium camera tach's (0.81)
+    ('vt_speed_cm', 'Michroma-Regular.ttf', 53, DIGITS + '-', 1),
+    ('vt_gear_cm', 'Michroma-Regular.ttf', 63, DIGITS + 'PRN-', 1, None, {'1': 'I'}),
+    ('vt_num_cs', 'Michroma-Regular.ttf', 42, DIGITS, 1, None, {'1': 'I'}),   # the small camera tach's (0.76)
+    ('vt_speed_cs', 'Michroma-Regular.ttf', 50, DIGITS + '-', 1),
+    ('vt_gear_cs', 'Michroma-Regular.ttf', 59, DIGITS + 'PRN-', 1, None, {'1': 'I'}),
     ('vt_word', 'Michroma-Regular.ttf', 17, 'AUTOMANLHV'),
     ('vt_unit', 'Michroma-Regular.ttf', 19, LOWER + '/'),
     ('vt_small', 'Michroma-Regular.ttf', 14, LOWER + '%'),

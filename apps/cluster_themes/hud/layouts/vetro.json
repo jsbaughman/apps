@@ -943,7 +943,7 @@
         248,
         140
       ],
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "needle_c",
@@ -963,7 +963,7 @@
         8
       ],
       "conn": 1,
-      "toggle": "cameraNotch&vetroRev=needle"
+      "toggle": "cameraNotch&vetroCamTach=large&vetroRev=needle"
     },
     {
       "id": "n0_sh_c",
@@ -979,7 +979,7 @@
       "align": "center",
       "glow": true,
       "rate": 60000,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "n0_black_c",
@@ -994,7 +994,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=black",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=black",
       "rate": 60000
     },
     {
@@ -1010,7 +1010,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=red",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=red",
       "rate": 60000
     },
     {
@@ -1026,7 +1026,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=yellow",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=yellow",
       "rate": 60000
     },
     {
@@ -1043,7 +1043,7 @@
       "align": "center",
       "glow": true,
       "rate": 60000,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "n1_black_c",
@@ -1058,7 +1058,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=black",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=black",
       "rate": 60000
     },
     {
@@ -1074,7 +1074,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=red",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=red",
       "rate": 60000
     },
     {
@@ -1090,7 +1090,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=yellow",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=yellow",
       "rate": 60000
     },
     {
@@ -1107,7 +1107,7 @@
       "align": "center",
       "glow": true,
       "rate": 60000,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "n2_black_c",
@@ -1122,7 +1122,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=black",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=black",
       "rate": 60000
     },
     {
@@ -1138,7 +1138,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=red",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=red",
       "rate": 60000
     },
     {
@@ -1154,7 +1154,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=yellow",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=yellow",
       "rate": 60000
     },
     {
@@ -1171,7 +1171,7 @@
       "align": "center",
       "glow": true,
       "rate": 60000,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "n3_black_c",
@@ -1186,7 +1186,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=black",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=black",
       "rate": 60000
     },
     {
@@ -1202,7 +1202,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=red",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=red",
       "rate": 60000
     },
     {
@@ -1218,7 +1218,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=yellow",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=yellow",
       "rate": 60000
     },
     {
@@ -1235,7 +1235,7 @@
       "align": "center",
       "glow": true,
       "rate": 60000,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "n4_black_c",
@@ -1250,7 +1250,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=black",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=black",
       "rate": 60000
     },
     {
@@ -1266,7 +1266,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=red",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=red",
       "rate": 60000
     },
     {
@@ -1282,7 +1282,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=yellow",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=yellow",
       "rate": 60000
     },
     {
@@ -1299,7 +1299,7 @@
       "align": "center",
       "glow": true,
       "rate": 60000,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "n5_black_c",
@@ -1314,7 +1314,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=black",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=black",
       "rate": 60000
     },
     {
@@ -1330,7 +1330,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=red",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=red",
       "rate": 60000
     },
     {
@@ -1346,7 +1346,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=yellow",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=yellow",
       "rate": 60000
     },
     {
@@ -1363,7 +1363,7 @@
       "align": "center",
       "glow": true,
       "rate": 60000,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "n6_black_c",
@@ -1378,7 +1378,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=black",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=black",
       "rate": 60000
     },
     {
@@ -1394,7 +1394,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=red",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=red",
       "rate": 60000
     },
     {
@@ -1410,7 +1410,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=yellow",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=yellow",
       "rate": 60000
     },
     {
@@ -1427,7 +1427,7 @@
       "align": "center",
       "glow": true,
       "rate": 60000,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "n7_black_c",
@@ -1442,7 +1442,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=black",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=black",
       "rate": 60000
     },
     {
@@ -1458,7 +1458,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=red",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=red",
       "rate": 60000
     },
     {
@@ -1474,7 +1474,7 @@
       "color": "num",
       "color2": "numLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=yellow",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=yellow",
       "rate": 60000
     },
     {
@@ -1491,7 +1491,7 @@
       "align": "center",
       "glow": true,
       "rate": 60000,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "n8_black_c",
@@ -1506,7 +1506,7 @@
       "color": "numRed",
       "color2": "numRedLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=black",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=black",
       "rate": 60000
     },
     {
@@ -1522,7 +1522,7 @@
       "color": "numBlack",
       "color2": "numBlackLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=red",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=red",
       "rate": 60000
     },
     {
@@ -1538,7 +1538,7 @@
       "color": "numRed",
       "color2": "numRedLow",
       "align": "center",
-      "toggle": "cameraNotch&vetroDial=yellow",
+      "toggle": "cameraNotch&vetroCamTach=large&vetroDial=yellow",
       "rate": 60000
     },
     {
@@ -1555,7 +1555,7 @@
       "align": "right",
       "rate": 45,
       "own": true,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "speed_u_c",
@@ -1569,7 +1569,7 @@
       "font": "vt_unit",
       "color": "dim",
       "align": "left",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -1586,7 +1586,7 @@
       "align": "center",
       "rate": 45,
       "own": true,
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "prog_c",
@@ -1600,7 +1600,1605 @@
       "font": "vt_word",
       "color": "dim",
       "align": "left",
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
+    },
+    {
+      "id": "dash_cm",
+      "type": "rdash",
+      "class": "content",
+      "z": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 660,
+      "tach": [
+        960,
+        392,
+        242,
+        180,
+        225,
+        8
+      ],
+      "red": 7200,
+      "left": [
+        200,
+        162.0,
+        570.0,
+        26
+      ],
+      "right": [
+        150.0,
+        588.0,
+        1890,
+        1846
+      ],
+      "bars": [
+        {
+          "x": 282,
+          "y": 223.99999999999997,
+          "w": 320,
+          "signal": "boost",
+          "min": 0,
+          "max": 2.758,
+          "alt": "intake",
+          "altMin": 0,
+          "altMax": 100,
+          "altWhen": "showBoost"
+        },
+        {
+          "x": 282,
+          "y": 310.0,
+          "w": 320,
+          "signal": "oil",
+          "min": 50,
+          "max": 150
+        },
+        {
+          "x": 282,
+          "y": 396.0,
+          "w": 320,
+          "signal": "coolant",
+          "min": 50,
+          "max": 130
+        },
+        {
+          "x": 282,
+          "y": 482.0,
+          "w": 320,
+          "signal": "oilP",
+          "min": 0,
+          "max": 5.516
+        }
+      ],
+      "fuel": [
+        282,
+        600.0,
+        250
+      ],
+      "hv": [
+        98,
+        220,
+        300
+      ],
+      "car": [
+        1560,
+        400,
+        175,
+        90
+      ],
+      "tbox": [
+        68,
+        37,
+        69,
+        1
+      ],
+      "hole": [
+        24,
+        175.99999999999997,
+        896,
+        380.0
+      ],
+      "holeWhen": "mapUp",
+      "holeInset": 0,
+      "holeAim": [
+        0.35,
+        0.5
+      ],
+      "mapLeft": 46,
+      "mapHv": [
+        300,
+        114,
+        -300
+      ],
+      "mapCar": [
+        1566,
+        346,
+        160,
+        74
+      ],
+      "mapTbox": [
+        58,
+        31,
+        56,
+        0.8
+      ],
+      "mapBars": [
+        {
+          "of": 0,
+          "x": 1294,
+          "y": 536,
+          "w": 236
+        },
+        {
+          "of": 1,
+          "x": 1598,
+          "y": 536,
+          "w": 236
+        }
+      ],
+      "tune": [
+        1312,
+        250,
+        248,
+        140
+      ],
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "needle_cm",
+      "type": "rneedle",
+      "class": "content",
+      "z": 6,
+      "x": 718,
+      "y": 150,
+      "w": 484,
+      "h": 484,
+      "tach": [
+        960,
+        392,
+        242,
+        180,
+        225,
+        8
+      ],
+      "conn": 1,
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroRev=needle"
+    },
+    {
+      "id": "n0_sh_cm",
+      "type": "text",
+      "z": 4,
+      "x": 928,
+      "y": 543,
+      "w": 66,
+      "h": 40,
+      "text": "0",
+      "font": "vt_num_cm",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "n0_black_cm",
+      "type": "text",
+      "z": 5,
+      "x": 927,
+      "y": 539,
+      "w": 66,
+      "h": 40,
+      "text": "0",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n0_red_cm",
+      "type": "text",
+      "z": 5,
+      "x": 927,
+      "y": 539,
+      "w": 66,
+      "h": 40,
+      "text": "0",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n0_yellow_cm",
+      "type": "text",
+      "z": 5,
+      "x": 927,
+      "y": 539,
+      "w": 66,
+      "h": 40,
+      "text": "0",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n1_sh_cm",
+      "type": "text",
+      "z": 4,
+      "x": 850,
+      "y": 524,
+      "w": 66,
+      "h": 40,
+      "text": "1",
+      "font": "vt_num_cm",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "n1_black_cm",
+      "type": "text",
+      "z": 5,
+      "x": 849,
+      "y": 520,
+      "w": 66,
+      "h": 40,
+      "text": "1",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n1_red_cm",
+      "type": "text",
+      "z": 5,
+      "x": 849,
+      "y": 520,
+      "w": 66,
+      "h": 40,
+      "text": "1",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n1_yellow_cm",
+      "type": "text",
+      "z": 5,
+      "x": 849,
+      "y": 520,
+      "w": 66,
+      "h": 40,
+      "text": "1",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n2_sh_cm",
+      "type": "text",
+      "z": 4,
+      "x": 791,
+      "y": 470,
+      "w": 66,
+      "h": 40,
+      "text": "2",
+      "font": "vt_num_cm",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "n2_black_cm",
+      "type": "text",
+      "z": 5,
+      "x": 790,
+      "y": 466,
+      "w": 66,
+      "h": 40,
+      "text": "2",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n2_red_cm",
+      "type": "text",
+      "z": 5,
+      "x": 790,
+      "y": 466,
+      "w": 66,
+      "h": 40,
+      "text": "2",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n2_yellow_cm",
+      "type": "text",
+      "z": 5,
+      "x": 790,
+      "y": 466,
+      "w": 66,
+      "h": 40,
+      "text": "2",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n3_sh_cm",
+      "type": "text",
+      "z": 4,
+      "x": 764,
+      "y": 394,
+      "w": 66,
+      "h": 40,
+      "text": "3",
+      "font": "vt_num_cm",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "n3_black_cm",
+      "type": "text",
+      "z": 5,
+      "x": 763,
+      "y": 390,
+      "w": 66,
+      "h": 40,
+      "text": "3",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n3_red_cm",
+      "type": "text",
+      "z": 5,
+      "x": 763,
+      "y": 390,
+      "w": 66,
+      "h": 40,
+      "text": "3",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n3_yellow_cm",
+      "type": "text",
+      "z": 5,
+      "x": 763,
+      "y": 390,
+      "w": 66,
+      "h": 40,
+      "text": "3",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n4_sh_cm",
+      "type": "text",
+      "z": 4,
+      "x": 776,
+      "y": 315,
+      "w": 66,
+      "h": 40,
+      "text": "4",
+      "font": "vt_num_cm",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "n4_black_cm",
+      "type": "text",
+      "z": 5,
+      "x": 775,
+      "y": 311,
+      "w": 66,
+      "h": 40,
+      "text": "4",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n4_red_cm",
+      "type": "text",
+      "z": 5,
+      "x": 775,
+      "y": 311,
+      "w": 66,
+      "h": 40,
+      "text": "4",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n4_yellow_cm",
+      "type": "text",
+      "z": 5,
+      "x": 775,
+      "y": 311,
+      "w": 66,
+      "h": 40,
+      "text": "4",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n5_sh_cm",
+      "type": "text",
+      "z": 4,
+      "x": 823,
+      "y": 250,
+      "w": 66,
+      "h": 40,
+      "text": "5",
+      "font": "vt_num_cm",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "n5_black_cm",
+      "type": "text",
+      "z": 5,
+      "x": 822,
+      "y": 246,
+      "w": 66,
+      "h": 40,
+      "text": "5",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n5_red_cm",
+      "type": "text",
+      "z": 5,
+      "x": 822,
+      "y": 246,
+      "w": 66,
+      "h": 40,
+      "text": "5",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n5_yellow_cm",
+      "type": "text",
+      "z": 5,
+      "x": 822,
+      "y": 246,
+      "w": 66,
+      "h": 40,
+      "text": "5",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n6_sh_cm",
+      "type": "text",
+      "z": 4,
+      "x": 896,
+      "y": 216,
+      "w": 66,
+      "h": 40,
+      "text": "6",
+      "font": "vt_num_cm",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "n6_black_cm",
+      "type": "text",
+      "z": 5,
+      "x": 895,
+      "y": 212,
+      "w": 66,
+      "h": 40,
+      "text": "6",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n6_red_cm",
+      "type": "text",
+      "z": 5,
+      "x": 895,
+      "y": 212,
+      "w": 66,
+      "h": 40,
+      "text": "6",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n6_yellow_cm",
+      "type": "text",
+      "z": 5,
+      "x": 895,
+      "y": 212,
+      "w": 66,
+      "h": 40,
+      "text": "6",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n7_sh_cm",
+      "type": "text",
+      "z": 4,
+      "x": 976,
+      "y": 220,
+      "w": 66,
+      "h": 40,
+      "text": "7",
+      "font": "vt_num_cm",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "n7_black_cm",
+      "type": "text",
+      "z": 5,
+      "x": 975,
+      "y": 216,
+      "w": 66,
+      "h": 40,
+      "text": "7",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n7_red_cm",
+      "type": "text",
+      "z": 5,
+      "x": 975,
+      "y": 216,
+      "w": 66,
+      "h": 40,
+      "text": "7",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n7_yellow_cm",
+      "type": "text",
+      "z": 5,
+      "x": 975,
+      "y": 216,
+      "w": 66,
+      "h": 40,
+      "text": "7",
+      "font": "vt_num_cm",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n8_sh_cm",
+      "type": "text",
+      "z": 4,
+      "x": 1045,
+      "y": 261,
+      "w": 66,
+      "h": 40,
+      "text": "8",
+      "font": "vt_num_cm",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "n8_black_cm",
+      "type": "text",
+      "z": 5,
+      "x": 1044,
+      "y": 257,
+      "w": 66,
+      "h": 40,
+      "text": "8",
+      "font": "vt_num_cm",
+      "color": "numRed",
+      "color2": "numRedLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n8_red_cm",
+      "type": "text",
+      "z": 5,
+      "x": 1044,
+      "y": 257,
+      "w": 66,
+      "h": 40,
+      "text": "8",
+      "font": "vt_num_cm",
+      "color": "numBlack",
+      "color2": "numBlackLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n8_yellow_cm",
+      "type": "text",
+      "z": 5,
+      "x": 1044,
+      "y": 257,
+      "w": 66,
+      "h": 40,
+      "text": "8",
+      "font": "vt_num_cm",
+      "color": "numRed",
+      "color2": "numRedLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "speed_cm",
+      "type": "text",
+      "z": 5,
+      "x": 887,
+      "y": 346,
+      "w": 220,
+      "h": 48,
+      "text": "{{speed}}",
+      "font": "vt_speed_cm",
+      "color": "fg",
+      "align": "right",
+      "rate": 45,
+      "own": true,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "speed_u_cm",
+      "type": "text",
+      "z": 5,
+      "x": 1115,
+      "y": 374,
+      "w": 80,
+      "h": 23,
+      "text": "{{u:speedLc}}",
+      "font": "vt_unit",
+      "color": "dim",
+      "align": "left",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "gear_cm",
+      "type": "text",
+      "z": 5,
+      "x": 973,
+      "y": 440,
+      "w": 120,
+      "h": 55,
+      "text": "{{gearnum}}",
+      "font": "vt_gear_cm",
+      "color": "fg",
+      "align": "center",
+      "rate": 45,
+      "own": true,
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "prog_cm",
+      "type": "text",
+      "z": 5,
+      "x": 1001,
+      "y": 501,
+      "w": 140,
+      "h": 17,
+      "text": "{{progWord}}",
+      "font": "vt_word",
+      "color": "dim",
+      "align": "left",
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "dash_cs",
+      "type": "rdash",
+      "class": "content",
+      "z": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 660,
+      "tach": [
+        960,
+        408,
+        228,
+        180,
+        225,
+        8
+      ],
+      "red": 7200,
+      "left": [
+        200,
+        162.0,
+        570.0,
+        26
+      ],
+      "right": [
+        150.0,
+        588.0,
+        1890,
+        1846
+      ],
+      "bars": [
+        {
+          "x": 282,
+          "y": 223.99999999999997,
+          "w": 320,
+          "signal": "boost",
+          "min": 0,
+          "max": 2.758,
+          "alt": "intake",
+          "altMin": 0,
+          "altMax": 100,
+          "altWhen": "showBoost"
+        },
+        {
+          "x": 282,
+          "y": 310.0,
+          "w": 320,
+          "signal": "oil",
+          "min": 50,
+          "max": 150
+        },
+        {
+          "x": 282,
+          "y": 396.0,
+          "w": 320,
+          "signal": "coolant",
+          "min": 50,
+          "max": 130
+        },
+        {
+          "x": 282,
+          "y": 482.0,
+          "w": 320,
+          "signal": "oilP",
+          "min": 0,
+          "max": 5.516
+        }
+      ],
+      "fuel": [
+        282,
+        600.0,
+        250
+      ],
+      "hv": [
+        98,
+        220,
+        300
+      ],
+      "car": [
+        1560,
+        400,
+        175,
+        90
+      ],
+      "tbox": [
+        68,
+        37,
+        69,
+        1
+      ],
+      "hole": [
+        24,
+        175.99999999999997,
+        896,
+        380.0
+      ],
+      "holeWhen": "mapUp",
+      "holeInset": 0,
+      "holeAim": [
+        0.35,
+        0.5
+      ],
+      "mapLeft": 46,
+      "mapHv": [
+        300,
+        114,
+        -300
+      ],
+      "mapCar": [
+        1566,
+        346,
+        160,
+        74
+      ],
+      "mapTbox": [
+        58,
+        31,
+        56,
+        0.8
+      ],
+      "mapBars": [
+        {
+          "of": 0,
+          "x": 1294,
+          "y": 536,
+          "w": 236
+        },
+        {
+          "of": 1,
+          "x": 1598,
+          "y": 536,
+          "w": 236
+        }
+      ],
+      "tune": [
+        1312,
+        250,
+        248,
+        140
+      ],
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "needle_cs",
+      "type": "rneedle",
+      "class": "content",
+      "z": 6,
+      "x": 732,
+      "y": 180,
+      "w": 456,
+      "h": 456,
+      "tach": [
+        960,
+        408,
+        228,
+        180,
+        225,
+        8
+      ],
+      "conn": 1,
+      "toggle": "cameraNotch&vetroCamTach=small&vetroRev=needle"
+    },
+    {
+      "id": "n0_sh_cs",
+      "type": "text",
+      "z": 4,
+      "x": 932,
+      "y": 546,
+      "w": 58,
+      "h": 39,
+      "text": "0",
+      "font": "vt_num_cs",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "n0_black_cs",
+      "type": "text",
+      "z": 5,
+      "x": 931,
+      "y": 542,
+      "w": 58,
+      "h": 39,
+      "text": "0",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n0_red_cs",
+      "type": "text",
+      "z": 5,
+      "x": 931,
+      "y": 542,
+      "w": 58,
+      "h": 39,
+      "text": "0",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n0_yellow_cs",
+      "type": "text",
+      "z": 5,
+      "x": 931,
+      "y": 542,
+      "w": 58,
+      "h": 39,
+      "text": "0",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n1_sh_cs",
+      "type": "text",
+      "z": 4,
+      "x": 861,
+      "y": 528,
+      "w": 58,
+      "h": 39,
+      "text": "1",
+      "font": "vt_num_cs",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "n1_black_cs",
+      "type": "text",
+      "z": 5,
+      "x": 860,
+      "y": 524,
+      "w": 58,
+      "h": 39,
+      "text": "1",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n1_red_cs",
+      "type": "text",
+      "z": 5,
+      "x": 860,
+      "y": 524,
+      "w": 58,
+      "h": 39,
+      "text": "1",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n1_yellow_cs",
+      "type": "text",
+      "z": 5,
+      "x": 860,
+      "y": 524,
+      "w": 58,
+      "h": 39,
+      "text": "1",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n2_sh_cs",
+      "type": "text",
+      "z": 4,
+      "x": 806,
+      "y": 478,
+      "w": 58,
+      "h": 39,
+      "text": "2",
+      "font": "vt_num_cs",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "n2_black_cs",
+      "type": "text",
+      "z": 5,
+      "x": 805,
+      "y": 474,
+      "w": 58,
+      "h": 39,
+      "text": "2",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n2_red_cs",
+      "type": "text",
+      "z": 5,
+      "x": 805,
+      "y": 474,
+      "w": 58,
+      "h": 39,
+      "text": "2",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n2_yellow_cs",
+      "type": "text",
+      "z": 5,
+      "x": 805,
+      "y": 474,
+      "w": 58,
+      "h": 39,
+      "text": "2",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n3_sh_cs",
+      "type": "text",
+      "z": 4,
+      "x": 782,
+      "y": 409,
+      "w": 58,
+      "h": 39,
+      "text": "3",
+      "font": "vt_num_cs",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "n3_black_cs",
+      "type": "text",
+      "z": 5,
+      "x": 781,
+      "y": 405,
+      "w": 58,
+      "h": 39,
+      "text": "3",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n3_red_cs",
+      "type": "text",
+      "z": 5,
+      "x": 781,
+      "y": 405,
+      "w": 58,
+      "h": 39,
+      "text": "3",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n3_yellow_cs",
+      "type": "text",
+      "z": 5,
+      "x": 781,
+      "y": 405,
+      "w": 58,
+      "h": 39,
+      "text": "3",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n4_sh_cs",
+      "type": "text",
+      "z": 4,
+      "x": 792,
+      "y": 337,
+      "w": 58,
+      "h": 39,
+      "text": "4",
+      "font": "vt_num_cs",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "n4_black_cs",
+      "type": "text",
+      "z": 5,
+      "x": 791,
+      "y": 333,
+      "w": 58,
+      "h": 39,
+      "text": "4",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n4_red_cs",
+      "type": "text",
+      "z": 5,
+      "x": 791,
+      "y": 333,
+      "w": 58,
+      "h": 39,
+      "text": "4",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n4_yellow_cs",
+      "type": "text",
+      "z": 5,
+      "x": 791,
+      "y": 333,
+      "w": 58,
+      "h": 39,
+      "text": "4",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n5_sh_cs",
+      "type": "text",
+      "z": 4,
+      "x": 836,
+      "y": 278,
+      "w": 58,
+      "h": 39,
+      "text": "5",
+      "font": "vt_num_cs",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "n5_black_cs",
+      "type": "text",
+      "z": 5,
+      "x": 835,
+      "y": 274,
+      "w": 58,
+      "h": 39,
+      "text": "5",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n5_red_cs",
+      "type": "text",
+      "z": 5,
+      "x": 835,
+      "y": 274,
+      "w": 58,
+      "h": 39,
+      "text": "5",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n5_yellow_cs",
+      "type": "text",
+      "z": 5,
+      "x": 835,
+      "y": 274,
+      "w": 58,
+      "h": 39,
+      "text": "5",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n6_sh_cs",
+      "type": "text",
+      "z": 4,
+      "x": 903,
+      "y": 246,
+      "w": 58,
+      "h": 39,
+      "text": "6",
+      "font": "vt_num_cs",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "n6_black_cs",
+      "type": "text",
+      "z": 5,
+      "x": 902,
+      "y": 242,
+      "w": 58,
+      "h": 39,
+      "text": "6",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n6_red_cs",
+      "type": "text",
+      "z": 5,
+      "x": 902,
+      "y": 242,
+      "w": 58,
+      "h": 39,
+      "text": "6",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n6_yellow_cs",
+      "type": "text",
+      "z": 5,
+      "x": 902,
+      "y": 242,
+      "w": 58,
+      "h": 39,
+      "text": "6",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n7_sh_cs",
+      "type": "text",
+      "z": 4,
+      "x": 976,
+      "y": 250,
+      "w": 58,
+      "h": 39,
+      "text": "7",
+      "font": "vt_num_cs",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "n7_black_cs",
+      "type": "text",
+      "z": 5,
+      "x": 975,
+      "y": 246,
+      "w": 58,
+      "h": 39,
+      "text": "7",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n7_red_cs",
+      "type": "text",
+      "z": 5,
+      "x": 975,
+      "y": 246,
+      "w": 58,
+      "h": 39,
+      "text": "7",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n7_yellow_cs",
+      "type": "text",
+      "z": 5,
+      "x": 975,
+      "y": 246,
+      "w": 58,
+      "h": 39,
+      "text": "7",
+      "font": "vt_num_cs",
+      "color": "num",
+      "color2": "numLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "n8_sh_cs",
+      "type": "text",
+      "z": 4,
+      "x": 1039,
+      "y": 288,
+      "w": 58,
+      "h": 39,
+      "text": "8",
+      "font": "vt_num_cs",
+      "color": "shade",
+      "align": "center",
+      "glow": true,
+      "rate": 60000,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "n8_black_cs",
+      "type": "text",
+      "z": 5,
+      "x": 1038,
+      "y": 284,
+      "w": 58,
+      "h": 39,
+      "text": "8",
+      "font": "vt_num_cs",
+      "color": "numRed",
+      "color2": "numRedLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=black",
+      "rate": 60000
+    },
+    {
+      "id": "n8_red_cs",
+      "type": "text",
+      "z": 5,
+      "x": 1038,
+      "y": 284,
+      "w": 58,
+      "h": 39,
+      "text": "8",
+      "font": "vt_num_cs",
+      "color": "numBlack",
+      "color2": "numBlackLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=red",
+      "rate": 60000
+    },
+    {
+      "id": "n8_yellow_cs",
+      "type": "text",
+      "z": 5,
+      "x": 1038,
+      "y": 284,
+      "w": 58,
+      "h": 39,
+      "text": "8",
+      "font": "vt_num_cs",
+      "color": "numRed",
+      "color2": "numRedLow",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small&vetroDial=yellow",
+      "rate": 60000
+    },
+    {
+      "id": "speed_cs",
+      "type": "text",
+      "z": 5,
+      "x": 873,
+      "y": 364,
+      "w": 220,
+      "h": 46,
+      "text": "{{speed}}",
+      "font": "vt_speed_cs",
+      "color": "fg",
+      "align": "right",
+      "rate": 45,
+      "own": true,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "speed_u_cs",
+      "type": "text",
+      "z": 5,
+      "x": 1101,
+      "y": 390,
+      "w": 80,
+      "h": 23,
+      "text": "{{u:speedLc}}",
+      "font": "vt_unit",
+      "color": "dim",
+      "align": "left",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "gear_cs",
+      "type": "text",
+      "z": 5,
+      "x": 968,
+      "y": 453,
+      "w": 120,
+      "h": 52,
+      "text": "{{gearnum}}",
+      "font": "vt_gear_cs",
+      "color": "fg",
+      "align": "center",
+      "rate": 45,
+      "own": true,
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "prog_cs",
+      "type": "text",
+      "z": 5,
+      "x": 996,
+      "y": 510,
+      "w": 140,
+      "h": 17,
+      "text": "{{progWord}}",
+      "font": "vt_word",
+      "color": "dim",
+      "align": "left",
+      "toggle": "cameraNotch&vetroCamTach=small"
     },
     {
       "id": "b0_v",

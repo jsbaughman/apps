@@ -58,7 +58,7 @@ An Italian GT style dash: a round dial under glass standing on a perforated meta
 - **Right panel** (Settings): Tires (default), or Tuning: AFR with its target, HPFP (the fuel rail pressure), timing and knock retard. Read from the engine unit about 3 times a second while the panel shows (BMW identifiers from Live Data, standard OBD as the fallback; not yet checked on an S58: a value the car doesn't answer shows --).
 - **Map:** with "Show Waze map inside the theme" on, Waze's map takes the left panel while it shows, fading into the dial; the gauges then move to the right panel, the car a bit smaller with boost (or intake) and oil temperature side by side under it.
 
-With "Leave room for the driver camera" on, the rev counter is drawn lower and smaller (its top clear of the camera), as on Apex and Circuit. The layout is made by `tools/gen_vetro.py`.
+With "Leave room for the driver camera" on, the rev counter is drawn lower and smaller (its top clear of the camera), as on Apex and Circuit. How small is set by "Tach size with driver camera (Vetro)": Large (86 % of the full dial, as before), Medium (81 %) or Small (76 %), for cars where the camera hides more of the top of the dial from the driver's seat. The layout is made by `tools/gen_vetro.py`.
 
 ## Starting with the car
 
