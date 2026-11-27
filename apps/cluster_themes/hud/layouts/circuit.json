@@ -394,7 +394,7 @@
         57,
         129
       ],
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "hole": [
         1338,
         118,
@@ -433,7 +433,7 @@
       "font": "ci_num_c",
       "color": "bandInk",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -448,7 +448,7 @@
       "font": "ci_num_c",
       "color": "bandInk",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -463,7 +463,7 @@
       "font": "ci_num_c",
       "color": "bandInk",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -478,7 +478,7 @@
       "font": "ci_num_c",
       "color": "bandInk",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -493,7 +493,7 @@
       "font": "ci_num_c",
       "color": "bandInk",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -508,7 +508,7 @@
       "font": "ci_num_c",
       "color": "bandInk",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -523,7 +523,7 @@
       "font": "ci_num_c",
       "color": "bandInk",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -538,7 +538,7 @@
       "font": "ci_num_c",
       "color": "bandInk",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -553,7 +553,7 @@
       "font": "ci_num_c",
       "color": "bandInk",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -568,7 +568,7 @@
       "font": "ci_mode",
       "color": "dim",
       "align": "center",
-      "toggle": "cameraNotch"
+      "toggle": "cameraNotch&vetroCamTach=large"
     },
     {
       "id": "rpm_u_c",
@@ -582,7 +582,7 @@
       "font": "ci_rpm",
       "color": "dim",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -598,7 +598,7 @@
       "color": "fg",
       "align": "right",
       "rate": 45,
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "own": true
     },
     {
@@ -613,7 +613,7 @@
       "font": "ci_unit",
       "color": "fg",
       "align": "center",
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
       "rate": 2000
     },
     {
@@ -629,7 +629,569 @@
       "color": "hot",
       "align": "center",
       "rate": 45,
-      "toggle": "cameraNotch",
+      "toggle": "cameraNotch&vetroCamTach=large",
+      "own": true
+    },
+    {
+      "id": "dash_cm",
+      "type": "gdash",
+      "class": "content",
+      "z": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 660,
+      "tach": [
+        960,
+        400,
+        252,
+        -122,
+        244,
+        8
+      ],
+      "zones": [
+        6500,
+        7000
+      ],
+      "left": [
+        338,
+        362,
+        266
+      ],
+      "right": [
+        1582,
+        362,
+        266
+      ],
+      "gbox": [
+        1037.1,
+        464.2,
+        15.7,
+        23.5
+      ],
+      "car": [
+        1582,
+        367,
+        57,
+        129
+      ],
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "hole": [
+        1338,
+        118,
+        488,
+        488
+      ],
+      "holeWhen": "mapUp",
+      "holeInset": 0,
+      "holeIf": "circuitMap=map",
+      "arcs": [
+        {
+          "pick": "left0",
+          "signal": "boost",
+          "min": 0,
+          "max": 2.758,
+          "red": 0.75
+        },
+        {
+          "pick": "left1",
+          "signal": "oil",
+          "min": 50,
+          "max": 150,
+          "red": 0.8
+        }
+      ]
+    },
+    {
+      "id": "rpm0_cm",
+      "type": "text",
+      "z": 5,
+      "x": 777,
+      "y": 470,
+      "w": 80,
+      "h": 38,
+      "text": "0",
+      "font": "ci_num_cm",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "rpm1_cm",
+      "type": "text",
+      "z": 5,
+      "x": 752,
+      "y": 385,
+      "w": 80,
+      "h": 38,
+      "text": "1",
+      "font": "ci_num_cm",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "rpm2_cm",
+      "type": "text",
+      "z": 5,
+      "x": 773,
+      "y": 299,
+      "w": 80,
+      "h": 38,
+      "text": "2",
+      "font": "ci_num_cm",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "rpm3_cm",
+      "type": "text",
+      "z": 5,
+      "x": 835,
+      "y": 236,
+      "w": 80,
+      "h": 38,
+      "text": "3",
+      "font": "ci_num_cm",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "rpm4_cm",
+      "type": "text",
+      "z": 5,
+      "x": 920,
+      "y": 213,
+      "w": 80,
+      "h": 38,
+      "text": "4",
+      "font": "ci_num_cm",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "rpm5_cm",
+      "type": "text",
+      "z": 5,
+      "x": 1005,
+      "y": 236,
+      "w": 80,
+      "h": 38,
+      "text": "5",
+      "font": "ci_num_cm",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "rpm6_cm",
+      "type": "text",
+      "z": 5,
+      "x": 1067,
+      "y": 299,
+      "w": 80,
+      "h": 38,
+      "text": "6",
+      "font": "ci_num_cm",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "rpm7_cm",
+      "type": "text",
+      "z": 5,
+      "x": 1088,
+      "y": 385,
+      "w": 80,
+      "h": 38,
+      "text": "7",
+      "font": "ci_num_cm",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "rpm8_cm",
+      "type": "text",
+      "z": 5,
+      "x": 1063,
+      "y": 470,
+      "w": 80,
+      "h": 38,
+      "text": "8",
+      "font": "ci_num_cm",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "mode_cm",
+      "type": "text",
+      "z": 5,
+      "x": 810,
+      "y": 336,
+      "w": 300,
+      "h": 18,
+      "text": "{{mode}}",
+      "font": "ci_mode",
+      "color": "dim",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium"
+    },
+    {
+      "id": "rpm_u_cm",
+      "type": "text",
+      "z": 5,
+      "x": 860,
+      "y": 616,
+      "w": 200,
+      "h": 16,
+      "text": "RPM x 1000",
+      "font": "ci_rpm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "speed_cm",
+      "type": "text",
+      "z": 5,
+      "x": 747,
+      "y": 434,
+      "w": 260,
+      "h": 57,
+      "text": "{{speed}}",
+      "font": "ci_speed_cm",
+      "color": "fg",
+      "align": "right",
+      "rate": 45,
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "own": true
+    },
+    {
+      "id": "speed_u_cm",
+      "type": "text",
+      "z": 5,
+      "x": 911,
+      "y": 491,
+      "w": 120,
+      "h": 27,
+      "text": "{{u:speedLc}}",
+      "font": "ci_unit",
+      "color": "fg",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "rate": 2000
+    },
+    {
+      "id": "gear_cm",
+      "type": "text",
+      "z": 5,
+      "x": 1021,
+      "y": 449,
+      "w": 31,
+      "h": 30,
+      "text": "{{gearnum}}",
+      "font": "ci_gear_cm",
+      "color": "hot",
+      "align": "center",
+      "rate": 45,
+      "toggle": "cameraNotch&vetroCamTach=medium",
+      "own": true
+    },
+    {
+      "id": "dash_cs",
+      "type": "gdash",
+      "class": "content",
+      "z": 1,
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 660,
+      "tach": [
+        960,
+        415,
+        237,
+        -122,
+        244,
+        8
+      ],
+      "zones": [
+        6500,
+        7000
+      ],
+      "left": [
+        338,
+        362,
+        266
+      ],
+      "right": [
+        1582,
+        362,
+        266
+      ],
+      "gbox": [
+        1033.4,
+        475.4,
+        14.7,
+        22.1
+      ],
+      "car": [
+        1582,
+        367,
+        57,
+        129
+      ],
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "hole": [
+        1338,
+        118,
+        488,
+        488
+      ],
+      "holeWhen": "mapUp",
+      "holeInset": 0,
+      "holeIf": "circuitMap=map",
+      "arcs": [
+        {
+          "pick": "left0",
+          "signal": "boost",
+          "min": 0,
+          "max": 2.758,
+          "red": 0.75
+        },
+        {
+          "pick": "left1",
+          "signal": "oil",
+          "min": 50,
+          "max": 150,
+          "red": 0.8
+        }
+      ]
+    },
+    {
+      "id": "rpm0_cs",
+      "type": "text",
+      "z": 5,
+      "x": 786,
+      "y": 481,
+      "w": 80,
+      "h": 36,
+      "text": "0",
+      "font": "ci_num_cs",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "rpm1_cs",
+      "type": "text",
+      "z": 5,
+      "x": 762,
+      "y": 401,
+      "w": 80,
+      "h": 36,
+      "text": "1",
+      "font": "ci_num_cs",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "rpm2_cs",
+      "type": "text",
+      "z": 5,
+      "x": 782,
+      "y": 320,
+      "w": 80,
+      "h": 36,
+      "text": "2",
+      "font": "ci_num_cs",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "rpm3_cs",
+      "type": "text",
+      "z": 5,
+      "x": 840,
+      "y": 261,
+      "w": 80,
+      "h": 36,
+      "text": "3",
+      "font": "ci_num_cs",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "rpm4_cs",
+      "type": "text",
+      "z": 5,
+      "x": 920,
+      "y": 239,
+      "w": 80,
+      "h": 36,
+      "text": "4",
+      "font": "ci_num_cs",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "rpm5_cs",
+      "type": "text",
+      "z": 5,
+      "x": 1000,
+      "y": 261,
+      "w": 80,
+      "h": 36,
+      "text": "5",
+      "font": "ci_num_cs",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "rpm6_cs",
+      "type": "text",
+      "z": 5,
+      "x": 1058,
+      "y": 320,
+      "w": 80,
+      "h": 36,
+      "text": "6",
+      "font": "ci_num_cs",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "rpm7_cs",
+      "type": "text",
+      "z": 5,
+      "x": 1078,
+      "y": 401,
+      "w": 80,
+      "h": 36,
+      "text": "7",
+      "font": "ci_num_cs",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "rpm8_cs",
+      "type": "text",
+      "z": 5,
+      "x": 1054,
+      "y": 481,
+      "w": 80,
+      "h": 36,
+      "text": "8",
+      "font": "ci_num_cs",
+      "color": "bandInk",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "mode_cs",
+      "type": "text",
+      "z": 5,
+      "x": 810,
+      "y": 354,
+      "w": 300,
+      "h": 18,
+      "text": "{{mode}}",
+      "font": "ci_mode",
+      "color": "dim",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small"
+    },
+    {
+      "id": "rpm_u_cs",
+      "type": "text",
+      "z": 5,
+      "x": 860,
+      "y": 618,
+      "w": 200,
+      "h": 16,
+      "text": "RPM x 1000",
+      "font": "ci_rpm",
+      "color": "dim",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "speed_cs",
+      "type": "text",
+      "z": 5,
+      "x": 745,
+      "y": 447,
+      "w": 260,
+      "h": 53,
+      "text": "{{speed}}",
+      "font": "ci_speed_cs",
+      "color": "fg",
+      "align": "right",
+      "rate": 45,
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "own": true
+    },
+    {
+      "id": "speed_u_cs",
+      "type": "text",
+      "z": 5,
+      "x": 911,
+      "y": 500,
+      "w": 120,
+      "h": 27,
+      "text": "{{u:speedLc}}",
+      "font": "ci_unit",
+      "color": "fg",
+      "align": "center",
+      "toggle": "cameraNotch&vetroCamTach=small",
+      "rate": 2000
+    },
+    {
+      "id": "gear_cs",
+      "type": "text",
+      "z": 5,
+      "x": 1019,
+      "y": 461,
+      "w": 29,
+      "h": 28,
+      "text": "{{gearnum}}",
+      "font": "ci_gear_cs",
+      "color": "hot",
+      "align": "center",
+      "rate": 45,
+      "toggle": "cameraNotch&vetroCamTach=small",
       "own": true
     },
     {

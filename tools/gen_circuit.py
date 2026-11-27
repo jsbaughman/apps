@@ -58,20 +58,21 @@ def centred(id_, cx, cy, w, h, t, font, color='fg', align='center', **kw):
     return text(id_, cx - w / 2.0, cy - h / 2.0, w, h, t, font, color, align, **kw)
 
 
-CAM_TACH = [960, 382, 270]                 # "Leave room for the driver camera": the rev counter lower and smaller, its top
-                                           # (y 112) clear of the camera (visible.CAMERA y 0..110), its foot above the strip
-CAM_FONTS = {'ci_num': 'ci_num_c', 'ci_speed': 'ci_speed_c', 'ci_gear': 'ci_gear_c'}
+# "Leave room for the driver camera": the rev counter lower and smaller, its top clear of the camera (visible.CAMERA y
+# 0..110), its foot above the strip; how small by "vetroCamTach" (Tach size with driver camera): large (top y 112, as
+# before), medium (y 148), small (y 178)
+CAM_TACH = {'large': ([960, 382, 270], '_c'), 'medium': ([960, 400, 252], '_cm'), 'small': ([960, 415, 237], '_cs')}
+CAM_FONTS = ('ci_num', 'ci_speed', 'ci_gear')
 
 
 def build(cells):
     widgets = []
     car = [RIGHT[0], int(round(RIGHT[1] + 5 * KS)), 57, 129]
-    for cam in (False, True):
-        cx, cy, R = CAM_TACH if cam else TACH
+    for cam in (None, 'large', 'medium', 'small'):
+        (cx, cy, R), sfx = CAM_TACH[cam] if cam else (TACH, '')
         k = R / 322.0
-        tg = 'cameraNotch' if cam else '!cameraNotch'
-        sfx = '_c' if cam else ''
-        fn = (lambda f: CAM_FONTS.get(f, f)) if cam else (lambda f: f)
+        tg = 'cameraNotch&vetroCamTach=' + cam if cam else '!cameraNotch'
+        fn = lambda f, s=sfx: f + s if f in CAM_FONTS else f
         rb1, rb0 = R - 64 * k, R - 150 * k
         SP_R = cx + 58 * k / K                            # the speed's digits end here (right-aligned, growing leftward)
         gbox = [SP_R + 14 + 20 * k, cy + 82 * k, 20 * k, 30 * k]   # the gear's box a fixed gap after the speed
@@ -141,7 +142,7 @@ def build(cells):
     ]
     # the fast numbers on their own small layers; slow texts checked less often (as Apex)
     for w in widgets:
-        if w.get('id') in ('gear', 'speed', 'gear_c', 'speed_c') or (w['id'][:1] == 'l' and w['id'].endswith('_v')):
+        if w.get('id').split('_c')[0] in ('gear', 'speed') or (w['id'][:1] == 'l' and w['id'].endswith('_v')):
             w['own'] = True
         elif w['type'] == 'text' and 'rate' not in w:
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
@@ -165,7 +166,7 @@ if __name__ == '__main__':
     root = sys.argv[1] if len(sys.argv) > 1 else '.'
     fonts = root + '/apps/cluster_themes/hud/fonts/'
     cells = {}
-    for f in ('ci_num_c', 'ci_speed_c', 'ci_gear_c', 'ci_num', 'ci_anum', 'ci_speed', 'ci_gear', 'ci_val', 'ci_tp', 'ci_unit', 'ci_lab', 'ci_head', 'ci_tt',
+    for f in tuple(f + x for f in CAM_FONTS for x in ('_c', '_cm', '_cs')) + ('ci_num', 'ci_anum', 'ci_speed', 'ci_gear', 'ci_val', 'ci_tp', 'ci_unit', 'ci_lab', 'ci_head', 'ci_tt',
               'ci_mode', 'ci_rpm'):
         cells[f] = json.load(open(fonts + f + '.json'))['cellHeight']
     path = root + '/apps/cluster_themes/hud/layouts/circuit.json'

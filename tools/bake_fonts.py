@@ -95,6 +95,12 @@ CLUSTER_FONTS = [
     ('ci_num_c', 'BarlowCondensed-Bold.ttf', 52, DIGITS),
     ('ci_speed_c', 'BarlowSemiCondensed-SemiBold.ttf', 77, DIGITS + '-'),
     ('ci_gear_c', 'BarlowSemiCondensed-SemiBold.ttf', 39, DIGITS + 'PRNDSM-'),
+    ('ci_num_cm', 'BarlowCondensed-Bold.ttf', 48, DIGITS),                    # the medium camera tach's (0.82)
+    ('ci_speed_cm', 'BarlowSemiCondensed-SemiBold.ttf', 72, DIGITS + '-'),
+    ('ci_gear_cm', 'BarlowSemiCondensed-SemiBold.ttf', 36, DIGITS + 'PRNDSM-'),
+    ('ci_num_cs', 'BarlowCondensed-Bold.ttf', 45, DIGITS),                    # the small camera tach's (0.77)
+    ('ci_speed_cs', 'BarlowSemiCondensed-SemiBold.ttf', 68, DIGITS + '-'),
+    ('ci_gear_cs', 'BarlowSemiCondensed-SemiBold.ttf', 34, DIGITS + 'PRNDSM-'),
     ('ci_gear', 'BarlowSemiCondensed-SemiBold.ttf', 44, DIGITS + 'PRNDSM-'),
     ('ci_val', 'BarlowSemiCondensed-SemiBold.ttf', 55, DIGITS + '.-'),
     ('ci_tp', 'BarlowSemiCondensed-SemiBold.ttf', 51, DIGITS + '.-'),
@@ -140,6 +146,16 @@ CLUSTER_FONTS = [
     ('a_speed_c', 'Outfit[wght].ttf', 79, DIGITS + '-', 0, 'ExtraBold', None, '', 0.2),
     ('a_unit_c', 'Outfit[wght].ttf', 28, LOWER + '/', 0, 'Bold', None, '', 0.2),
     ('a_tach_c', 'Outfit[wght].ttf', 47, DIGITS, 0, 'ExtraBold', None, '', 0.2),
+    ('a_gear_cm', 'Outfit[wght].ttf', 151, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 5),   # the medium camera tach's (0.75)
+    ('a_gear_s_cm', 'Outfit[wght].ttf', 151, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2),
+    ('a_speed_cm', 'Outfit[wght].ttf', 74, DIGITS + '-', 0, 'ExtraBold', None, '', 0.2),
+    ('a_unit_cm', 'Outfit[wght].ttf', 26, LOWER + '/', 0, 'Bold', None, '', 0.2),
+    ('a_tach_cm', 'Outfit[wght].ttf', 44, DIGITS, 0, 'ExtraBold', None, '', 0.2),
+    ('a_gear_cs', 'Outfit[wght].ttf', 142, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2, 4),   # the small camera tach's (0.71)
+    ('a_gear_s_cs', 'Outfit[wght].ttf', 142, DIGITS + 'PRNDSM-', 0, 'Bold', None, '', 0.2),
+    ('a_speed_cs', 'Outfit[wght].ttf', 69, DIGITS + '-', 0, 'ExtraBold', None, '', 0.2),
+    ('a_unit_cs', 'Outfit[wght].ttf', 24, LOWER + '/', 0, 'Bold', None, '', 0.2),
+    ('a_tach_cs', 'Outfit[wght].ttf', 41, DIGITS, 0, 'ExtraBold', None, '', 0.2),
     ('a_head', 'Outfit[wght].ttf', 40, UPPER + LOWER + ' ', 0, 'Bold', None, '', 0.2),   # the panel headings, as the speed
     ('a_tp', 'BarlowSemiCondensed-Medium.ttf', 48, DIGITS + '.-', 0),   # the readouts' numbers (tyres, boost, oil, hp, torque); no extra stroke since 0.21.5
     ('a_lim', 'BarlowSemiCondensed-SemiBold.ttf', 30, DIGITS + '.-', 0),   # the bars' end numbers, 25 % over r_label

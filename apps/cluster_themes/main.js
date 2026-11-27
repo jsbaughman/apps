@@ -69,7 +69,7 @@ mgu.run({
             settingThemes: {
                 showBoost: ['apex', 'circuit', 'aero', 'vetro'], leftTop: ['apex', 'circuit', 'aero'], leftBottom: ['apex', 'circuit', 'aero'],
                 circuitColor: ['circuit'], circuitMap: ['circuit'], vetroDial: ['vetro'], vetroRev: ['vetro'], vetroRight: ['vetro'], vetroBright: ['vetro'], vetroHv: ['vetro'], vetroPeak: ['vetro', 'aero'], aeroBackdrop: ['aero'], apexBackdrop: ['apex'], gearStyle: ['apex', 'veloce'], tachSpeed: ['apex'], dialGlow: ['apex'], leftStyle: ['apex'],
-                gaugeFill: ['apex'], rightPanel: ['apex'], cameraNotch: ['apex', 'circuit', 'vetro'], vetroCamTach: ['vetro'],
+                gaugeFill: ['apex'], rightPanel: ['apex'], cameraNotch: ['apex', 'circuit', 'vetro'], vetroCamTach: ['apex', 'circuit', 'vetro'],
             },   // no theme here has shift lights: Alerts shows the warnings alone
             settings: ['units', 'tempUnits', 'pressureUnits', 'showBoost', 'shiftLight', 'redline', 'shiftBefore', 'coldGuard', 'nightDim', 'backdrops', 'circuitColor', 'circuitMap', 'vetroDial', 'vetroRev', 'vetroRight', 'vetroBright', 'vetroPeak', 'vetroHv', 'aeroBackdrop', 'apexBackdrop', 'tachResponse', 'gearStyle', 'gearSource', 'tachSpeed', 'readingsCheck', 'dialGlow', 'leftStyle', 'leftTop', 'leftBottom', 'gaugeFill', 'rightPanel', 'cameraNotch', 'vetroCamTach', 'keepStrip', 'holiday', 'demo'],
             // the drive mode check's candidates this app's app.json listens to (issue #8; shared/hud.js modeDiagLines)
