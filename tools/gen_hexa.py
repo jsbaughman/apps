@@ -82,6 +82,7 @@ def build(fonts):
         x, y = CX + nr * math.cos(a), CY - nr * math.sin(a)
         text('n%d' % k, x, y, 64, str(k), 'hx_num', 'hot' if k >= 7 else 'fg', 'center', rate=60000)
     text('gear', 966, 361, 240, '{{gearnum}}', 'hx_gear', 'hot', 'center', rate=FAST, own=True)
+    text('prog', 1060, 318, 40, '{{progLetter}}', 'hx_unit', 'hot', 'left')   # A / M, small at the gear's top right
     text('speed', 964, 523, 280, '{{speed}}', 'hx_speed', 'fg', 'center', rate=FAST, own=True, spacing=-8)
     text('speed_u', 960, 587, 120, '{{u:speed}}', 'hx_unit', 'fg', 'center')
     text('rpm_u', 668, 516, 200, 'RPM x 1000', 'hx_rpm', 'dim', 'center', rate=60000)

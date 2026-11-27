@@ -265,7 +265,7 @@
  *
  * Text tokens: {{speed}} {{u:speed}} {{oil}} {{coolant}} {{boost}} {{u:boost}} {{rpm}}
  * {{gear}} (P / R / N, D3 / S3 / M3 by the shifter programme, or just 3 when the selector position is unknown), {{gearnum}} (3, or P / R / N)
- * {{spd:<i>}} (speed scale label i of SPEED_SCALE: 0..200 mph, 0..320 km/h) {{range}} {{u:distLc}} (mi, km) {{u:dist}} (MI, KM) {{ambient}} (outside, signed: +75) {{u:speedLc}} (mph, km/h) {{speed2}} {{u:speed2Lc}} {{u:speed2}} (the speed in the other unit) {{mediaTitle}} {{mediaArtist}} {{mediaElapsed}} {{mediaLeft}} (now playing, HmiMediaState; empty without) {{ampmLc}} (am, pm) {{torque}} {{u:torque}} (lb-ft, Nm) {{torquePct}} {{powerPct}} (% of config.engine's peak) {{boostHi}} {{boostMid}}
+ * {{progLetter}} (A or M in drive, else nothing) {{spd:<i>}} (speed scale label i of SPEED_SCALE: 0..200 mph, 0..320 km/h) {{range}} {{u:distLc}} (mi, km) {{u:dist}} (MI, KM) {{ambient}} (outside, signed: +75) {{u:speedLc}} (mph, km/h) {{speed2}} {{u:speed2Lc}} {{u:speed2}} (the speed in the other unit) {{mediaTitle}} {{mediaArtist}} {{mediaElapsed}} {{mediaLeft}} (now playing, HmiMediaState; empty without) {{ampmLc}} (am, pm) {{torque}} {{u:torque}} (lb-ft, Nm) {{torquePct}} {{powerPct}} (% of config.engine's peak) {{boostHi}} {{boostMid}}
  * (gauge labels for 1.4 / 0.7 bar in the display unit) {{stage}} (P R N, D / S / M by the shifter programme) {{gearInD}} (gear number while in D) {{mode}} (COMFORT, SPORT, SPORT PLUS, SPORT INDIVIDUAL, ECO PRO, ...)
  * {{temp:<deg C>}} (that temperature in the display unit, °F rounded to 10, for gauge labels) {{setup:engine|chassis|steering|gearbox}} (what that part is set to in the drive mode now)
  * {{time}} {{ampm}} {{u:temp}} (°F / °C) {{gLat}} {{gLong}} (g, 2 decimals) {{gSide}} ("0.42 L", "0.42 R")
@@ -2080,6 +2080,10 @@ class HudApp {
             case 'progWord': {       // in drive AUTO (D, S) or MANUAL (M), else nothing (Vetro's gear box)
                 const d = this.car.data();
                 return d.stage === 'D' || (!d.stage && isNum(d.gear) && d.gear > 0) ? (this._program(d) === 'M' ? 'MANUAL' : 'AUTO') : '';
+            }
+            case 'progLetter': {     // the same as one letter, A or M (Hexa, beside the gear)
+                const w = this._token('progWord');
+                return w ? w.charAt(0) : '';
             }
             case 'stage': {          // the selector letter alone: P R N, or D / S / M by the shifter programme
                 const d = this.car.data();

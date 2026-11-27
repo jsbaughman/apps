@@ -418,6 +418,20 @@
       "own": true
     },
     {
+      "id": "prog",
+      "type": "text",
+      "z": 5,
+      "x": 1060,
+      "y": 304,
+      "w": 40,
+      "h": 29,
+      "text": "{{progLetter}}",
+      "font": "hx_unit",
+      "color": "hot",
+      "align": "left",
+      "rate": 1000
+    },
+    {
       "id": "speed",
       "type": "text",
       "z": 5,
