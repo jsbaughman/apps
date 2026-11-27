@@ -3077,25 +3077,25 @@ void main() {
     // --- the black well: inside the arc down past the numbers, behind the speed, and the two pockets
     float rin = length(p - u_arc.xy);
     float inside = clamp((u_arc.z - 6.0 - rin) / 40.0, 0.0, 1.0) * clamp((u_arc.w - p.y) / 70.0, 0.0, 1.0);
-    float fade = pow(clamp(1.45 - abs(p.x - 960.0) / 300.0, 0.0, 1.0), 0.7) * (1.0 - 0.75 * clamp((p.y - 560.0) / 100.0, 0.0, 1.0)) * clamp((p.y - 470.0) / 20.0, 0.0, 1.0);
-    vec2 pk = vec2(abs(p.x - 960.0) - 292.0, p.y - 542.0);
+    float fade = pow(clamp(1.45 - abs(p.x - 960.0) / 300.0, 0.0, 1.0), 0.7) * (1.0 - 0.75 * clamp((p.y - 535.0) / 100.0, 0.0, 1.0)) * clamp((p.y - 445.0) / 20.0, 0.0, 1.0);
+    vec2 pk = vec2(abs(p.x - 960.0) - 292.0, p.y - 517.0);
     float pocket = exp(-pow(pk.x / 170.0, 4.0) - pow(pk.y / 30.0, 4.0));
     c *= 1.0 - clamp(max(max(inside, fade), pocket * 0.95) * 0.97, 0.0, 1.0);
 
     // the thin glass plates over the pockets: a level lit top edge, a short slant in
     float ax = abs(p.x - 960.0), keep = 0.0;     // keep: the plates and lines stay over the map
-    float xin = 225.0 - (p.y - 494.0) * 40.0 / 18.0;
-    if (p.y > 494.0 && p.y < 512.0 && ax > xin && ax < 560.0 - (p.y - 494.0) * 30.0 / 18.0) {
-        float f = (p.y - 494.0) / 18.0;
+    float xin = 225.0 - (p.y - 469.0) * 40.0 / 18.0;
+    if (p.y > 469.0 && p.y < 487.0 && ax > xin && ax < 560.0 - (p.y - 469.0) * 30.0 / 18.0) {
+        float f = (p.y - 469.0) / 18.0;
         c = mix(c, mix(vec3(0.118, 0.282, 0.47), vec3(0.02, 0.047, 0.094), f), 0.55);
         keep = 1.0;
     }
-    c *= 1.0 - 0.6 * exp(-pow((p.y - 518.0) / 8.0, 2.0)) * step(200.0, ax) * step(ax, 540.0);
-    float pe = min(segd(vec2(ax, p.y), vec2(225.0, 494.0), vec2(560.0, 494.0)), segd(vec2(ax, p.y), vec2(225.0, 494.0), vec2(185.0, 512.0)) + 0.6);
+    c *= 1.0 - 0.6 * exp(-pow((p.y - 493.0) / 8.0, 2.0)) * step(200.0, ax) * step(ax, 540.0);
+    float pe = min(segd(vec2(ax, p.y), vec2(225.0, 469.0), vec2(560.0, 469.0)), segd(vec2(ax, p.y), vec2(225.0, 469.0), vec2(185.0, 487.0)) + 0.6);
     c += vec3(0.67, 0.88, 1.0) * cov(pe - 1.0) * 0.9 + vec3(0.27, 0.67, 1.0) * exp(-pe / 5.0) * 0.35;
     keep = max(keep, cov(pe - 2.0));
     // the faint horizon under the gear, the bright bar low in the middle
-    float hz = cov(abs(p.y - 487.0) - 0.75) * step(abs(p.x - 960.0), 140.0);
+    float hz = cov(abs(p.y - 462.0) - 0.75) * step(abs(p.x - 960.0), 140.0);
     c += vec3(0.47, 0.75, 1.0) * hz * 0.43;
     keep = max(keep, hz);
     float bb = segd(p, vec2(620.0, 652.0), vec2(1300.0, 652.0));

@@ -15,8 +15,8 @@ import math
 import sys
 
 W, H = 1920, 660
-CX, CY, R, TH = 960, 868, 708, 72          # the rev arc: one wide circle's slice, its outer radius and band width
-T0, T1, KMAX, KEND = 144.6, 35.4, 9, 8.75  # its 0 end and its 9000 end (deg, counter-clockwise from 3 o'clock); drawn to 8750
+CX, CY, R, TH = 960, 843, 708, 72          # the rev arc: one wide circle's slice, its outer radius and band width
+T0, T1, KEND = 144.6, 35.4, 8.75           # its 0 end and its 8750 end (deg, counter-clockwise from 3 o'clock): level ends
 FAST = 45
 
 # the gauge panels' outlines (screen px), measured off the concept: the left stack wraps round the arc's 0 end, the right
@@ -68,23 +68,23 @@ def build(fonts):
     widgets.append({'id': 'floor', 'type': 'hfloor', 'class': 'content', 'z': 0, 'x': 0, 'y': 0, 'w': W, 'h': H, 'conn': 0,
                     'panels': panels, 'warn': [WARN.get(k) for k in order],
                     'barAt': [[1745, 428, 15], [1745, 514, 15], [1682, 592, 94, 13]],
-                    'arc': [CX, CY, R - TH, 540],
+                    'arc': [CX, CY, R - TH, 515],
                     # the Waze map in the well ("Show Waze map inside the theme"): its window round the arc's inside
-                    'hole': [330, 150, 1260, 410], 'holeWhen': 'mapUp', 'holeInset': 0, 'holeAim': [0.5, 0.62]})
-    AX0, AY0 = 240, 120
+                    'hole': [330, 125, 1260, 410], 'holeWhen': 'mapUp', 'holeInset': 0, 'holeAim': [0.5, 0.62]})
+    AX0, AY0 = 240, 95
     widgets.append({'id': 'arc', 'type': 'hdash', 'class': 'content', 'z': 1, 'x': AX0, 'y': AY0, 'w': 1440, 'h': 440, 'conn': 0,
-                    'arc': [CX, CY, R, TH], 'ang': [T0, T1, KMAX, KEND]})
+                    'arc': [CX, CY, R, TH], 'ang': [T0, T1, KEND, KEND]})
 
     # --- the numbers along the arc (7 and 8 red), the gear, the speed, its unit, RPM x 1000
     nr = R - TH - 40
     for k in range(9):
-        a = math.radians(T0 - (T0 - T1) * k / float(KMAX))
+        a = math.radians(T0 - (T0 - T1) * k / float(KEND))
         x, y = CX + nr * math.cos(a), CY - nr * math.sin(a)
         text('n%d' % k, x, y, 64, str(k), 'hx_num', 'hot' if k >= 7 else 'fg', 'center', rate=60000)
-    text('gear', 966, 386, 240, '{{gearnum}}', 'hx_gear', 'hot', 'center', rate=FAST, own=True)
-    text('speed', 964, 548, 280, '{{speed}}', 'hx_speed', 'fg', 'center', rate=FAST, own=True, spacing=-8)
-    text('speed_u', 960, 612, 120, '{{u:speed}}', 'hx_unit', 'fg', 'center')
-    text('rpm_u', 668, 541, 200, 'RPM x 1000', 'hx_rpm', 'dim', 'center', rate=60000)
+    text('gear', 966, 361, 240, '{{gearnum}}', 'hx_gear', 'hot', 'center', rate=FAST, own=True)
+    text('speed', 964, 523, 280, '{{speed}}', 'hx_speed', 'fg', 'center', rate=FAST, own=True, spacing=-8)
+    text('speed_u', 960, 587, 120, '{{u:speed}}', 'hx_unit', 'fg', 'center')
+    text('rpm_u', 668, 516, 200, 'RPM x 1000', 'hx_rpm', 'dim', 'center', rate=60000)
 
     # --- the left gauges: icon, label, value (right-aligned: its unit right after it)
     rows = [  # key, icon, label, value, unit, icon x, label x / y, value right x / y, unit x, cyan unit
@@ -105,7 +105,7 @@ def build(fonts):
             text(key + '_u', ux, vy + 4, 40, unit, 'hx_u', 'dim', 'left')
 
     # --- the right: the drive mode in the box, power and torque (their tick bars in the backdrop), fuel
-    text('mode', 1622, 327, 330, '{{mode}}', 'hx_mode', 'fg', 'center')
+    text('mode', 1645, 327, 320, '{{mode}}', 'hx_mode', 'fg', 'center')
     for key, label, val, unit, lx, ly, vy in (('power', 'POWER', '{{power}}', '{{u:powerLc}}', 1622, 391, 426),
                                              ('torque', 'TORQUE', '{{torque}}', '{{u:torque}}', 1604, 477, 512)):
         text(key + '_l', lx, ly, 160, label, 'hx_lab', 'fg', 'left', rate=60000)
