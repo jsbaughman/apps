@@ -76,7 +76,7 @@ def build(fonts):
                     'arc': [CX, CY, R, TH], 'ang': [T0, T1, KEND, KEND]})
 
     # --- the numbers along the arc (7 and 8 red), the gear, the speed, its unit, RPM x 1000
-    nr = R - TH - 40
+    nr = R - TH - 52
     for k in range(9):
         a = math.radians(T0 - (T0 - T1) * k / float(KEND))
         x, y = CX + nr * math.cos(a), CY - nr * math.sin(a)
