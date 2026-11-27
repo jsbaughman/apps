@@ -70,7 +70,7 @@ def build(fonts):
                     'barAt': [[1745, 428, 15], [1745, 514, 15], [1682, 592, 94, 13]],
                     'arc': [CX, CY, R - TH, 515],
                     # the Waze map in the well ("Show Waze map inside the theme"): its window round the arc's inside
-                    'hole': [330, 125, 1260, 410], 'holeWhen': 'mapUp', 'holeInset': 0, 'holeAim': [0.5, 0.62]})
+                    'hole': [330, 125, 1260, 410], 'holeWhen': 'mapUp', 'holeInset': 0, 'holeAim': [0.5, 0.46]})   # Waze draws its arrow well below its map's centre: this puts it just under the gear
     AX0, AY0 = 240, 95
     widgets.append({'id': 'arc', 'type': 'hdash', 'class': 'content', 'z': 1, 'x': AX0, 'y': AY0, 'w': 1440, 'h': 440, 'conn': 0,
                     'arc': [CX, CY, R, TH], 'ang': [T0, T1, KEND, KEND]})
