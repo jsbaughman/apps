@@ -1071,8 +1071,7 @@
       "w": 1380,
       "h": 60,
       "color": "bg",
-      "stripRow": "l",
-      "conn": 2
+      "stripRow": "l"
     },
     {
       "id": "strip_cover_r",
@@ -1084,8 +1083,7 @@
       "w": 460,
       "h": 60,
       "color": "bg",
-      "stripRow": "r",
-      "conn": 1
+      "stripRow": "r"
     }
   ]
 }

@@ -138,10 +138,9 @@ def build(fonts):
         {'id': 'strip_cover_r', 'type': 'fill', 'class': 'content', 'z': 0, 'x': 1460, 'y': 660, 'w': 460, 'h': 60,
          'color': 'bg', 'stripRow': 'r'},
     ]
-    # connections (8 layers each): the backdrop, the arc, the middle on 0; the right on 1, the left on 2 (each with a strip cover)
+    # connections (8 layers each): the backdrop, the arc, the middle on 0; the right on 1, the left on 2 (the strip covers on 0, as
+    # 0.28.2, which held on the car: 0.28.4 moved them and reset the cluster, with more uniforms)
     for w in widgets:
-        if w['id'] == 'strip_cover_l': w['conn'] = 2      # the strip covers on the side connections: 0 keeps room
-        if w['id'] == 'strip_cover_r': w['conn'] = 1
         if w['id'] in ('floor', 'arc') or w['id'].startswith('strip') or 'conn' in w:
             continue
         if w['x'] >= 1380:
