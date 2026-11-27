@@ -26,6 +26,8 @@ LEFT = {
     'coolant': [(94, 385), (366, 385), (372, 393), (356, 470), (86, 470), (86, 393)],
     'oil':     [(88, 479), (348, 479), (376, 560), (96, 560)],
     'intake':  [(104, 569), (384, 569), (402, 654), (124, 654)],
+    # the HV battery (setting "vetroHv"), above boost: its right edge on boost's line
+    'hv':      [(242, 207), (512, 207), (453, 283), (161, 283), (161, 262)],
 }
 
 
@@ -63,10 +65,10 @@ def build(fonts):
         widgets.append(d)
 
     # --- the backdrop and the rev arc
-    order = ['boost', 'coolant', 'oil', 'intake', 'mode', 'power', 'torque', 'fuel']
-    panels = [[list(v) for v in (LEFT.get(k) or RIGHT.get(k))] for k in order]
+    order = ['boost', 'coolant', 'oil', 'intake', 'hv', 'mode', 'power', 'torque', 'fuel', None]
+    panels = [[list(v) for v in (LEFT.get(k) or RIGHT.get(k))] if k else None for k in order]
     widgets.append({'id': 'floor', 'type': 'hfloor', 'class': 'content', 'z': 0, 'x': 0, 'y': 0, 'w': W, 'h': H, 'conn': 0,
-                    'panels': panels, 'warn': [WARN.get(k) for k in order],
+                    'panels': panels, 'panelIf': ['vetroHv' if k == 'hv' else None for k in order], 'warn': [WARN.get(k) for k in order],
                     'barAt': [[1745, 428, 15], [1745, 514, 15], [1682, 592, 94, 13]],
                     'arc': [CX, CY, R - TH, 515],
                     # the Waze map in the well ("Show Waze map inside the theme"): its window round the arc's inside
@@ -81,8 +83,9 @@ def build(fonts):
         a = math.radians(T0 - (T0 - T1) * k / float(KEND))
         x, y = CX + nr * math.cos(a), CY - nr * math.sin(a)
         text('n%d' % k, x, y, 64, str(k), 'hx_num', 'hot' if k >= 7 else 'fg', 'center', rate=60000)
+    # A / M, small at the gear's top right; before the gear in file order so it shares the numbers' sheet
+    text('prog', 1060, 318, 40, '{{progAM}}', 'hx_unit', 'hot', 'left')
     text('gear', 966, 361, 240, '{{gearnum}}', 'hx_gear', 'hot', 'center', rate=FAST, own=True)
-    text('prog', 1060, 318, 40, '{{progLetter}}', 'hx_unit', 'hot', 'left')   # A / M, small at the gear's top right
     text('speed', 964, 523, 280, '{{speed}}', 'hx_speed', 'fg', 'center', rate=FAST, own=True, spacing=-8)
     text('speed_u', 960, 587, 120, '{{u:speed}}', 'hx_unit', 'fg', 'center')
     text('rpm_u', 668, 516, 200, 'RPM x 1000', 'hx_rpm', 'dim', 'center', rate=60000)
@@ -107,6 +110,13 @@ def build(fonts):
         else:
             text(key + '_u', ux, vy + 4, 40, unit, 'hx_u', 'dim', 'left', toggle=tg)
 
+    # the HV battery above boost (setting "vetroHv"): its icon, the label, the charge
+    widgets.append({'id': 'hv_i', 'type': 'icon', 'icon': 'battery', 'z': 5, 'x': 236, 'y': 225, 'w': 44, 'h': 44,
+                    'color': 'cool', 'toggle': 'vetroHv'})
+    text('hv_l', 304, 231, 170, 'HV BATTERY', 'hx_lab', 'fg', 'left', rate=60000, toggle='vetroHv')
+    text('hv_v', 381, 262, 90, '{{hvSoc}}', 'hx_val', 'fg', 'right', spacing=-3, toggle='vetroHv')
+    text('hv_u', 387, 266, 30, '%', 'hx_u', 'dim', 'left', rate=60000, toggle='vetroHv')
+
     # --- the right: the drive mode in the box, power and torque (their tick bars in the backdrop), fuel
     text('mode', 1645, 327, 320, '{{mode}}', 'hx_mode', 'fg', 'center')
     for key, label, val, unit, lx, ly, vy in (('power', 'POWER', '{{power}}', '{{u:powerLc}}', 1622, 391, 426),
@@ -128,8 +138,10 @@ def build(fonts):
         {'id': 'strip_cover_r', 'type': 'fill', 'class': 'content', 'z': 0, 'x': 1460, 'y': 660, 'w': 460, 'h': 60,
          'color': 'bg', 'stripRow': 'r'},
     ]
-    # connections (8 layers each): the backdrop, the arc, the middle on 0; the right on 1, the left on 2
+    # connections (8 layers each): the backdrop, the arc, the middle on 0; the right on 1, the left on 2 (each with a strip cover)
     for w in widgets:
+        if w['id'] == 'strip_cover_l': w['conn'] = 2      # the strip covers on the side connections: 0 keeps room
+        if w['id'] == 'strip_cover_r': w['conn'] = 1
         if w['id'] in ('floor', 'arc') or w['id'].startswith('strip') or 'conn' in w:
             continue
         if w['x'] >= 1380:
@@ -140,7 +152,7 @@ def build(fonts):
     for w in widgets:
         if w['type'] == 'text' and 'rate' not in w and not w.get('own'):
             toks = [t.split('}}')[0] for t in w['text'].split('{{')[1:]]
-            if any(t in ('oil', 'intake', 'oilP', 'coolant', 'mode', 'power', 'torque', 'fuelPct', 'range') for t in toks):
+            if any(t in ('oil', 'intake', 'oilP', 'hvSoc', 'coolant', 'mode', 'power', 'torque', 'fuelPct', 'range') for t in toks):
                 continue
             w['rate'] = 2000 if all(t.startswith('u:') for t in toks) else 1000
     return {

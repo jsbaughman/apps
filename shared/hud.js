@@ -113,7 +113,8 @@
  *             [cx, cy, box dx, wheel dy] (the tyres); the face by the "vetroDial" setting
  *   rneedle   effect layer; Vetro's needle and cap over the rev counter's numbers (shaders.js rneedle): "tach" as rdash's
  *   hfloor    effect layer; the Hexa theme's backdrop (shaders.js hfloor, layout made by tools/gen_hexa.py): the hex floor, the
- *             black well, "panels" (up to 8 gauge panels, up to 6 corners each: the first 4 left, the next 4 right), "warn"
+ *             black well, "panels" (up to 10 gauge panels, up to 6 corners each: the first 5 left, the next 5 right; null:
+ *             none), "panelIf" (per panel: a toggle it shows under, or null), "warn"
  *             per panel ({ signal, amber, red, low }: its frame amber or red, _hexaWarn), "barAt" (the power and torque tick
  *             bars [x, middle y, ticks], the fuel bar [x, y, w, h]), "arc" [the rev arc's centre x, y, inner radius, the
  *             well's foot y]; the Waze map in the well ("hole", "holeWhen" mapUp; the layout is "mapLive")
@@ -265,7 +266,7 @@
  *
  * Text tokens: {{speed}} {{u:speed}} {{oil}} {{coolant}} {{boost}} {{u:boost}} {{rpm}}
  * {{gear}} (P / R / N, D3 / S3 / M3 by the shifter programme, or just 3 when the selector position is unknown), {{gearnum}} (3, or P / R / N)
- * {{progLetter}} (A or M in drive, else nothing) {{spd:<i>}} (speed scale label i of SPEED_SCALE: 0..200 mph, 0..320 km/h) {{range}} {{u:distLc}} (mi, km) {{u:dist}} (MI, KM) {{ambient}} (outside, signed: +75) {{u:speedLc}} (mph, km/h) {{speed2}} {{u:speed2Lc}} {{u:speed2}} (the speed in the other unit) {{mediaTitle}} {{mediaArtist}} {{mediaElapsed}} {{mediaLeft}} (now playing, HmiMediaState; empty without) {{ampmLc}} (am, pm) {{torque}} {{u:torque}} (lb-ft, Nm) {{torquePct}} {{powerPct}} (% of config.engine's peak) {{boostHi}} {{boostMid}}
+ * {{progAM}} (A or M in drive, else nothing) {{spd:<i>}} (speed scale label i of SPEED_SCALE: 0..200 mph, 0..320 km/h) {{range}} {{u:distLc}} (mi, km) {{u:dist}} (MI, KM) {{ambient}} (outside, signed: +75) {{u:speedLc}} (mph, km/h) {{speed2}} {{u:speed2Lc}} {{u:speed2}} (the speed in the other unit) {{mediaTitle}} {{mediaArtist}} {{mediaElapsed}} {{mediaLeft}} (now playing, HmiMediaState; empty without) {{ampmLc}} (am, pm) {{torque}} {{u:torque}} (lb-ft, Nm) {{torquePct}} {{powerPct}} (% of config.engine's peak) {{boostHi}} {{boostMid}}
  * (gauge labels for 1.4 / 0.7 bar in the display unit) {{stage}} (P R N, D / S / M by the shifter programme) {{gearInD}} (gear number while in D) {{mode}} (COMFORT, SPORT, SPORT PLUS, SPORT INDIVIDUAL, ECO PRO, ...)
  * {{temp:<deg C>}} (that temperature in the display unit, °F rounded to 10, for gauge labels) {{setup:engine|chassis|steering|gearbox}} (what that part is set to in the drive mode now)
  * {{time}} {{ampm}} {{u:temp}} (°F / °C) {{gLat}} {{gLong}} (g, 2 decimals) {{gSide}} ("0.42 L", "0.42 R")
@@ -384,7 +385,7 @@ function cachedText(w, h, s, o) {
 }
 // settings that always rebuild (they pick another layout, change the theme's colours or what is placed where); every
 // other setting first tries _softSwitch, which swaps text in the layers already on the cluster
-const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap', 'vetroRev', 'vetroBright', 'vetroRight', 'vetroCamTach', 'showBoost'];
+const HARD_KEYS = ['hudLayout', 'byMode', 'inComfort', 'inSport', 'inEco', 'keepStrip', 'holiday', 'nightDim', 'redline', 'demo', 'mapInTheme', 'circuitMap', 'vetroRev', 'vetroBright', 'vetroRight', 'vetroCamTach', 'showBoost', 'vetroHv'];
 // (0.17.4: "Leave BMW's bottom strip clear" is gone. Since 0.17.0 every cluster theme ends above BMW's strip anyway;
 // its squeeze to 662 / 720 only lifted the theme off the bottoms of BMW's own gauges, car photo Nov 14 2026.)
 // settings that only change what a text shows (the next tick paints it), no rebuild
@@ -2081,7 +2082,7 @@ class HudApp {
                 const d = this.car.data();
                 return d.stage === 'D' || (!d.stage && isNum(d.gear) && d.gear > 0) ? (this._program(d) === 'M' ? 'MANUAL' : 'AUTO') : '';
             }
-            case 'progLetter': {     // the same as one letter, A or M (Hexa, beside the gear)
+            case 'progAM': {         // the same as one letter, A or M (Hexa, beside the gear)
                 const w = this._token('progWord');
                 return w ? w.charAt(0) : '';
             }
@@ -2646,8 +2647,9 @@ class HudApp {
             // its inner radius, the well's foot y]; "warn" per panel (_hexaWarn); target px
             c.uniform(ref, 'u_size', [w.w, w.h]);
             const pv = [];
-            for (let i = 0; i < 8; i++) {
-                const P = (w.panels || [])[i];
+            for (let i = 0; i < 10; i++) {
+                const pi = (w.panelIf || [])[i];      // a panel shown only while this toggle is on (the HV battery: vetroHv)
+                const P = pi && !this._toggleOn(pi) ? null : (w.panels || [])[i];
                 for (let j = 0; j < 6; j++) {
                     if (!P) { pv.push(-1, -1); continue; }
                     const v = P[Math.min(j, P.length - 1)];
@@ -2655,7 +2657,7 @@ class HudApp {
                 }
             }
             c.uniform(ref, 'u_pv', pv, { type: 'vec4' });
-            c.uniform(ref, 'u_warn', [0, 0, 0, 0, 0, 0, 0, 0], { type: 'float' });
+            c.uniform(ref, 'u_warn', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], { type: 'float' });
             const ba = [];
             (w.barAt || []).slice(0, 3).forEach((b, i) => ba.push(b[0] - w.x, b[1] - w.y, b[2], i === 2 ? b[3] : 0));
             while (ba.length < 12) ba.push(-999, -999, 0, 0);
@@ -3593,7 +3595,7 @@ class HudApp {
             const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 200) / 200;
             const pw = this._raw('powerPct'), tq = this._raw('torquePct'), fuel = this._raw('fuel');
             const bars = [isNum(pw) ? q(pw / 100) : 0, isNum(tq) ? q(tq / 100) : 0, isNum(fuel) ? q(fuel) : 0, 0];
-            const warn = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => this._hexaWarn((w.warn || [])[i]));
+            const warn = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => this._hexaWarn((w.warn || [])[i]));
             const key = bars.concat(warn).join('|');
             if (!force && key === x.last) return;
             x.last = key;

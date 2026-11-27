@@ -102,6 +102,28 @@
         ],
         [
           [
+            242,
+            207
+          ],
+          [
+            512,
+            207
+          ],
+          [
+            453,
+            283
+          ],
+          [
+            161,
+            283
+          ],
+          [
+            161,
+            262
+          ]
+        ],
+        [
+          [
             1445,
             292
           ],
@@ -187,7 +209,20 @@
             1556,
             553
           ]
-        ]
+        ],
+        null
+      ],
+      "panelIf": [
+        null,
+        null,
+        null,
+        null,
+        "vetroHv",
+        null,
+        null,
+        null,
+        null,
+        null
       ],
       "warn": [
         null,
@@ -209,12 +244,14 @@
         null,
         null,
         null,
+        null,
         {
           "signal": "fuel",
           "amber": 0.12,
           "red": 0.06,
           "low": true
-        }
+        },
+        null
       ],
       "barAt": [
         [
@@ -403,6 +440,20 @@
       "rate": 60000
     },
     {
+      "id": "prog",
+      "type": "text",
+      "z": 5,
+      "x": 1060,
+      "y": 304,
+      "w": 40,
+      "h": 29,
+      "text": "{{progAM}}",
+      "font": "hx_unit",
+      "color": "hot",
+      "align": "left",
+      "rate": 1000
+    },
+    {
       "id": "gear",
       "type": "text",
       "z": 5,
@@ -416,20 +467,6 @@
       "align": "center",
       "rate": 45,
       "own": true
-    },
-    {
-      "id": "prog",
-      "type": "text",
-      "z": 5,
-      "x": 1060,
-      "y": 304,
-      "w": 40,
-      "h": 29,
-      "text": "{{progLetter}}",
-      "font": "hx_unit",
-      "color": "hot",
-      "align": "left",
-      "rate": 1000
     },
     {
       "id": "speed",
@@ -773,6 +810,67 @@
       "rate": 2000
     },
     {
+      "id": "hv_i",
+      "type": "icon",
+      "icon": "battery",
+      "z": 5,
+      "x": 236,
+      "y": 225,
+      "w": 44,
+      "h": 44,
+      "color": "cool",
+      "toggle": "vetroHv",
+      "conn": 2
+    },
+    {
+      "id": "hv_l",
+      "type": "text",
+      "z": 5,
+      "x": 304,
+      "y": 220,
+      "w": 170,
+      "h": 22,
+      "text": "HV BATTERY",
+      "font": "hx_lab",
+      "color": "fg",
+      "align": "left",
+      "rate": 60000,
+      "toggle": "vetroHv",
+      "conn": 2
+    },
+    {
+      "id": "hv_v",
+      "type": "text",
+      "z": 5,
+      "x": 291,
+      "y": 250,
+      "w": 90,
+      "h": 25,
+      "text": "{{hvSoc}}",
+      "font": "hx_val",
+      "color": "fg",
+      "align": "right",
+      "spacing": -3,
+      "toggle": "vetroHv",
+      "conn": 2
+    },
+    {
+      "id": "hv_u",
+      "type": "text",
+      "z": 5,
+      "x": 387,
+      "y": 255,
+      "w": 30,
+      "h": 22,
+      "text": "%",
+      "font": "hx_u",
+      "color": "dim",
+      "align": "left",
+      "rate": 60000,
+      "toggle": "vetroHv",
+      "conn": 2
+    },
+    {
       "id": "mode",
       "type": "text",
       "z": 5,
@@ -973,7 +1071,8 @@
       "w": 1380,
       "h": 60,
       "color": "bg",
-      "stripRow": "l"
+      "stripRow": "l",
+      "conn": 2
     },
     {
       "id": "strip_cover_r",
@@ -985,7 +1084,8 @@
       "w": 460,
       "h": 60,
       "color": "bg",
-      "stripRow": "r"
+      "stripRow": "r",
+      "conn": 1
     }
   ]
 }

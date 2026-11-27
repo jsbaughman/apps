@@ -3025,8 +3025,9 @@ precision mediump float;
 #endif
 varying vec2 v_uv;
 uniform vec2 u_size;
-uniform vec4 u_pv[24];     // the panels: 8 x 6 corners, two to a vec4 (x, y, x, y), in this layer's px
-uniform float u_warn[8];   // per panel: 0 fine (cyan), 1 warning (amber), 2 alarm (red)
+uniform vec4 u_pv[30];     // the panels: 10 (5 left, 5 right) x 6 corners, two to a vec4 (x, y, x, y), in this layer's px;
+                           // a panel not shown has its first x < 0
+uniform float u_warn[10];  // per panel: 0 fine (cyan), 1 warning (amber), 2 alarm (red)
 uniform vec4 u_bars;       // power, torque, fuel 0..1; w unused
 uniform vec4 u_barAt[3];   // the power and torque tick bars' left x, middle y, ticks; the fuel bar's x, y, w, h
 uniform vec4 u_arc;        // the rev arc's centre x, y, its inner edge's radius, the well's foot y
@@ -3085,17 +3086,20 @@ void main() {
     // the thin glass plates over the pockets: a level lit top edge, a short slant in
     float ax = abs(p.x - 960.0), keep = 0.0;     // keep: the plates and lines stay over the map
     float xin = 225.0 - (p.y - 469.0) * 40.0 / 18.0;
-    if (p.y > 469.0 && p.y < 487.0 && ax > xin && ax < 560.0 - (p.y - 469.0) * 30.0 / 18.0) {
+    bool noMap = u_hole.z <= 0.0;          // the plates and the horizon line stay out of the map
+    if (noMap && p.y > 469.0 && p.y < 487.0 && ax > xin && ax < 560.0 - (p.y - 469.0) * 30.0 / 18.0) {
         float f = (p.y - 469.0) / 18.0;
         c = mix(c, mix(vec3(0.118, 0.282, 0.47), vec3(0.02, 0.047, 0.094), f), 0.55);
         keep = 1.0;
     }
+    if (noMap) {
     c *= 1.0 - 0.6 * exp(-pow((p.y - 493.0) / 8.0, 2.0)) * step(200.0, ax) * step(ax, 540.0);
     float pe = min(segd(vec2(ax, p.y), vec2(225.0, 469.0), vec2(560.0, 469.0)), segd(vec2(ax, p.y), vec2(225.0, 469.0), vec2(185.0, 487.0)) + 0.6);
     c += vec3(0.67, 0.88, 1.0) * cov(pe - 1.0) * 0.9 + vec3(0.27, 0.67, 1.0) * exp(-pe / 5.0) * 0.35;
     keep = max(keep, cov(pe - 2.0));
+    }
     // the faint horizon under the gear, the bright bar low in the middle
-    float hz = cov(abs(p.y - 462.0) - 0.75) * step(abs(p.x - 960.0), 140.0);
+    float hz = cov(abs(p.y - 462.0) - 0.75) * step(abs(p.x - 960.0), 140.0) * (noMap ? 1.0 : 0.0);
     c += vec3(0.47, 0.75, 1.0) * hz * 0.43;
     keep = max(keep, hz);
     float bb = segd(p, vec2(620.0, 652.0), vec2(1300.0, 652.0));
@@ -3104,8 +3108,8 @@ void main() {
     // --- the panels: a soft shadow, the dark glass, a fine inner frame, the glowing frame
     if (abs(p.x - 960.0) > 440.0) {
         bool rt = p.x > 960.0;
-        for (int i = 0; i < 4; i++) {
-            vec4 a = rt ? u_pv[12 + i * 3] : u_pv[i * 3], b = rt ? u_pv[13 + i * 3] : u_pv[i * 3 + 1], e = rt ? u_pv[14 + i * 3] : u_pv[i * 3 + 2];
+        for (int i = 0; i < 5; i++) {
+            vec4 a = rt ? u_pv[15 + i * 3] : u_pv[i * 3], b = rt ? u_pv[16 + i * 3] : u_pv[i * 3 + 1], e = rt ? u_pv[17 + i * 3] : u_pv[i * 3 + 2];
             float y0 = min(min(a.y, b.y), e.y), y1 = max(max(a.w, b.w), e.w);
             if (a.x < 0.0 || p.y < y0 - 24.0 || p.y > y1 + 30.0) continue;
             float pd = 1e5, ps = 1.0;
@@ -3117,7 +3121,7 @@ void main() {
             float f = pow(clamp((p.y - y0) / max(y1 - y0, 1.0), 0.0, 1.0), 0.7);
             c = put(c, mix(vec3(0.059, 0.11, 0.173), vec3(0.016, 0.031, 0.055), f), cov(pd) * 0.92);
             c += vec3(0.35, 0.55, 0.75) * cov(abs(pd + 6.6) - 0.6) * 0.45;
-            float wv = rt ? u_warn[4 + i] : u_warn[i];
+            float wv = rt ? u_warn[5 + i] : u_warn[i];
             vec3 ec = wv > 1.5 ? vec3(1.0, 0.2, 0.16) : wv > 0.5 ? vec3(1.0, 0.59, 0.12) : vec3(0.275, 0.686, 1.0);
             c = put(c, min(ec * 1.3, vec3(1.0)), cov(abs(pd) - 1.1));
             c += ec * exp(-abs(pd) / 5.0) * 0.45;
