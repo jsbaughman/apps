@@ -3,7 +3,8 @@
  * Small line icons, drawn here (no image files): straight RGBA for an image layer, w x h, in one colour.
  * Each icon is a distance function in a 0..1 box; coverage is anti-aliased over one pixel.
  *   gauge (engine), shock (chassis), wheel (steering), cog (gearbox), stack (the gear's shift program
- *   lines), therm (coolant), oilcan (oil), fuel (pump), tyre (a wheel seen from the side: ring, hub, tread notches).
+ *   lines), therm (coolant), oilcan (oil), fuel (pump), tyre (a wheel seen from the side: ring, hub, tread notches),
+ *   turbo, coolant and intake (Hexa's gauges).
  */
 function seg(px, py, ax, ay, bx, by) {
     const pax = px - ax, pay = py - ay, bax = bx - ax, bay = by - ay;
@@ -37,6 +38,21 @@ const ICONS = {
     tyre: (x, y) => {
         let d = Math.min(ring(x, y, 0.5, 0.5, 0.4) - 0.075, ring(x, y, 0.5, 0.5, 0.17) - 0.04);
         for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + Math.PI / 8; d = Math.min(d, seg(x, y, 0.5 + 0.42 * Math.sin(a), 0.5 - 0.42 * Math.cos(a), 0.5 + 0.49 * Math.sin(a), 0.5 - 0.49 * Math.cos(a)) - 0.04); }
+        return d;
+    },
+    // Hexa's gauges: a turbo (a ring, three vanes, its outlet), coolant (a thermometer over waves), intake (a filter's
+    // slats, the air coming in, the funnel out)
+    turbo: (x, y) => {
+        let d = Math.min(ring(x, y, 0.46, 0.46, 0.33) - 0.055, disc(x, y, 0.46, 0.46, 0.07), seg(x, y, 0.7, 0.7, 0.88, 0.88) - 0.055);
+        for (let i = 0; i < 3; i++) { const a = i * 2.0944; d = Math.min(d, seg(x, y, 0.46 + 0.08 * Math.sin(a), 0.46 - 0.08 * Math.cos(a), 0.46 + 0.27 * Math.sin(a + 0.8), 0.46 - 0.27 * Math.cos(a + 0.8)) - 0.045); }
+        return d;
+    },
+    coolant: (x, y) => Math.min(seg(x, y, 0.5, 0.1, 0.5, 0.5) - 0.06, disc(x, y, 0.5, 0.56, 0.1), seg(x, y, 0.62, 0.18, 0.74, 0.18) - 0.03, seg(x, y, 0.62, 0.3, 0.74, 0.3) - 0.03,
+        seg(x, y, 0.62, 0.42, 0.74, 0.42) - 0.03, x > 0.08 && x < 0.92 ? Math.min(Math.abs(y - 0.78 - 0.035 * Math.sin(x * 26)), Math.abs(y - 0.91 - 0.035 * Math.sin(x * 26))) - 0.03 : 1),
+    intake: (x, y) => {
+        let d = Math.min(seg(x, y, 0.68, 0.22, 0.88, 0.36) - 0.035, seg(x, y, 0.88, 0.36, 0.88, 0.62) - 0.035, seg(x, y, 0.88, 0.62, 0.68, 0.78) - 0.035);
+        for (let i = 0; i < 4; i++) d = Math.min(d, seg(x, y, 0.4, 0.26 + i * 0.16, 0.62, 0.26 + i * 0.16) - 0.05);
+        for (let i = 0; i < 3; i++) d = Math.min(d, seg(x, y, 0.06, 0.34 + i * 0.16, 0.26, 0.34 + i * 0.16) - 0.03);
         return d;
     },
     oilcan: (x, y) => Math.min(seg(x, y, 0.2, 0.62, 0.6, 0.62) - 0.12, seg(x, y, 0.6, 0.58, 0.9, 0.44) - 0.04, disc(x, y, 0.92, 0.66, 0.05), seg(x, y, 0.3, 0.46, 0.3, 0.34) - 0.035, seg(x, y, 0.22, 0.34, 0.38, 0.34) - 0.04),

@@ -3013,4 +3013,245 @@ void main() {
 }
 `;
 
-module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gdash: GDASH, adash: ADASH, gtext: GTEXT, rdash: RDASH, rneedle: RNEEDLE };
+const HFLOOR = `// The Hexa theme's backdrop in one cluster-render "effect" layer (GLSL ES 1.00), layout made by tools/gen_hexa.py: a
+// floor of raised hex tiles seen low (each tile's back edges lit cyan, its front edges in shadow, lit in a pool low in
+// the middle), a black well under the rev arc behind the gear and the speed, dark pockets for "RPM x 1000", two thin
+// glass plates, and the eight glass gauge panels (cyan frames, an amber or red frame on a warning) with the power,
+// torque and fuel bars. The rev arc and all text are layers over it. The Waze map shows through the well (u_hole).
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 v_uv;
+uniform vec2 u_size;
+uniform vec4 u_pv[24];     // the panels: 8 x 6 corners, two to a vec4 (x, y, x, y), in this layer's px
+uniform float u_warn[8];   // per panel: 0 fine (cyan), 1 warning (amber), 2 alarm (red)
+uniform vec4 u_bars;       // power, torque, fuel 0..1; w unused
+uniform vec4 u_barAt[3];   // the power and torque tick bars' left x, middle y, ticks; the fuel bar's x, y, w, h
+uniform vec4 u_arc;        // the rev arc's centre x, y, its inner edge's radius, the well's foot y
+uniform vec4 u_hole;       // the map's window while it shows (w 0: none)
+
+float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
+vec3 put(vec3 c, vec3 col, float a) { return mix(c, col, clamp(a, 0.0, 1.0)); }
+float segd(vec2 p, vec2 a, vec2 b) { vec2 ba = b - a; float h = clamp(dot(p - a, ba) / max(dot(ba, ba), 1e-4), 0.0, 1.0); return length(p - a - ba * h); }
+// one polygon edge: the distance so far (min) and the inside test (crossings)
+void edge(vec2 p, vec2 a, vec2 b, inout float d, inout float s) {
+    d = min(d, segd(p, a, b));
+    if ((a.y > p.y) != (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) s = -s;
+}
+
+void main() {
+    vec2 p = v_uv * u_size;
+    // --- the floor: raised flat-top hexes on a plane, horizon at y 250
+    float dy = max(p.y - 250.0, 1.0);
+    float sc = dy / 300.0;
+    vec2 F = vec2((p.x - 960.0) / sc, 300000.0 / dy);
+    float HR = 96.0;
+    float qa = (2.0 / 3.0 * F.x) / HR, ra = (-1.0 / 3.0 * F.x + 0.57735 * F.y) / HR, ya = -qa - ra;
+    vec3 rc = floor(vec3(qa, ya, ra) + 0.5), df = abs(rc - vec3(qa, ya, ra));
+    if (df.x > df.y && df.x > df.z) rc.x = -rc.y - rc.z; else if (df.y <= df.z) rc.z = -rc.x - rc.y;
+    vec2 hp = F - vec2(HR * 1.5 * rc.x, HR * 1.7320508 * (rc.z + rc.x * 0.5));
+    float h = HR * 0.8660254;
+    float etb = abs(hp.y), esd = 0.866 * abs(hp.x) + 0.5 * abs(hp.y);
+    float d = max(etb, esd) - h + 3.8;
+    float ny = etb >= esd ? sign(hp.y) : 0.5 * sign(hp.y);
+    float dpx = d * sc * (etb >= esd ? 0.45 : 0.926);
+    float light = (exp(-pow((p.x - 960.0) / 760.0, 2.0) - pow((p.y - 660.0) / 230.0, 2.0)) * 1.1 + 0.22)
+        * pow(clamp((p.y - 372.0) / 110.0, 0.0, 1.0), 1.3) * clamp(1.0 - abs(p.x - 960.0) / 1100.0, 0.25, 1.0);
+    float tile = clamp(-dpx / 1.2, 0.0, 1.0);
+    float bev = clamp(1.0 + d / 10.0, 0.0, 1.0) * step(d, 0.0);
+    float gy = clamp(hp.y / h, -1.0, 1.0);
+    vec3 col = vec3(0.047, 0.11, 0.204) * (0.7 + 0.45 * gy);
+    col += vec3(0.04, 0.176, 0.353) * exp(-max(h - 3.8 - hp.y, 0.0) * sc / 26.0) * step(0.0, gy);
+    col += clamp(ny, 0.0, 1.0) * bev * vec3(0.22, 0.77, 1.29);
+    col *= 1.0 - clamp(-ny, 0.0, 1.0) * bev * 0.75;
+    float rim = exp(-pow((dpx + 1.2) / 1.3, 2.0)) * step(0.0, ny) * (0.65 + 0.35 * clamp(ny, 0.0, 1.0));
+    float rimG = exp(-pow((dpx + 1.2) / 6.0, 2.0)) * step(0.0, ny) * 0.35;
+    col += rim * vec3(0.75, 1.35, 1.6) + rimG * vec3(0.2, 0.6, 1.0);
+    col = mix(vec3(0.008, 0.024, 0.055), col, tile) * light;
+    vec3 sky = vec3(0.016, 0.031, 0.059) + vec3(0.016, 0.055, 0.118) * exp(-pow((p.x - 960.0) / 700.0, 2.0) - pow((p.y - 430.0) / 160.0, 2.0));
+    float fb = clamp((p.y - 372.0) / 60.0, 0.0, 1.0);
+    vec3 c = (col + sky * 0.35) * fb + sky * (1.0 - fb);
+
+    // --- the black well: inside the arc down past the numbers, behind the speed, and the two pockets
+    float rin = length(p - u_arc.xy);
+    float inside = clamp((u_arc.z - 6.0 - rin) / 40.0, 0.0, 1.0) * clamp((u_arc.w - p.y) / 70.0, 0.0, 1.0);
+    float fade = pow(clamp(1.45 - abs(p.x - 960.0) / 300.0, 0.0, 1.0), 0.7) * (1.0 - 0.75 * clamp((p.y - 560.0) / 100.0, 0.0, 1.0)) * clamp((p.y - 470.0) / 20.0, 0.0, 1.0);
+    vec2 pk = vec2(abs(p.x - 960.0) - 292.0, p.y - 542.0);
+    float pocket = exp(-pow(pk.x / 170.0, 4.0) - pow(pk.y / 30.0, 4.0));
+    c *= 1.0 - clamp(max(max(inside, fade), pocket * 0.95) * 0.97, 0.0, 1.0);
+
+    // the thin glass plates over the pockets: a level lit top edge, a short slant in
+    float ax = abs(p.x - 960.0), keep = 0.0;     // keep: the plates and lines stay over the map
+    float xin = 225.0 - (p.y - 494.0) * 40.0 / 18.0;
+    if (p.y > 494.0 && p.y < 512.0 && ax > xin && ax < 560.0 - (p.y - 494.0) * 30.0 / 18.0) {
+        float f = (p.y - 494.0) / 18.0;
+        c = mix(c, mix(vec3(0.118, 0.282, 0.47), vec3(0.02, 0.047, 0.094), f), 0.55);
+        keep = 1.0;
+    }
+    c *= 1.0 - 0.6 * exp(-pow((p.y - 518.0) / 8.0, 2.0)) * step(200.0, ax) * step(ax, 540.0);
+    float pe = min(segd(vec2(ax, p.y), vec2(225.0, 494.0), vec2(560.0, 494.0)), segd(vec2(ax, p.y), vec2(225.0, 494.0), vec2(185.0, 512.0)) + 0.6);
+    c += vec3(0.67, 0.88, 1.0) * cov(pe - 1.0) * 0.9 + vec3(0.27, 0.67, 1.0) * exp(-pe / 5.0) * 0.35;
+    keep = max(keep, cov(pe - 2.0));
+    // the faint horizon under the gear, the bright bar low in the middle
+    float hz = cov(abs(p.y - 487.0) - 0.75) * step(abs(p.x - 960.0), 140.0);
+    c += vec3(0.47, 0.75, 1.0) * hz * 0.43;
+    keep = max(keep, hz);
+    float bb = segd(p, vec2(620.0, 652.0), vec2(1300.0, 652.0));
+    c += vec3(0.67, 0.88, 1.0) * cov(bb - 1.5) + vec3(0.24, 0.63, 1.0) * exp(-bb / 8.0) * 0.6;
+
+    // --- the panels: a soft shadow, the dark glass, a fine inner frame, the glowing frame
+    if (abs(p.x - 960.0) > 440.0) {
+        bool rt = p.x > 960.0;
+        for (int i = 0; i < 4; i++) {
+            vec4 a = rt ? u_pv[12 + i * 3] : u_pv[i * 3], b = rt ? u_pv[13 + i * 3] : u_pv[i * 3 + 1], e = rt ? u_pv[14 + i * 3] : u_pv[i * 3 + 2];
+            float y0 = min(min(a.y, b.y), e.y), y1 = max(max(a.w, b.w), e.w);
+            if (a.x < 0.0 || p.y < y0 - 24.0 || p.y > y1 + 30.0) continue;
+            float pd = 1e5, ps = 1.0;
+            edge(p, a.xy, a.zw, pd, ps); edge(p, a.zw, b.xy, pd, ps); edge(p, b.xy, b.zw, pd, ps);
+            edge(p, b.zw, e.xy, pd, ps); edge(p, e.xy, e.zw, pd, ps); edge(p, e.zw, a.xy, pd, ps);
+            pd *= ps;
+            // its shadow on the floor under it, the dark glass (lighter at the top), a fine inner frame, the glowing frame
+            c *= 1.0 - 0.6 * exp(-max(pd, 0.0) / 10.0) * clamp((p.y - y1 + 10.0) / 10.0, 0.0, 1.0) * step(0.0, pd);
+            float f = pow(clamp((p.y - y0) / max(y1 - y0, 1.0), 0.0, 1.0), 0.7);
+            c = put(c, mix(vec3(0.059, 0.11, 0.173), vec3(0.016, 0.031, 0.055), f), cov(pd) * 0.92);
+            c += vec3(0.35, 0.55, 0.75) * cov(abs(pd + 6.6) - 0.6) * 0.45;
+            float wv = rt ? u_warn[4 + i] : u_warn[i];
+            vec3 ec = wv > 1.5 ? vec3(1.0, 0.2, 0.16) : wv > 0.5 ? vec3(1.0, 0.59, 0.12) : vec3(0.275, 0.686, 1.0);
+            c = put(c, min(ec * 1.3, vec3(1.0)), cov(abs(pd) - 1.1));
+            c += ec * exp(-abs(pd) / 5.0) * 0.45;
+        }
+        // the power and torque tick bars, the fuel bar
+        for (int j = 0; j < 2; j++) {
+            vec4 B = u_barAt[j];
+            float v = j == 0 ? u_bars.x : u_bars.y;
+            float t = (p.x - B.x + (p.y - B.y) * 0.17) / 4.8;
+            if (t > 0.0 && t < B.z && abs(p.y - B.y) < 6.0 && fract(t) < 0.46)
+                c = floor(t) < v * B.z ? vec3(0.275, 0.725, 1.0) : vec3(0.176, 0.243, 0.345);
+        }
+        vec4 Fb = u_barAt[2];
+        float fd = max(abs(p.x - Fb.x - Fb.z * 0.5) - Fb.z * 0.5, abs(p.y - Fb.y - Fb.w * 0.5) - Fb.w * 0.5);
+        c = put(c, vec3(0.78, 0.82, 0.88), cov(abs(fd) - 0.75));
+        c = put(c, vec3(0.92, 0.157, 0.176), step(p.x, Fb.x + 2.0 + (Fb.z - 4.0) * u_bars.z) * cov(fd + 2.0));
+    }
+
+    // the map's window: the well see-through while it shows, its foot fading out
+    float ma = 0.0;
+    if (u_hole.z > 0.0) ma = clamp((u_arc.z - 24.0 - rin) / 30.0, 0.0, 1.0) * clamp((u_arc.w + 20.0 - p.y) / 40.0, 0.0, 1.0) * (1.0 - keep);
+    float al = 1.0 - ma;
+    gl_FragColor = vec4(clamp(c, 0.0, 1.0) * (1.0 - ma) / max(al, 0.001), al);
+}
+`;
+
+const HDASH = `// The Hexa theme's rev arc on a layer of its own (GLSL ES 1.00), layout made by tools/gen_hexa.py: one wide circular
+// arc of 23 glass blocks, blue through white to orange and red, lit up to the revs (the last 700 rpm brighter), each
+// block glossy and light outside, a shadow line across its middle, deep inside, a dark gap between blocks; a white scale
+// line with ticks inside it, a cyan cap at 0, the needle (two red lines), the peak of the last pull (held, fading), and
+// the shift light (every lit block red, glowing). The rest see-through (the backdrop and the map are under it).
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 v_uv;
+uniform vec2 u_size;
+uniform vec4 u_arc;        // centre x, y (this layer's px), outer radius, band width
+uniform vec4 u_ang;        // the arc's ends (deg, counter-clockwise from 3 o'clock): 0 at x, the scale's end at y; thousands
+                           // over that span z; drawn to w thousands
+uniform vec4 u_rev;        // the last pull's peak 0..1 and its fade 1..0; z unused; w the revs 0..1 of u_ang.z thousands
+uniform vec2 u_shift;      // the shift light: count 0..1, flash 0 / 1
+
+vec3 revCol(float k) {
+    vec3 c = mix(vec3(0.157, 0.549, 1.0), vec3(0.353, 0.706, 1.0), clamp(k / 2.5, 0.0, 1.0));
+    c = mix(c, vec3(0.784, 0.882, 0.961), clamp((k - 2.5) / 1.7, 0.0, 1.0));
+    c = mix(c, vec3(0.922), clamp((k - 4.2) / 1.0, 0.0, 1.0));
+    c = mix(c, vec3(1.0, 0.745, 0.275), clamp((k - 5.2) / 0.8, 0.0, 1.0));
+    c = mix(c, vec3(1.0, 0.431, 0.118), clamp((k - 6.0) / 0.8, 0.0, 1.0));
+    c = mix(c, vec3(0.941, 0.118, 0.118), clamp((k - 6.8) / 0.6, 0.0, 1.0));
+    return mix(c, vec3(0.824, 0.059, 0.078), clamp((k - 7.4) / 1.6, 0.0, 1.0));
+}
+float cov(float d) { return clamp(0.5 - d, 0.0, 1.0); }
+
+void main() {
+    vec2 p = v_uv * u_size;
+    vec2 q = p - u_arc.xy;
+    float r = length(q), R = u_arc.z, TH = u_arc.w;
+    float a = degrees(atan(-q.y, q.x));
+    float span = u_ang.x - u_ang.y, Kt = u_ang.z, KE = u_ang.w;
+    float k = (u_ang.x - a) / span * Kt;                   // thousands at this angle
+    float pxk = radians(span / Kt) * r;                     // px per thousand along the arc here
+    float rk = u_rev.w * Kt;
+    vec2 un = q / max(r, 1.0);                              // outward
+    vec2 tg = vec2(-un.y, un.x);
+    vec4 o = vec4(0.0);                                     // premultiplied
+    float flash = u_shift.y;
+
+    // the glow of the lit blocks round the band (red while the light flashes)
+    float litK = clamp(rk, 0.0, KE);
+    float along = max(max(-k, k - litK), 0.0) * pxk;
+    float outB = max(max(r - R, R - TH - r), 0.0);
+    float gl = exp(-outB / (14.0 + 12.0 * flash)) * exp(-along / 14.0) * step(0.05, litK) * (0.4 + 0.5 * flash);
+    vec3 gc = mix(vec3(0.353, 0.667, 1.0), vec3(1.0, 0.157, 0.118), flash);
+    o = vec4(gc * gl, gl);
+
+    // the blocks
+    float BW = KE / 23.0;
+    if (r < R && r > R - TH && k > 0.0 && k < KE) {
+        float bi = floor(k / BW), w = fract(k / BW), kc = (bi + 0.5) * BW;
+        float u = (R - r) / TH;
+        bool on = kc * 1000.0 <= rk * 1000.0 + 0.5;
+        vec3 base = on && flash > 0.5 ? vec3(1.0, 0.157, 0.157) : revCol(k);
+        float hi = max(0.0, 1.0 - u / 0.42) * max(0.0, 1.0 - 0.8 * w);
+        vec3 col = base * (u < 0.46 ? 1.12 : 0.62 - 0.22 * (u - 0.46) / 0.54) + (1.0 - base) * 0.38 * hi * hi;
+        col *= 1.0 - 0.55 * exp(-pow((u - 0.47) / 0.05, 2.0));
+        col *= (1.08 - 0.22 * w) * (1.0 - 0.5 * exp(-w / 0.05));
+        if (u < 0.045) col = col * 0.45 + 0.55;
+        if (u > 0.955) col = col * 0.6 + 0.3;
+        if (!on) col *= kc >= 6.0 ? 0.735 : 0.42;
+        else if (rk - kc < 0.7 && flash < 0.5) col = col * 1.22 + 0.07;
+        float gapd = min(w, 1.0 - w) * BW * pxk;
+        col = mix(vec3(0.008, 0.016, 0.031), clamp(col, 0.0, 1.0), clamp(gapd - 2.25 + 0.5, 0.0, 1.0));
+        float ca = clamp(min(R - r, r - R + TH) + 0.5, 0.0, 1.0) * clamp(min(k, KE - k) * pxk - 1.75, 0.0, 1.0);
+        o = o * (1.0 - ca) + vec4(col, 1.0) * ca;
+    }
+
+    // the scale line and its ticks (every 250 rpm; longer at 500, longest at each thousand), soft blue glow
+    float RS = R - TH - 6.0;
+    if (k > -0.05 && k < KE + 0.05) {
+        float sl = cov(abs(r - RS) - 1.25);
+        float kq = k * 4.0, tk = abs(kq - floor(kq + 0.5)) * pxk / 4.0;
+        float nk = floor(kq + 0.5);
+        float len = mod(nk, 4.0) < 0.5 ? 18.0 : mod(nk, 2.0) < 0.5 ? 9.0 : 5.0;
+        float tw = mod(nk, 4.0) < 0.5 ? 1.5 : 1.0;
+        float tl = cov(tk - tw) * step(r, RS) * step(RS - len, r);
+        float s = max(sl, tl);
+        float sg = exp(-abs(r - RS) / 5.0) * 0.25;
+        o = o * (1.0 - sg) + vec4(vec3(0.47, 0.706, 1.0) * sg, sg);
+        o = o * (1.0 - s) + vec4(vec3(0.92, 0.94, 0.98), 1.0) * s;
+    }
+    // the cyan cap at 0
+    float c0 = abs(k) * pxk;
+    float cap = cov(c0 - 2.5) * step(R - TH - 8.0, r) * step(r, R + 4.0);
+    float capG = exp(-c0 / 8.0) * exp(-max(max(r - R - 4.0, R - TH - 8.0 - r), 0.0) / 8.0) * 0.8;
+    o = o * (1.0 - capG) + vec4(vec3(0.235, 0.745, 1.0) * capG, capG);
+    o = o * (1.0 - cap) + vec4(0.59, 0.9, 1.0, 1.0) * cap;
+    // the peak of the last pull, held a moment then fading
+    if (u_rev.y > 0.0 && u_rev.x > 0.0) {
+        float pd = abs(k - u_rev.x * Kt) * pxk;
+        float pl = cov(pd - 1.5) * step(R - TH - 2.0, r) * step(r, R + 6.0) * u_rev.y;
+        float pg = exp(-pd / 8.0) * exp(-max(max(r - R - 6.0, R - TH - 2.0 - r), 0.0) / 8.0) * 0.6 * u_rev.y;
+        o = o * (1.0 - pg) + vec4(vec3(1.0, 0.82, 0.59) * pg, pg);
+        o = o * (1.0 - pl) + vec4(1.0, 0.94, 0.86, 1.0) * pl;
+    }
+    // the needle: two fine red lines across the band, a little past it, glowing
+    float nd = (k - rk) * pxk;
+    float nl = max(cov(abs(nd - 4.0) - 1.5), cov(abs(nd + 4.0) - 1.5)) * step(RS, r) * step(r, R + 10.0);
+    float ng = exp(-abs(nd) / 10.0) * exp(-max(max(r - R - 10.0, RS - r), 0.0) / 10.0) * 0.9;
+    o = o * (1.0 - ng) + vec4(vec3(1.0, 0.118, 0.118) * ng, ng);
+    o = o * (1.0 - nl) + vec4(1.0, 0.235, 0.216, 1.0) * nl;
+    gl_FragColor = vec4(o.rgb / max(o.a, 0.001), clamp(o.a, 0.0, 1.0));
+}
+`;
+
+module.exports = { shiftbar: SHIFTBAR, arc: ARC, revbar: REVBAR, lights: LIGHTS, fill: FILL, box: BOX, grid: GRID, segbar: SEGBAR, mdash: MDASH, mtach: MTACH, sdash: SDASH, boxes: BOXES, atext: ATEXT, meter: METER, gmeter: GMETER, revarc: REVARC, tiles: TILES, ribbon: RIBBON, deco: DECO, mview: MVIEW, vdash: VDASH, cdash: CDASH, ldash: LDASH, gdash: GDASH, adash: ADASH, gtext: GTEXT, rdash: RDASH, rneedle: RNEEDLE, hfloor: HFLOOR, hdash: HDASH };

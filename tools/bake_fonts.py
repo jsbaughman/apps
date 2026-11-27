@@ -175,6 +175,17 @@ CLUSTER_FONTS = [
     # Cruise: calm, light numbers
     # Ribbon: Outfit (SIL OFL), thin and calm: the huge speed, the side readouts, small spaced labels
     ('b_unit', 'Outfit[wght].ttf', 26, UPPER + LOWER + '/', 0, 'Medium'),
+    # Hexa (tools/gen_hexa.py): Saira Italic (SIL OFL), its own slant; weight and width per use ([wght, wdth])
+    ('hx_num', 'Saira-Italic[wdth,wght].ttf', 50, DIGITS, 0, [700, 118]),
+    ('hx_gear', 'Saira-Italic[wdth,wght].ttf', 165, DIGITS + 'PRNDSM-', 0, [800, 125], None, '', 0.0, 5),   # hollow, red
+    ('hx_speed', 'Saira-Italic[wdth,wght].ttf', 104, DIGITS + '-', 0, [750, 118]),
+    ('hx_unit', 'Saira-Italic[wdth,wght].ttf', 28, UPPER + '/', 0, [650, 112]),
+    ('hx_rpm', 'Saira-Italic[wdth,wght].ttf', 24, 'RPMx 01', 0, [550, 105]),
+    ('hx_mode', 'Saira-Italic[wdth,wght].ttf', 30, UPPER + ' +', 0, [700, 125]),
+    ('hx_lab', 'Saira-Italic[wdth,wght].ttf', 23, UPPER + ' ', 0, [620, 100]),
+    ('hx_val', 'Saira-Italic[wdth,wght].ttf', 31, DIGITS + '.-', 0, [700, 110]),
+    ('hx_u', 'Saira-Italic[wdth,wght].ttf', 20, LOWER + UPPER + '°/%-', 0, [600, 100]),
+    ('hx_uc', 'Saira-Italic[wdth,wght].ttf', 25, LOWER + '/', 0, [600, 105]),   # boost's unit, cyan, larger
 ]
 FONTS = {'idrive_hud_widgets': HUD_FONTS, 'cluster_themes': CLUSTER_FONTS}
 PAD = 2
@@ -183,14 +194,16 @@ ATLAS_W = 1024
 
 def bake(out, name, file, size, chars, stroke=0, weight=None, subs=None, tuck='', slant=0.0, outline=0):
     """stroke: px of extra weight round every glyph (Michroma has one weight). weight: a named instance of a
-    variable font (Orbitron: Regular .. Black), for the M theme's squared BMW-style gear, speed and numbers.
+    variable font (Orbitron: Regular .. Black), for the M theme's squared BMW-style gear, speed and numbers; or a list
+    of axis values in the font's own order (Saira Italic: [weight, width], Hexa).
     subs: {char: glyph drawn for it} (Orbitron's zero is slashed; the M8's is plain, so its O stands in).
     tuck: characters added to a font after layouts were built on its cell height (° on value / y_val, Nov 7 2026):
     they don't count towards the cell, and one that rises above it is drawn lower so its top meets the cell's.
     slant: an italic made by shearing (x shift per px above the baseline, 0.2 = about 11 degrees; the fonts have no italics).
     outline: px; the glyph drawn hollow, only a ring that wide round its outline (Apex's gear)."""
     font = ImageFont.truetype(os.path.join(SRC, file), size)
-    if weight: font.set_variation_by_name(weight)
+    if isinstance(weight, (list, tuple)): font.set_variation_by_axes(list(weight))   # axis values, in the font's order
+    elif weight: font.set_variation_by_name(weight)
     subs = subs or {}
     glyph = lambda c: subs.get(c, c)
     ink = [c for c in chars if c != ' ']

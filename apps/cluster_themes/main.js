@@ -62,7 +62,7 @@ mgu.run({
         if (!hud) return;
         new Page(ctx, hud, {
             title: ctx.spec.title, what: 'cluster',
-            look: { name: 'Themes', style: 'hero', tags: { apex: 'needle dash · G-meter', veloce: 'arc · hex', circuit: 'three dials · red band', aero: 'rev rail · navy', vetro: 'dial under glass · floor' } },
+            look: { name: 'Themes', style: 'hero', tags: { apex: 'needle dash · G-meter', veloce: 'arc · hex', circuit: 'three dials · red band', aero: 'rev rail · navy', vetro: 'dial under glass · floor', hexa: 'glass arc · hex floor' } },
             tabs: ['look', 'map', 'alerts', 'gmeter', 'settings'],
             smartTemps: false,    // no theme here hides temperatures (smart_temps.js works on readout slots only)
             // the Settings tab lists only the settings of the theme on the cluster (shared/page.js); not listed: all themes

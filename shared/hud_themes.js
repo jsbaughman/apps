@@ -148,6 +148,18 @@ const THEMES = {
         numBlack: [30, 30, 34, 255], numBlackLow: [8, 8, 10, 255],         // the red face's redline number
         shade: [0, 0, 0, 210],
     },
+    // Hexa (layout hexa.json, tools/gen_hexa.py): a glass rev arc over a floor of lit hex tiles, cyan-framed glass gauges
+    // either side; white type, cyan icons and units, a red gear.
+    hexa: {
+        name: 'Hexa',
+        fg: [240, 244, 250, 255], dim: [225, 232, 242, 255], track: [44, 62, 88, 255], arc: [240, 244, 250, 255],
+        glow: 0.85, stripe: false,
+        bar: { low: [70, 185, 255], mid: [240, 244, 250], high: [240, 40, 40], midAt: 'shift' },
+        rev: { from: [240, 40, 40], to: [240, 40, 40] },
+        bg: [0, 0, 0, 255], panel: [0, 0, 0, 255], line: [70, 175, 255, 255], head: [240, 244, 250, 255],
+        ink: [10, 4, 6, 255], accent: [70, 185, 255, 255], well: [0, 0, 0, 255], faint: [96, 110, 130, 255],
+        hot: [240, 34, 40, 255], cool: [70, 185, 255, 255], numRed: [240, 40, 40, 255],
+    },
     // Veloce (layout veloce.json, tools/gen_veloce.py): an Italian supercar style, silver arc blocks on hex cells, red accents.
     veloce: {
         name: 'Veloce',

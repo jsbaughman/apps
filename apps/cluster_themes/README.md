@@ -60,6 +60,19 @@ An Italian GT style dash: a round dial under glass standing on a perforated meta
 
 With "Leave room for the driver camera" on, the rev counter is drawn lower and smaller (its top clear of the camera), as on Apex and Circuit. How small is set by "Tach size with driver camera (Vetro)": Large (86 % of the full dial, as before), Medium (81 %) or Small (76 %), for cars where the camera hides more of the top of the dial from the driver's seat. The layout is made by `tools/gen_vetro.py`.
 
+### Hexa
+
+A wide glass rev arc over a floor of raised hex tiles lit cyan, after a concept a driver brought (Nov 27 2026).
+
+- **Rev arc:** 23 glass blocks from 0 to past 8, blue to white to orange and red, lit up to the revs, the last few blocks under the needle a little brighter; the needle is two red lines. The highest revs of a pull stay marked for about 2.5 seconds, then fade. The shift light turns every lit block red and makes the arc glow.
+- **Middle:** the gear (hollow red), the speed and its unit in a black well under the arc, RPM x 1000 on the left.
+- **Left:** boost, coolant, oil and intake temperature in glass panels round the arc's foot.
+- **Right:** the drive mode, power and torque (with bars, % of the engine's peaks), fuel with its bar and the range.
+- **Warnings:** a panel's frame turns amber, then red: coolant from 113 / 120 °C (235 / 248 °F), oil from 135 / 145 °C (275 / 293 °F), intake from 55 / 65 °C (131 / 149 °F), fuel under 12 / 6 %.
+- **Map:** with "Show Waze map inside the theme" on, Waze's map shows in the well under the arc, the gear and speed over it.
+
+All the type is Saira Italic. The layout is made by `tools/gen_hexa.py`; the floor and panels are one shader (hfloor), the arc another (hdash), each well under the size that reset the cluster.
+
 ## Starting with the car
 
 Since 0.22.0 the app starts by itself when the head unit powers up (autostart), without its page, and draws the cluster from then on; opening it from the apps menu shows the page over that same drawing. If the head unit starts a second copy when the page is opened, the older one stops drawing (data/running.json) so the cluster is drawn once.

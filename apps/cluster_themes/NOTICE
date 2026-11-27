@@ -34,7 +34,7 @@ Besides its own code, the app ships with:
 4c. The Outfit typeface (hud.pack, fonts/b_*): pre-rendered glyphs of Outfit, Copyright 2021 The Outfit Project Authors
    (https://github.com/Outfitio/Outfit-Fonts), under the SIL Open Font License 1.1 (the same licence text as below).
 
-4d. The Saira and Oxanium typefaces (hud.pack, fonts/ae_*, the Aero theme): pre-rendered glyphs of Saira, Copyright 2020
+4d. The Saira and Oxanium typefaces (hud.pack, fonts/ae_*, the Aero theme; fonts/hx_*, Saira Italic, the Hexa theme): pre-rendered glyphs of Saira, Copyright 2020
    The Saira Project Authors (https://github.com/Omnibus-Type/Saira), and of Oxanium, Copyright 2019 The Oxanium Project
    Authors (https://github.com/sevmeyer/oxanium), both under the SIL Open Font License 1.1 (the same licence text as below).
 
@@ -56,6 +56,7 @@ Copyright 2011 The Michroma Project Authors (https://github.com/googlefonts/Mich
 Copyright 2018 The Orbitron Project Authors (https://github.com/theleagueof/orbitron), with Reserved Font Name "Orbitron"
 Copyright (c) 2017, keshikan (http://www.keshikan.net), with Reserved Font Name "DSEG"
 Copyright 2021 The Outfit Project Authors (https://github.com/Outfitio/Outfit-Fonts)
+Copyright 2020 The Saira Project Authors (https://github.com/Omnibus-Type/Saira)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

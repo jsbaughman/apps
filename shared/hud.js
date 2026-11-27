@@ -112,6 +112,14 @@
  *             ({ of: bar index, x, y, w }) for the right panel meanwhile; "car"
  *             [cx, cy, box dx, wheel dy] (the tyres); the face by the "vetroDial" setting
  *   rneedle   effect layer; Vetro's needle and cap over the rev counter's numbers (shaders.js rneedle): "tach" as rdash's
+ *   hfloor    effect layer; the Hexa theme's backdrop (shaders.js hfloor, layout made by tools/gen_hexa.py): the hex floor, the
+ *             black well, "panels" (up to 8 gauge panels, up to 6 corners each: the first 4 left, the next 4 right), "warn"
+ *             per panel ({ signal, amber, red, low }: its frame amber or red, _hexaWarn), "barAt" (the power and torque tick
+ *             bars [x, middle y, ticks], the fuel bar [x, y, w, h]), "arc" [the rev arc's centre x, y, inner radius, the
+ *             well's foot y]; the Waze map in the well ("hole", "holeWhen" mapUp; the layout is "mapLive")
+ *   hdash     effect layer; Hexa's rev arc (shaders.js hdash): "arc" [centre x, y, outer radius, band width], "ang" [the 0 end's
+ *             angle, the end's angle (deg, counter-clockwise from 3 o'clock), thousands over it, thousands drawn]: 23 blocks
+ *             lit to the revs, the needle, the last pull's peak (HEXA_PEAK_HOLD), the shift light
  *   gdash     effect layer; the whole Circuit theme (shaders.js gdash, layout made by tools/gen_circuit.py): three round dials
  *             ("tach", "left", "right"), the left one's two scales ("arcs", picked like Apex's left gauges), the tyres ("car")
  *   ldash     effect layer; the whole Veloce theme (shaders.js ldash, layout made by tools/gen_veloce.py): "arc" [cx, cy, rx,
@@ -341,9 +349,10 @@ const PRED_AHEAD = 500;          // rpm at most it runs ahead of the last readin
 const PRED_FLOOR = 800;          // falling, never below this (or the reading, if lower): no dip under idle on a lift-off
 const PRED_SLOPE = 30;           // rpm per ms it runs on at most (an M4 free-revving is ~15)
 const PRED_MAX = 9500;           // and never past this
-const SHIFT_DASH = { cdash: 1, ldash: 1, adash: 1, gdash: 1, rdash: 1 };   // dashes whose u_shift _tachTick sends
+const SHIFT_DASH = { cdash: 1, ldash: 1, adash: 1, gdash: 1, rdash: 1, hdash: 1 };   // dashes whose u_shift _tachTick sends
 const PULL_LOW = 0.2, PULL_RESET_MS = 4000, PULL_SHOW = 0.3;   // Vetro's peak boost: bar under which a pull ends, ms, bar to show from
 const REV_PEAK_DROP = 0.06, REV_PEAK_HOLD = 400, REV_PEAK_FADE = 1000, REV_PEAK_MIN = 0.45;   // Vetro's lit ladder: its peak mark
+const HEXA_PEAK_HOLD = 2500;     // ms: Hexa's peak mark stays this long after a pull before it fades
 const TUNE_STALE_MS = 6000, TUNE_RAIL_MAX = 35, TUNE_TIMEOUT_MS = 600, TUNE_RETRY_MS = 5000;   // Vetro's Tuning tiles: a reading older than this shows none; the rail's scale, MPa
 const TACH_MS = 16;              // ~60 Hz: the rev counter's needle / band alone (_tachTick), the display's own frame rate
 const TEXT_MS = 200;             // text re-draws at most 5 times a second (what BMW's own readouts do)
@@ -428,7 +437,7 @@ function mediaText(v) {
 /** Seconds as m:ss. */
 function clockOf(sec) { const t = Math.max(0, Math.floor(sec)); return Math.floor(t / 60) + ':' + ('0' + (t % 60)).slice(-2); }   // its speed scale: 0..200 mph by 20, 0..330 km/h by 30 (linear)
 const ROAD_DASH_M = 12;            // the Sport road: metres per dash and gap (shaders.js sdash u_road)
-const CUE_TYPES = { lights: true, shiftbar: true, revbar: true, revarc: true, ribbon: true, mtach: true, cdash: true, ldash: true, gdash: true, adash: true, rdash: true };
+const CUE_TYPES = { lights: true, shiftbar: true, revbar: true, revarc: true, ribbon: true, mtach: true, cdash: true, ldash: true, gdash: true, adash: true, rdash: true, hdash: true };
 // the shift-light test (page.js Alerts): rpm climbs from TEST_FROM to just past the shift point, then holds
 const TEST_FROM = 1500, TEST_CLIMB_MS = 2500, TEST_HOLD_MS = 1200;
 // night colours (Cluster Themes "nightDim"): after sunset the theme's whites and greys go to this brightness
@@ -2627,6 +2636,39 @@ class HudApp {
             c.uniform(ref, 'u_car', [C[0] - w.x, C[1] - w.y, C[2], C[3]]);
             c.uniform(ref, 'u_hole', this._hole(w));
             c.uniform(ref, 'u_holeF', [isNum(w.holeFeather) ? w.holeFeather : 0]);
+        } else if (w.type === 'hfloor') {
+            // Hexa's backdrop (tools/gen_hexa.py): "panels" (up to 8 gauge panels, up to 6 corners each), "barAt" (the power
+            // and torque tick bars [left x, middle y, ticks], the fuel bar [x, y, w, h]), "arc" [the rev arc's centre x, y,
+            // its inner radius, the well's foot y]; "warn" per panel (_hexaWarn); target px
+            c.uniform(ref, 'u_size', [w.w, w.h]);
+            const pv = [];
+            for (let i = 0; i < 8; i++) {
+                const P = (w.panels || [])[i];
+                for (let j = 0; j < 6; j++) {
+                    if (!P) { pv.push(-1, -1); continue; }
+                    const v = P[Math.min(j, P.length - 1)];
+                    pv.push(v[0] - w.x, v[1] - w.y);
+                }
+            }
+            c.uniform(ref, 'u_pv', pv, { type: 'vec4' });
+            c.uniform(ref, 'u_warn', [0, 0, 0, 0, 0, 0, 0, 0], { type: 'float' });
+            const ba = [];
+            (w.barAt || []).slice(0, 3).forEach((b, i) => ba.push(b[0] - w.x, b[1] - w.y, b[2], i === 2 ? b[3] : 0));
+            while (ba.length < 12) ba.push(-999, -999, 0, 0);
+            c.uniform(ref, 'u_barAt', ba, { type: 'vec4' });
+            c.uniform(ref, 'u_bars', [0, 0, 0, 0]);
+            const Ar = w.arc;
+            c.uniform(ref, 'u_arc', [Ar[0] - w.x, Ar[1] - w.y, Ar[2], Ar[3] - w.y]);
+            c.uniform(ref, 'u_hole', this._hole(w));
+        } else if (w.type === 'hdash') {
+            // Hexa's rev arc (tools/gen_hexa.py): "arc" [centre x, y, outer radius, band width], "ang" [the 0 end's angle, the
+            // scale's end's angle (deg, counter-clockwise from 3 o'clock), thousands over that, thousands drawn]; target px
+            const Ar = w.arc;
+            c.uniform(ref, 'u_size', [w.w, w.h]);
+            c.uniform(ref, 'u_arc', [Ar[0] - w.x, Ar[1] - w.y, Ar[2], Ar[3]]);
+            c.uniform(ref, 'u_ang', w.ang);
+            c.uniform(ref, 'u_rev', [0, 0, 0, 0]);
+            c.uniform(ref, 'u_shift', [0, 0]);
         } else if (w.type === 'rneedle') {
             // Vetro's needle over the numbers (tools/gen_vetro.py): "tach" as the dash's; white on the red face
             const T = w.tach;
@@ -2984,6 +3026,17 @@ class HudApp {
 
     _barsOf(w) { return (w.bars || []).map((b) => this._pickOf(b)); }
 
+    /**
+     * A Hexa panel's warning (its frame amber or red): r { signal, amber, red } in the car's units (temperatures in C,
+     * fuel 0..1), "low": true when low is the bad side (fuel); 0 fine or no reading, 1 amber, 2 red.
+     */
+    _hexaWarn(r) {
+        const v = r && r.signal ? this._raw(r.signal) : null;
+        if (!isNum(v)) return 0;
+        if (r.low) return v <= r.red ? 2 : v <= r.amber ? 1 : 0;
+        return v >= r.red ? 2 : v >= r.amber ? 1 : 0;
+    }
+
     /** Vetro's HV gauge with the setting on: [x, y, height] in the layer, upright, or lying above the panel (height < 0) while the map shows. */
     _hvAt(w) {
         if (!w.hv || this.setting('vetroHv') !== true) return null;
@@ -3147,7 +3200,7 @@ class HudApp {
             if (x.sheet || !x.ref) return;
             const u = this._tachUniform(x);
             if (!u) return;
-            const k = u[1][3];
+            const k = x.w.type === 'hdash' ? u[1].join(',') : u[1][3];
             if (k !== x.lastTach) { x.lastTach = k; x.c.uniform(x.ref, u[0], u[1]); }
             // Vetro's lit ladder: the revs' peak after a pull, held a moment, then fading out
             if (x.w.type === 'rdash' && this.setting('vetroRev') === 'ladder') {
@@ -3164,15 +3217,16 @@ class HudApp {
     }
 
     /** A dash effect's rev uniform: [name, vec4 with the revs' fraction of its scale last], or null. */
-    _revPeak(now, f) {
+    _revPeak(now, f, hold) {
         // the highest revs of a pull: held while they climb; once they have dropped REV_PEAK_DROP of the scale below it
         // it stays REV_PEAK_HOLD ms and fades over REV_PEAK_FADE ms; a pull under REV_PEAK_MIN shows none
         const P = this.revPk || (this.revPk = { v: 0, at: 0 });
-        if (f >= P.v || (P.at && now - P.at > REV_PEAK_HOLD + REV_PEAK_FADE)) { P.v = f; P.at = 0; }
+        const H = isNum(hold) ? hold : REV_PEAK_HOLD;     // Hexa holds its peak longer (HEXA_PEAK_HOLD)
+        if (f >= P.v || (P.at && now - P.at > H + REV_PEAK_FADE)) { P.v = f; P.at = 0; }
         else if (!P.at && P.v - f > REV_PEAK_DROP) P.at = now;
         if (!P.at || P.v < REV_PEAK_MIN) return [0, 0];
         const t = now - P.at;
-        return [P.v, Math.round(Math.max(0, Math.min(1, 1 - (t - REV_PEAK_HOLD) / REV_PEAK_FADE)) * 20) / 20];
+        return [P.v, Math.round(Math.max(0, Math.min(1, 1 - (t - H) / REV_PEAK_FADE)) * 20) / 20];
     }
 
     _tachUniform(x) {
@@ -3182,6 +3236,8 @@ class HudApp {
         if (w.type === 'adash') { const Sc = w.scale; return ['u_scale', [Sc[0] - w.x, Sc[1] - w.x, Sc[2], f(Sc[2] * 1000)]]; }
         if (w.type === 'gdash' || w.type === 'rdash' || w.type === 'rneedle') { const T = w.tach; return ['u_tach', [T[0] - w.x, T[1] - w.y, T[2], f(T[5] * 1000)]]; }
         if (w.type === 'vdash') { const T = w.tach; return ['u_tachA', [T[4], T[5], T[6], f(VDASH_RPM)]]; }
+        // Hexa: the last pull's peak and its fade, then the revs
+        if (w.type === 'hdash') { const rv = f(w.ang[2] * 1000), pv = this._revPeak(Date.now(), rv, HEXA_PEAK_HOLD); return ['u_rev', [pv[0], pv[1], 0, rv]]; }
         return null;
     }
 
@@ -3528,6 +3584,17 @@ class HudApp {
             x.c.uniform(x.ref, 'u_tyre', ts);
             const F = w.fuel;
             x.c.uniform(x.ref, 'u_fuel', [F[0] - w.x, F[1] - w.y, F[2] - w.y, fl]);
+        } else if (w.type === 'hfloor') {
+            // Hexa: the power and torque bars (% of the engine's peaks), the fuel bar, each panel's warning
+            const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 200) / 200;
+            const pw = this._raw('powerPct'), tq = this._raw('torquePct'), fuel = this._raw('fuel');
+            const bars = [isNum(pw) ? q(pw / 100) : 0, isNum(tq) ? q(tq / 100) : 0, isNum(fuel) ? q(fuel) : 0, 0];
+            const warn = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => this._hexaWarn((w.warn || [])[i]));
+            const key = bars.concat(warn).join('|');
+            if (!force && key === x.last) return;
+            x.last = key;
+            x.c.uniform(x.ref, 'u_bars', bars);
+            x.c.uniform(x.ref, 'u_warn', warn, { type: 'float' });
         } else if (w.type === 'rdash') {
             const q = (v) => Math.round(Math.min(1, Math.max(0, v)) * 400) / 400;
             const mapOn = !!(w.hole && this.setting('mapUp') === true);
