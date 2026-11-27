@@ -3084,18 +3084,19 @@ void main() {
 
     // the thin glass plates over the pockets: a level lit top edge, a short slant in
     float ax = abs(p.x - 960.0), keep = 0.0;     // keep: the plates and lines stay over the map
+    float nm = step(u_hole.z, 0.0);              // 0 while the map shows: the plates and the gear's line step aside
     float xin = 225.0 - (p.y - 469.0) * 40.0 / 18.0;
     if (p.y > 469.0 && p.y < 487.0 && ax > xin && ax < 560.0 - (p.y - 469.0) * 30.0 / 18.0) {
         float f = (p.y - 469.0) / 18.0;
-        c = mix(c, mix(vec3(0.118, 0.282, 0.47), vec3(0.02, 0.047, 0.094), f), 0.55);
-        keep = 1.0;
+        c = mix(c, mix(vec3(0.118, 0.282, 0.47), vec3(0.02, 0.047, 0.094), f), 0.55 * nm);
+        keep = nm;
     }
-    c *= 1.0 - 0.6 * exp(-pow((p.y - 493.0) / 8.0, 2.0)) * step(200.0, ax) * step(ax, 540.0);
+    c *= 1.0 - 0.6 * nm * exp(-pow((p.y - 493.0) / 8.0, 2.0)) * step(200.0, ax) * step(ax, 540.0);
     float pe = min(segd(vec2(ax, p.y), vec2(225.0, 469.0), vec2(560.0, 469.0)), segd(vec2(ax, p.y), vec2(225.0, 469.0), vec2(185.0, 487.0)) + 0.6);
-    c += vec3(0.67, 0.88, 1.0) * cov(pe - 1.0) * 0.9 + vec3(0.27, 0.67, 1.0) * exp(-pe / 5.0) * 0.35;
-    keep = max(keep, cov(pe - 2.0));
+    c += (vec3(0.67, 0.88, 1.0) * cov(pe - 1.0) * 0.9 + vec3(0.27, 0.67, 1.0) * exp(-pe / 5.0) * 0.35) * nm;
+    keep = max(keep, cov(pe - 2.0) * nm);
     // the faint horizon under the gear, the bright bar low in the middle
-    float hz = cov(abs(p.y - 462.0) - 0.75) * step(abs(p.x - 960.0), 140.0);
+    float hz = cov(abs(p.y - 462.0) - 0.75) * step(abs(p.x - 960.0), 140.0) * nm;
     c += vec3(0.47, 0.75, 1.0) * hz * 0.43;
     keep = max(keep, hz);
     float bb = segd(p, vec2(620.0, 652.0), vec2(1300.0, 652.0));
